@@ -41,6 +41,13 @@ layout_mode = 2
 mouse_filter = 2
 visible = false
 
+[node name="AvatarIcon" type="TextureRect" parent="VBox/Avatar"]
+layout_mode = 2
+mouse_filter = 2
+stretch_mode = 5
+expand_mode = 1
+visible = false
+
 [node name="DescSection" type="PanelContainer" parent="VBox"]
 layout_mode = 2
 mouse_filter = 2

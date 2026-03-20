@@ -6,5 +6,6 @@ extends Resource
 @export var is_passable: bool = true
 @export var height: float = 0.1
 @export var color: Color = Color.GREEN
+@export var texture: Texture2D
 @export var materials_yield: int = 0
 @export var food_yield: int = 0

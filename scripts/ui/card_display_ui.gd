@@ -3,12 +3,6 @@ extends PanelContainer
 signal drag_started(card: CardData)
 signal drag_ended(card: CardData, target: Vector2i, success: bool)
 
-const _CARD_ICONS: Dictionary = {
-	CardData.CardType.MOVE: "▲",
-	CardData.CardType.SCOUT: "◉",
-	CardData.CardType.GATHER: "◆",
-}
-
 var card_data: CardData
 var hex_map: Node3D
 var camera: Camera3D
@@ -16,6 +10,16 @@ var card_effects: Node
 var active_unit: Node3D
 var arrow_indicator: MeshInstance3D
 
+var _card_icon_textures: Dictionary = {
+	CardData.CardType.MOVE: preload("res://assets/icons/boot_64.png"),
+	CardData.CardType.SCOUT: preload("res://assets/icons/telescope_64.png"),
+	CardData.CardType.GATHER: preload("res://assets/icons/mining_64.png"),
+}
+var _parchment_tex: Texture2D = preload(
+	"res://assets/textures/ui/parchment_256_grayscale.png"
+)
+var _font_regular: Font = preload("res://assets/fonts/Cinzel-Regular.ttf")
+var _font_bold: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
 var _dragging: bool = false
 var _drag_offset: Vector2 = Vector2.ZERO
 var _original_position: Vector2 = Vector2.ZERO
@@ -37,59 +41,74 @@ func setup(card: CardData) -> void:
 	outer.corner_radius_bottom_right = 8
 	add_theme_stylebox_override("panel", outer)
 
-	# Header — dark, rounded top corners
+	# Header — dark, textured, rounded top corners
 	_apply_section_style($VBox/Header, dark, 8, 8, 0, 0)
 	$VBox/Header/CardName.text = card.card_name
 	$VBox/Header/CardName.add_theme_font_size_override("font_size", 12)
 	$VBox/Header/CardName.add_theme_color_override("font_color", Color.WHITE)
+	$VBox/Header/CardName.add_theme_font_override("font", _font_bold)
 
-	# Avatar — lighter shade
-	_apply_section_style($VBox/Avatar, light, 0, 0, 0, 0)
-	var icon: String = _CARD_ICONS.get(card.card_type, "?") as String
-	$VBox/Avatar/AvatarLabel.text = icon
-	$VBox/Avatar/AvatarLabel.add_theme_font_size_override("font_size", 28)
-	$VBox/Avatar/AvatarLabel.add_theme_color_override("font_color", dark)
+	# Avatar — no texture wash, just a flat lighter shade
+	_apply_section_style($VBox/Avatar, light, 0, 0, 0, 0, false)
+	_setup_avatar(card)
 
-	# Description — base color
+	# Description — base color, textured
 	_apply_section_style($VBox/DescSection, base, 0, 0, 0, 0)
 	$VBox/DescSection/Description.text = card.description
-	var desc_size := _calc_desc_font_size(card.description)
+	var desc_size := UIHelpers.calc_desc_font_size(card.description)
 	$VBox/DescSection/Description.add_theme_font_size_override("font_size", desc_size)
 	$VBox/DescSection/Description.add_theme_color_override("font_color", Color.WHITE)
+	$VBox/DescSection/Description.add_theme_font_override("font", _font_regular)
 
-	# Footer — dark, rounded bottom corners
+	# Footer — dark, textured, rounded bottom corners
 	_apply_section_style($VBox/Footer, dark, 0, 0, 8, 8)
 	$VBox/Footer/FooterLabel.text = "Range %d" % card.range_value
 	$VBox/Footer/FooterLabel.add_theme_font_size_override("font_size", 10)
 	$VBox/Footer/FooterLabel.add_theme_color_override("font_color", Color(1, 1, 1, 0.8))
+	$VBox/Footer/FooterLabel.add_theme_font_override("font", _font_regular)
 
 
 func _apply_section_style(
 	node: PanelContainer, color: Color,
 	tl: int, tr: int, bl: int, br: int,
+	use_texture: bool = true,
 ) -> void:
-	var style := StyleBoxFlat.new()
-	style.bg_color = color
-	style.corner_radius_top_left = tl
-	style.corner_radius_top_right = tr
-	style.corner_radius_bottom_left = bl
-	style.corner_radius_bottom_right = br
-	style.content_margin_left = 6.0
-	style.content_margin_right = 6.0
-	style.content_margin_top = 4.0
-	style.content_margin_bottom = 4.0
-	node.add_theme_stylebox_override("panel", style)
+	if use_texture and _parchment_tex:
+		var style := StyleBoxTexture.new()
+		style.texture = _parchment_tex
+		style.modulate_color = color
+		style.content_margin_left = 6.0
+		style.content_margin_right = 6.0
+		style.content_margin_top = 4.0
+		style.content_margin_bottom = 4.0
+		node.add_theme_stylebox_override("panel", style)
+	else:
+		var style := StyleBoxFlat.new()
+		style.bg_color = color
+		style.corner_radius_top_left = tl
+		style.corner_radius_top_right = tr
+		style.corner_radius_bottom_left = bl
+		style.corner_radius_bottom_right = br
+		style.content_margin_left = 6.0
+		style.content_margin_right = 6.0
+		style.content_margin_top = 4.0
+		style.content_margin_bottom = 4.0
+		node.add_theme_stylebox_override("panel", style)
 
 
-func _calc_desc_font_size(text: String) -> int:
-	var length := text.length()
-	if length < 20:
-		return 13
-	if length < 30:
-		return 12
-	if length < 45:
-		return 11
-	return 10
+func _setup_avatar(card: CardData) -> void:
+	$VBox/Avatar/AvatarLabel.visible = false
+	$VBox/Avatar/AvatarArt.visible = false
+	var icon_tex: Texture2D = _card_icon_textures.get(
+		card.card_type, null
+	) as Texture2D
+	if icon_tex:
+		var tex_rect: TextureRect = $VBox/Avatar/AvatarIcon
+		tex_rect.texture = icon_tex
+		tex_rect.visible = true
+	else:
+		$VBox/Avatar/AvatarLabel.visible = true
+		$VBox/Avatar/AvatarLabel.text = "?"
 
 
 func _gui_input(event: InputEvent) -> void:

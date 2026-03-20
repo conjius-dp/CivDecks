@@ -17,6 +17,8 @@ func setup(
 	$MeshInstance3D.mesh = mesh
 	var mat := StandardMaterial3D.new()
 	mat.albedo_color = terrain.color
+	if terrain.texture:
+		mat.albedo_texture = terrain.texture
 	$MeshInstance3D.material_override = mat
 
 	$StaticBody3D/CollisionShape3D.shape = shape

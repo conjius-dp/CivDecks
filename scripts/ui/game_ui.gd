@@ -9,6 +9,13 @@ var card_effects: Node
 var active_unit: Node3D
 var arrow_indicator: MeshInstance3D
 
+var _wood_tex: Texture2D = preload(
+	"res://assets/textures/ui/wood_panel_256_grayscale.png"
+)
+var _font_bold: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
+var _font_regular: Font = preload("res://assets/fonts/Cinzel-Regular.ttf")
+
+@onready var bottom_bar: PanelContainer = $FullScreen/VBox/BottomBar
 @onready var card_hand: HBoxContainer = %CardHand
 @onready var turn_label: Label = %TurnLabel
 @onready var draw_count: Label = %DrawCount
@@ -25,6 +32,7 @@ func _ready() -> void:
 		func(card: CardData, target: Vector2i) -> void:
 			card_dropped.emit(card, target)
 	)
+	_apply_styles()
 
 
 func setup_refs(
@@ -72,3 +80,27 @@ func refresh_unit_info() -> void:
 
 func update_resources(materials: int, food: int) -> void:
 	resource_tracker.update_resources(materials, food)
+
+
+func _apply_styles() -> void:
+	# Wood texture on bottom bar
+	var wood_style := StyleBoxTexture.new()
+	wood_style.texture = _wood_tex
+	wood_style.modulate_color = Color(0.45, 0.3, 0.18)
+	wood_style.content_margin_left = 8.0
+	wood_style.content_margin_right = 8.0
+	wood_style.content_margin_top = 8.0
+	wood_style.content_margin_bottom = 8.0
+	bottom_bar.add_theme_stylebox_override("panel", wood_style)
+
+	# Cinzel font on top bar labels
+	turn_label.add_theme_font_override("font", _font_bold)
+	turn_label.add_theme_font_size_override("font_size", 14)
+	draw_count.add_theme_font_override("font", _font_regular)
+	draw_count.add_theme_font_size_override("font_size", 12)
+	discard_count.add_theme_font_override("font", _font_regular)
+	discard_count.add_theme_font_size_override("font_size", 12)
+
+	# Cinzel font on end turn button
+	end_turn_button.add_theme_font_override("font", _font_bold)
+	end_turn_button.add_theme_font_size_override("font_size", 12)
