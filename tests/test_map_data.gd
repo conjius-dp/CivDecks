@@ -1,0 +1,86 @@
+extends RefCounted
+
+var _plains: TerrainType
+var _forest: TerrainType
+var _mountain: TerrainType
+var _water: TerrainType
+
+
+func before() -> void:
+	_plains = TerrainType.new()
+	_plains.terrain_name = "Plains"
+	_plains.is_passable = true
+	_plains.height = 0.1
+	_plains.materials_yield = 1
+	_plains.food_yield = 0
+
+	_forest = TerrainType.new()
+	_forest.terrain_name = "Forest"
+	_forest.is_passable = true
+	_forest.height = 0.15
+	_forest.materials_yield = 2
+	_forest.food_yield = 1
+
+	_mountain = TerrainType.new()
+	_mountain.terrain_name = "Mountain"
+	_mountain.is_passable = false
+	_mountain.height = 0.5
+	_mountain.materials_yield = 3
+	_mountain.food_yield = 0
+
+	_water = TerrainType.new()
+	_water.terrain_name = "Water"
+	_water.is_passable = false
+	_water.height = 0.05
+	_water.materials_yield = 0
+	_water.food_yield = 2
+
+
+func test_set_and_get_terrain() -> void:
+	var map := MapData.new()
+	var coord := Vector2i(3, 2)
+	map.set_terrain(coord, _plains)
+	TestAssert.assert_eq(map.get_terrain(coord), _plains)
+
+
+func test_get_terrain_missing_returns_null() -> void:
+	var map := MapData.new()
+	TestAssert.assert_null(map.get_terrain(Vector2i(99, 99)))
+
+
+func test_has_tile() -> void:
+	var map := MapData.new()
+	var coord := Vector2i(1, 1)
+	TestAssert.assert_false(map.has_tile(coord))
+	map.set_terrain(coord, _plains)
+	TestAssert.assert_true(map.has_tile(coord))
+
+
+func test_get_walkable_neighbors_filters_impassable() -> void:
+	var map := MapData.new()
+	var center := Vector2i(2, 2)
+	map.set_terrain(center, _plains)
+
+	var east := Vector2i(3, 2)
+	var west := Vector2i(1, 2)
+	var ne := Vector2i(3, 1)
+	map.set_terrain(east, _plains)
+	map.set_terrain(west, _mountain)
+	map.set_terrain(ne, _forest)
+
+	var walkable := map.get_walkable_neighbors(center)
+	TestAssert.assert_contains(walkable, east)
+	TestAssert.assert_contains(walkable, ne)
+	TestAssert.assert_not_contains(walkable, west)
+
+
+func test_get_walkable_neighbors_edge_of_map() -> void:
+	var map := MapData.new()
+	var corner := Vector2i(0, 0)
+	map.set_terrain(corner, _plains)
+	var neighbor := Vector2i(1, 0)
+	map.set_terrain(neighbor, _plains)
+
+	var walkable := map.get_walkable_neighbors(corner)
+	TestAssert.assert_size(walkable, 1)
+	TestAssert.assert_contains(walkable, neighbor)

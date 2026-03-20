@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/cards/card_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = "Gather"
+description = "Collect resources from an adjacent tile."
+card_type = 2
+range_value = 1
+cost = 1
+card_color = Color(0.839, 0.706, 0.271, 1)

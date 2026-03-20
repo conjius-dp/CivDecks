@@ -1,0 +1,71 @@
+[gd_scene format=3 uid="uid://cdmmt667rdwia"]
+
+[ext_resource type="Script" uid="uid://jjykdyqtvkrn" path="res://scripts/main.gd" id="1"]
+[ext_resource type="Script" uid="uid://mnbn1lkiwp6v" path="res://scripts/map/hex_map.gd" id="2"]
+[ext_resource type="Script" uid="uid://b2646fcty8e8q" path="res://scripts/unit/player_unit.gd" id="3"]
+[ext_resource type="Script" uid="uid://cj24c6d3hvba1" path="res://scripts/camera/strategy_camera.gd" id="4"]
+[ext_resource type="Script" uid="uid://h13n2r8ujgmx" path="res://scripts/cards/card_manager.gd" id="5"]
+[ext_resource type="Script" uid="uid://cv6kwx7lw7a3m" path="res://scripts/cards/card_effects.gd" id="6"]
+[ext_resource type="Script" uid="uid://bkkgdm4iv4twa" path="res://scripts/turn/turn_manager.gd" id="7"]
+[ext_resource type="PackedScene" path="res://scenes/ui/game_ui.tscn" id="8"]
+[ext_resource type="Script" path="res://scripts/ui/arrow_indicator.gd" id="9"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_unit"]
+albedo_color = Color(0.9, 0.2, 0.2, 1)
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_1"]
+radius = 0.25
+height = 0.8
+
+[sub_resource type="Environment" id="Environment_1"]
+background_mode = 1
+background_color = Color(0.3, 0.35, 0.45, 1)
+ambient_light_source = 2
+ambient_light_color = Color(0.7, 0.7, 0.75, 1)
+ambient_light_energy = 1.0
+tonemap_mode = 2
+
+[node name="Main" type="Node3D" unique_id=401297367]
+script = ExtResource("1")
+
+[node name="HexMap" type="Node3D" parent="." unique_id=28673876]
+script = ExtResource("2")
+
+[node name="PlayerUnit" type="Node3D" parent="." unique_id=1475465653]
+script = ExtResource("3")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="PlayerUnit" unique_id=1872465449]
+material_override = SubResource("StandardMaterial3D_unit")
+mesh = SubResource("CapsuleMesh_1")
+
+[node name="CameraRig" type="Node3D" parent="." unique_id=1480660991]
+script = ExtResource("4")
+
+[node name="CameraPivot" type="Node3D" parent="CameraRig" unique_id=1656686377]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0.866, 0, -0.866, 0.5, 0, 0, 0)
+
+[node name="Camera3D" type="Camera3D" parent="CameraRig/CameraPivot" unique_id=147443260]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 15)
+fov = 45.0
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=984827727]
+transform = Transform3D(0.866, 0, -0.5, -0.433, 0.5, -0.75, 0.25, 0.866, 0.433, 0, 10, 0)
+light_energy = 1.5
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1198311906]
+environment = SubResource("Environment_1")
+
+[node name="CardManager" type="Node" parent="." unique_id=1879593697]
+script = ExtResource("5")
+
+[node name="CardEffects" type="Node" parent="." unique_id=38310206]
+script = ExtResource("6")
+
+[node name="TurnManager" type="Node" parent="." unique_id=767809735]
+script = ExtResource("7")
+
+[node name="ArrowIndicator" type="MeshInstance3D" parent="."]
+script = ExtResource("9")
+
+[node name="GameUI" parent="." unique_id=463122490 instance=ExtResource("8")]

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="CardData" format=3 uid="uid://bxwxo4foentgq"]
+
+[ext_resource type="Script" uid="uid://dthw8v4a84dny" path="res://resources/cards/card_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = "Sprint"
+description = "Move up to 2 tiles away."
+range_value = 2
+card_color = Color(0.18, 0.545, 0.169, 1)

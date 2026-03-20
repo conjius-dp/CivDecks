@@ -1,0 +1,151 @@
+extends Node3D
+
+var _move_1: CardData = preload("res://resources/cards/move_1.tres")
+var _move_2: CardData = preload("res://resources/cards/move_2.tres")
+var _scout: CardData = preload("res://resources/cards/scout.tres")
+var _gather: CardData = preload("res://resources/cards/gather.tres")
+
+@onready var hex_map: Node3D = $HexMap
+@onready var player_unit: Node3D = $PlayerUnit
+@onready var camera_rig: Node3D = $CameraRig
+@onready var card_manager: Node = $CardManager
+@onready var card_effects: Node = $CardEffects
+@onready var turn_manager: Node = $TurnManager
+@onready var game_ui: CanvasLayer = $GameUI
+@onready var arrow_indicator: MeshInstance3D = $ArrowIndicator
+
+
+
+func _ready() -> void:
+	# Wire references
+	card_effects.hex_map = hex_map
+	card_effects.player_unit = player_unit
+	turn_manager.card_manager = card_manager
+
+	# Generate map first so MapData is populated before CardResolver needs it
+	hex_map.generate_map()
+	card_effects.card_resolver = CardResolver.new(hex_map.map_data)
+
+	var cam: Camera3D = $CameraRig/CameraPivot/Camera3D
+	game_ui.setup_refs(hex_map, cam, card_effects, player_unit, arrow_indicator)
+
+	# Connect signals
+	game_ui.card_dropped.connect(_on_card_dropped)
+	game_ui.end_turn_pressed.connect(_on_end_turn)
+	card_manager.hand_changed.connect(game_ui.card_hand.update_hand)
+	card_manager.draw_pile_changed.connect(game_ui.update_draw_count)
+	card_manager.discard_pile_changed.connect(game_ui.update_discard_count)
+	turn_manager.turn_started.connect(_on_turn_started)
+	turn_manager.phase_changed.connect(_on_phase_changed)
+	player_unit.movement_finished.connect(_on_unit_moved)
+	card_effects.gathered.connect(_on_gathered)
+
+	# Build the starter deck
+	var deck: Array[CardData] = [
+		_move_1, _move_1, _move_1, _move_1,
+		_move_2, _move_2,
+		_scout, _scout,
+		_gather, _gather,
+	]
+	card_manager.starting_deck = deck
+	card_manager.initialize_deck()
+
+	# Find a passable starting tile near center
+	var start_coord: Vector2i = _find_start_coord()
+	var start_terrain: TerrainType = hex_map.get_terrain(start_coord)
+	player_unit.place_at(start_coord, start_terrain.height - 0.1)
+
+	# Center camera on player
+	var start_world: Vector3 = HexUtil.axial_to_world(start_coord.x, start_coord.y)
+	camera_rig.global_position = Vector3(start_world.x, 0.0, start_world.z)
+
+	# Reveal starting area (fog of war)
+	_reveal_around(start_coord, 2)
+
+	# Highlight active unit hex
+	_highlight_active_unit()
+
+	# Start the game
+	turn_manager.start_game()
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed("ui_cancel"):
+		get_tree().quit()
+
+	# Show terrain info on hover
+	if event is InputEventMouseMotion:
+		var coord: Vector2i = hex_map.raycast_to_hex(
+			$CameraRig/CameraPivot/Camera3D, event.position
+		)
+		if coord != Vector2i(-999, -999):
+			var terrain: TerrainType = hex_map.get_terrain(coord)
+			if terrain:
+				game_ui.update_info(
+					"%s (%d,%d)" % [terrain.terrain_name, coord.x, coord.y]
+				)
+		else:
+			game_ui.update_info("")
+
+
+func _on_card_dropped(card: CardData, target: Vector2i) -> void:
+	if turn_manager.can_play_cards():
+		var success: bool = card_effects.execute_card(card, target)
+		if success:
+			card_manager.play_card(card)
+			turn_manager.on_card_played()
+			_highlight_active_unit()
+			game_ui.refresh_unit_info()
+
+
+func _on_end_turn() -> void:
+	hex_map.clear_highlights()
+	turn_manager.end_turn()
+	_highlight_active_unit()
+
+
+func _on_turn_started(turn_number: int) -> void:
+	game_ui.update_turn(turn_number)
+
+
+func _on_phase_changed(phase: int) -> void:
+	game_ui.set_end_turn_enabled(phase == TurnStateMachine.Phase.PLAY)
+
+
+func _on_unit_moved() -> void:
+	_highlight_active_unit()
+
+
+func _on_gathered(materials: int, food: int) -> void:
+	player_unit.state.add_resources(materials, food)
+	game_ui.update_resources(player_unit.state.materials, player_unit.state.food)
+
+
+func _highlight_active_unit() -> void:
+	hex_map.clear_highlights()
+	var coord: Vector2i = player_unit.current_coord
+	var tile: Node3D = hex_map.get_tile(coord)
+	if tile:
+		tile.set_highlighted(true, Color(1.0, 0.85, 0.2, 0.9))
+
+
+func _find_start_coord() -> Vector2i:
+	var center := Vector2i(5, 3)
+	var center_terrain: TerrainType = hex_map.get_terrain(center)
+	if center_terrain and center_terrain.is_passable:
+		return center
+	for radius in range(1, 5):
+		var hexes := HexUtil.get_hexes_in_range(center, radius)
+		for coord in hexes:
+			var terrain: TerrainType = hex_map.get_terrain(coord)
+			if terrain and terrain.is_passable:
+				return coord
+	return center
+
+
+func _reveal_around(coord: Vector2i, radius: int) -> void:
+	var hexes := HexUtil.get_hexes_in_range(coord, radius)
+	for c in hexes:
+		var tile: Node3D = hex_map.get_tile(c)
+		if tile:
+			tile.set_fog(false)

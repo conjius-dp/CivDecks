@@ -1,0 +1,11 @@
+class_name CardData
+extends Resource
+
+enum CardType { MOVE, SCOUT, GATHER }
+
+@export var card_name: String = ""
+@export_multiline var description: String = ""
+@export var card_type: CardType = CardType.MOVE
+@export var range_value: int = 1
+@export var cost: int = 1
+@export var card_color: Color = Color.WHITE
