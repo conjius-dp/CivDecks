@@ -9,12 +9,8 @@ var _pulse_tween: Tween
 var _font_bold: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
 var _tent_path: String = "res://assets/models/buildings/tent.gltf"
 var _yield_sprites: Array[Sprite3D] = []
-var _materials_icon: Texture2D = preload(
-	"res://assets/icons/entities/materials.svg"
-)
-var _food_icon: Texture2D = preload(
-	"res://assets/icons/entities/food.svg"
-)
+var _materials_icon: Texture2D
+var _food_icon: Texture2D
 
 
 func setup(
@@ -52,6 +48,14 @@ func setup(
 
 
 func _create_yield_markers() -> void:
+	if _materials_icon == null:
+		_materials_icon = load(
+			"res://assets/icons/entities/materials.svg"
+		) as Texture2D
+	if _food_icon == null:
+		_food_icon = load(
+			"res://assets/icons/entities/food.svg"
+		) as Texture2D
 	var icons: Array[Array] = []
 	for i in range(terrain.materials_yield):
 		icons.append([_materials_icon, Color(0.8, 0.6, 0.3)])
