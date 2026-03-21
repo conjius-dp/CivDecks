@@ -99,7 +99,7 @@ static func fit_font_size(
 
 static func create_panel_style() -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.12, 0.08, 0.05, 0.4)
+	style.bg_color = Color(0.0, 0.0, 0.0, 0.0)
 	style.border_color = Color(0.55, 0.4, 0.15)
 	style.set_border_width_all(CARD_BORDER)
 	style.set_corner_radius_all(CARD_CORNER_RADIUS)
@@ -111,12 +111,11 @@ static func create_panel_style() -> StyleBoxFlat:
 
 
 static func apply_parchment_bg(
-	panel: Control, is_container: bool = true,
+	panel: Control, _is_container: bool = true,
 ) -> void:
 	var tex: Texture2D = load(PARCHMENT_PATH) as Texture2D
 	if tex == null:
 		return
-	panel.clip_contents = true
 	var bg := TextureRect.new()
 	var do_rotate: bool = randi() % 2 == 0
 	var do_mirror: bool = randi() % 2 == 0
@@ -131,20 +130,15 @@ static func apply_parchment_bg(
 		bg.texture = tex
 	bg.stretch_mode = TextureRect.STRETCH_SCALE
 	bg.modulate = Color(0.95, 0.9, 0.8, 1.0)
-	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	if is_container:
-		bg.offset_left = -(PANEL_MARGIN_H + 10)
-		bg.offset_right = PANEL_MARGIN_H + 10
-		bg.offset_top = -(PANEL_MARGIN_V + 10)
-		bg.offset_bottom = PANEL_MARGIN_V + 10
-	else:
-		bg.offset_left = -10
-		bg.offset_right = 10
-		bg.offset_top = -10
-		bg.offset_bottom = 10
+	bg.show_behind_parent = true
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(bg)
-	panel.move_child(bg, 0)
+	# Position to fill the entire panel including borders
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.offset_left = -100
+	bg.offset_right = 100
+	bg.offset_top = -100
+	bg.offset_bottom = 100
 
 
 static func create_circle_panel_style(
