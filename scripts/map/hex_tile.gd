@@ -157,6 +157,7 @@ func set_fog(value: bool) -> void:
 func place_settlement(
 	settlement_name: String,
 	player_color: Color = Color(0.9, 0.2, 0.2),
+	map_data: MapData = null,
 ) -> void:
 	var tent_scene: PackedScene = load(_tent_path) as PackedScene
 	if tent_scene:
@@ -178,13 +179,20 @@ func place_settlement(
 		marker.position = Vector3(0, 0.4, 0)
 		add_child(marker)
 
+	var max_h := terrain.height
+	if map_data:
+		for neighbor in HexUtil.get_neighbors(coord):
+			var nt: TerrainType = map_data.get_terrain(neighbor)
+			if nt and nt.height > max_h:
+				max_h = nt.height
+	var label_y := max_h - (terrain.height - 0.1) + 0.8
 	var label := Label3D.new()
 	label.text = settlement_name
 	label.font = _font_bold
 	label.font_size = UIHelpers.SETTLEMENT_FONT_SIZE
 	label.pixel_size = 0.01
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	label.position = Vector3(0, 1.0, 0)
+	label.position = Vector3(0, label_y, 0)
 	label.modulate = Color(1.0, 0.95, 0.8)
 	label.outline_modulate = Color(0.15, 0.1, 0.05)
 	label.outline_size = UIHelpers.SETTLEMENT_OUTLINE

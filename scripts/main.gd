@@ -158,7 +158,8 @@ func _on_settled(coord: Vector2i, settlement_name: String) -> void:
 	var tile: Node3D = hex_map.get_tile(coord)
 	if tile:
 		tile.place_settlement(
-			settlement_name, player_unit.avatar_color
+			settlement_name, player_unit.avatar_color,
+			hex_map.map_data,
 		)
 	_reveal_around(coord, player_unit.state.sight_range)
 	_update_packing()
