@@ -269,23 +269,22 @@ func _update_hover(mouse_pos: Vector2) -> void:
 	hex_map.highlight_tiles(
 		_valid_targets, Color(0.3, 0.8, 1.0, 0.8)
 	)
+	var from_pos := _screen_to_ground(
+		_original_position + size * 0.5
+	)
 	var hovered := _raycast_hex(mouse_pos)
 	if hovered != Vector2i(-999, -999) and _is_valid_target(hovered):
 		hex_map.highlight_tiles(
 			[hovered] as Array[Vector2i],
 			Color(1.0, 1.0, 0.3, 1.0),
 		)
-		if arrow_indicator and camera:
-			var from_pos := _screen_to_ground(
-				_original_position + size * 0.5
-			)
-			var to_pos := HexUtil.axial_to_world(
+	if arrow_indicator and camera:
+		var to_pos := _screen_to_ground(mouse_pos)
+		if hovered != Vector2i(-999, -999) and _is_valid_target(hovered):
+			to_pos = HexUtil.axial_to_world(
 				hovered.x, hovered.y
 			)
-			arrow_indicator.show_arrow(from_pos, to_pos)
-	else:
-		if arrow_indicator:
-			arrow_indicator.hide_arrow()
+		arrow_indicator.show_arrow(from_pos, to_pos)
 
 
 func _raycast_hex(screen_pos: Vector2) -> Vector2i:
