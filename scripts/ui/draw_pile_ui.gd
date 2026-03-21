@@ -35,7 +35,7 @@ func _update_display() -> void:
 		var tex_rect := TextureRect.new()
 		tex_rect.texture = _card_back_tex
 		tex_rect.custom_minimum_size = Vector2(115, 165)
-		tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tex_rect.stretch_mode = TextureRect.STRETCH_SCALE
 		tex_rect.position = Vector2(i * 2, -i * 2)
 		tex_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_stack.add_child(tex_rect)

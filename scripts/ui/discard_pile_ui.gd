@@ -1,9 +1,23 @@
 extends VBoxContainer
 
 var _font_bold: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
+var _font_regular: Font = preload(
+	"res://assets/fonts/Cinzel-Regular.ttf"
+)
 var _parchment_tex: Texture2D = preload(
 	"res://assets/textures/ui/parchment_256_grayscale.png"
 )
+var _card_icon_textures: Dictionary = {
+	CardData.CardType.MOVE: preload(
+		"res://assets/icons/boot_64.png"
+	),
+	CardData.CardType.SCOUT: preload(
+		"res://assets/icons/binoculars_64.svg"
+	),
+	CardData.CardType.GATHER: preload(
+		"res://assets/icons/mining_64.png"
+	),
+}
 var _cards: Array[CardData] = []
 
 @onready var _stack: Control = $Stack
@@ -41,28 +55,110 @@ func _update_display() -> void:
 	_count_label.text = "Discard: %d" % _cards.size()
 	for child in _stack.get_children():
 		child.queue_free()
-	var cards_to_show := mini(_cards.size(), 5)
+	var cards_to_show := mini(_cards.size(), 3)
 	var start_idx := _cards.size() - cards_to_show
 	for i in range(cards_to_show):
 		var card: CardData = _cards[start_idx + i]
-		var panel := PanelContainer.new()
-		panel.custom_minimum_size = Vector2(115, 165)
+		var panel := _build_card_face(card)
 		panel.position = Vector2(i * 2, -i * 2)
-		panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		var style := StyleBoxTexture.new()
-		style.texture = _parchment_tex
-		style.modulate_color = card.card_color
-		style.content_margin_left = 4.0
-		style.content_margin_right = 4.0
-		style.content_margin_top = 4.0
-		style.content_margin_bottom = 4.0
-		panel.add_theme_stylebox_override("panel", style)
-		var lbl := Label.new()
-		lbl.text = card.card_name
-		lbl.add_theme_font_size_override("font_size", 12)
-		lbl.add_theme_color_override("font_color", Color.WHITE)
-		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		panel.add_child(lbl)
 		_stack.add_child(panel)
+
+
+func _build_card_face(card: CardData) -> PanelContainer:
+	var base: Color = card.card_color
+	var dark: Color = base.darkened(0.35)
+	var light: Color = base.lightened(0.2)
+
+	var outer := PanelContainer.new()
+	outer.custom_minimum_size = Vector2(115, 165)
+	outer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var outer_style := StyleBoxFlat.new()
+	outer_style.bg_color = Color(0, 0, 0, 0)
+	outer.add_theme_stylebox_override("panel", outer_style)
+
+	var vbox := VBoxContainer.new()
+	vbox.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_theme_constant_override("separation", 2)
+	outer.add_child(vbox)
+
+	# Header
+	var header := _make_section(dark, Vector2(0, 30))
+	var name_lbl := Label.new()
+	name_lbl.text = card.card_name
+	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	name_lbl.add_theme_font_override("font", _font_bold)
+	name_lbl.add_theme_font_size_override("font_size", 12)
+	name_lbl.add_theme_color_override("font_color", Color.WHITE)
+	name_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	header.add_child(name_lbl)
+	vbox.add_child(header)
+
+	# Avatar
+	var avatar := _make_section(light, Vector2(0, 55))
+	var icon_tex: Texture2D = _card_icon_textures.get(
+		card.card_type, null
+	) as Texture2D
+	if icon_tex:
+		var tex_rect := TextureRect.new()
+		tex_rect.texture = icon_tex
+		tex_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		tex_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		tex_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		avatar.add_child(tex_rect)
+	vbox.add_child(avatar)
+
+	# Description
+	var desc := _make_section(base, Vector2(0, 44))
+	var desc_lbl := Label.new()
+	desc_lbl.text = card.description
+	desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	desc_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD
+	desc_lbl.add_theme_font_override("font", _font_regular)
+	desc_lbl.add_theme_font_size_override("font_size", 9)
+	desc_lbl.add_theme_color_override("font_color", Color.WHITE)
+	desc_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	desc.add_child(desc_lbl)
+	vbox.add_child(desc)
+
+	# Footer
+	var footer := _make_section(dark, Vector2(0, 28))
+	var footer_lbl := Label.new()
+	footer_lbl.text = "Range %d" % card.range_value
+	footer_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	footer_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	footer_lbl.add_theme_font_override("font", _font_regular)
+	footer_lbl.add_theme_font_size_override("font_size", 10)
+	footer_lbl.add_theme_color_override(
+		"font_color", Color(1, 1, 1, 0.8)
+	)
+	footer_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	footer.add_child(footer_lbl)
+	vbox.add_child(footer)
+
+	return outer
+
+
+func _make_section(
+	color: Color, min_size: Vector2,
+) -> PanelContainer:
+	var section := PanelContainer.new()
+	section.custom_minimum_size = min_size
+	section.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var style := StyleBoxTexture.new()
+	var atlas := AtlasTexture.new()
+	atlas.atlas = _parchment_tex
+	var tex_size := _parchment_tex.get_size()
+	var half := tex_size * 0.5
+	var ox := randf() * half.x
+	var oy := randf() * half.y
+	atlas.region = Rect2(ox, oy, half.x, half.y)
+	style.texture = atlas
+	style.modulate_color = color
+	style.content_margin_left = 6.0
+	style.content_margin_right = 6.0
+	style.content_margin_top = 4.0
+	style.content_margin_bottom = 4.0
+	section.add_theme_stylebox_override("panel", style)
+	return section

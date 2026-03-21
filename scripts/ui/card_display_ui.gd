@@ -41,27 +41,27 @@ func setup(card: CardData) -> void:
 	outer.corner_radius_bottom_right = 8
 	add_theme_stylebox_override("panel", outer)
 
-	# Header — dark, textured, rounded top corners
-	_apply_section_style($VBox/Header, dark, 8, 8, 0, 0)
+	# Header — dark, textured
+	_apply_section_style($VBox/Header, dark)
 	$VBox/Header/CardName.text = card.card_name
 	$VBox/Header/CardName.add_theme_font_size_override("font_size", 12)
 	$VBox/Header/CardName.add_theme_color_override("font_color", Color.WHITE)
 	$VBox/Header/CardName.add_theme_font_override("font", _font_bold)
 
 	# Avatar — parchment texture with lighter shade
-	_apply_section_style($VBox/Avatar, light, 0, 0, 0, 0)
+	_apply_section_style($VBox/Avatar, light)
 	_setup_avatar(card)
 
 	# Description — base color, textured
-	_apply_section_style($VBox/DescSection, base, 0, 0, 0, 0)
+	_apply_section_style($VBox/DescSection, base)
 	$VBox/DescSection/Description.text = card.description
 	var desc_size := UIHelpers.calc_desc_font_size(card.description)
 	$VBox/DescSection/Description.add_theme_font_size_override("font_size", desc_size)
 	$VBox/DescSection/Description.add_theme_color_override("font_color", Color.WHITE)
 	$VBox/DescSection/Description.add_theme_font_override("font", _font_regular)
 
-	# Footer — dark, textured, rounded bottom corners
-	_apply_section_style($VBox/Footer, dark, 0, 0, 8, 8)
+	# Footer — dark, textured
+	_apply_section_style($VBox/Footer, dark)
 	$VBox/Footer/FooterLabel.text = "Range %d" % card.range_value
 	$VBox/Footer/FooterLabel.add_theme_font_size_override("font_size", 10)
 	$VBox/Footer/FooterLabel.add_theme_color_override("font_color", Color(1, 1, 1, 0.8))
@@ -70,37 +70,22 @@ func setup(card: CardData) -> void:
 
 func _apply_section_style(
 	node: PanelContainer, color: Color,
-	tl: int, tr: int, bl: int, br: int,
-	use_texture: bool = true,
 ) -> void:
-	if use_texture and _parchment_tex:
-		var style := StyleBoxTexture.new()
-		var atlas := AtlasTexture.new()
-		atlas.atlas = _parchment_tex
-		var tex_size := _parchment_tex.get_size()
-		var half := tex_size * 0.5
-		var ox := randf() * half.x
-		var oy := randf() * half.y
-		atlas.region = Rect2(ox, oy, half.x, half.y)
-		style.texture = atlas
-		style.modulate_color = color
-		style.content_margin_left = 6.0
-		style.content_margin_right = 6.0
-		style.content_margin_top = 4.0
-		style.content_margin_bottom = 4.0
-		node.add_theme_stylebox_override("panel", style)
-	else:
-		var style := StyleBoxFlat.new()
-		style.bg_color = color
-		style.corner_radius_top_left = tl
-		style.corner_radius_top_right = tr
-		style.corner_radius_bottom_left = bl
-		style.corner_radius_bottom_right = br
-		style.content_margin_left = 6.0
-		style.content_margin_right = 6.0
-		style.content_margin_top = 4.0
-		style.content_margin_bottom = 4.0
-		node.add_theme_stylebox_override("panel", style)
+	var style := StyleBoxTexture.new()
+	var atlas := AtlasTexture.new()
+	atlas.atlas = _parchment_tex
+	var tex_size := _parchment_tex.get_size()
+	var half := tex_size * 0.5
+	var ox := randf() * half.x
+	var oy := randf() * half.y
+	atlas.region = Rect2(ox, oy, half.x, half.y)
+	style.texture = atlas
+	style.modulate_color = color
+	style.content_margin_left = 6.0
+	style.content_margin_right = 6.0
+	style.content_margin_top = 4.0
+	style.content_margin_bottom = 4.0
+	node.add_theme_stylebox_override("panel", style)
 
 
 func _setup_avatar(card: CardData) -> void:
