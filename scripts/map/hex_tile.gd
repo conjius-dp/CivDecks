@@ -60,9 +60,7 @@ func _create_yield_markers() -> void:
 	if icons.is_empty():
 		return
 	var count: int = icons.size()
-	var spacing := 0.2
-	@warning_ignore("integer_division")
-	var start_x := -spacing * (count - 1) / 2.0
+	var positions: Array[Vector3] = _get_yield_positions(count)
 	for idx in range(count):
 		var icon_data: Dictionary = icons[idx]
 		var tex: Texture2D = load(
@@ -75,9 +73,7 @@ func _create_yield_markers() -> void:
 		sprite.pixel_size = 0.0005
 		sprite.billboard = BaseMaterial3D.BILLBOARD_DISABLED
 		sprite.axis = Vector3.AXIS_Y
-		sprite.position = Vector3(
-			start_x + idx * spacing, 0.15, 0.0
-		)
+		sprite.position = positions[idx]
 		sprite.rotation_degrees = Vector3(-90, 0, 0)
 		sprite.modulate = Color(
 			icon_data["color"].r, icon_data["color"].g,
@@ -88,6 +84,29 @@ func _create_yield_markers() -> void:
 		)
 		add_child(sprite)
 		_yield_sprites.append(sprite)
+
+
+func _get_yield_positions(count: int) -> Array[Vector3]:
+	var y_off := 0.15
+	var r := 0.18
+	if count == 1:
+		return [Vector3(0, y_off, 0)] as Array[Vector3]
+	if count == 2:
+		return [
+			Vector3(-r * 0.5, y_off, 0),
+			Vector3(r * 0.5, y_off, 0),
+		] as Array[Vector3]
+	# 3+ arranged in equilateral triangle
+	var result: Array[Vector3] = []
+	for i in range(count):
+		if i < 3:
+			var angle := deg_to_rad(90.0 + 120.0 * i)
+			result.append(Vector3(
+				cos(angle) * r, y_off, -sin(angle) * r
+			))
+		else:
+			result.append(Vector3(0, y_off, 0))
+	return result
 
 
 func set_highlighted(value: bool, color: Color = Color(1.0, 0.9, 0.2, 0.9)) -> void:
