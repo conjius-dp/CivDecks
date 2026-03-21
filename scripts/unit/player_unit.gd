@@ -48,7 +48,6 @@ func _ready() -> void:
 		return
 	_model = scene.instantiate()
 	_model.scale = Vector3(0.25, 0.25, 0.25)
-	_model.rotation.y = PI
 	add_child(_model)
 	_anim_player = _model.get_node_or_null(
 		"AnimationPlayer"
@@ -174,7 +173,7 @@ func _face_toward_instant(target: Vector3) -> void:
 	var dir := target - global_position
 	dir.y = 0.0
 	if dir.length_squared() > 0.001:
-		_model.look_at(global_position + dir, Vector3.UP)
+		_model.look_at(global_position - dir, Vector3.UP)
 
 
 func _face_direction(dir: Vector3) -> void:
@@ -182,7 +181,7 @@ func _face_direction(dir: Vector3) -> void:
 		return
 	if dir.length_squared() > 0.001:
 		_model.look_at(
-			_model.global_position + dir, Vector3.UP
+			_model.global_position - dir, Vector3.UP
 		)
 
 
