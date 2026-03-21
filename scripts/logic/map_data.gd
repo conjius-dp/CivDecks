@@ -24,3 +24,30 @@ func get_walkable_neighbors(coord: Vector2i) -> Array[Vector2i]:
 			if terrain.is_passable:
 				result.append(neighbor)
 	return result
+
+
+func find_path(from: Vector2i, to: Vector2i) -> Array[Vector2i]:
+	if from == to:
+		return [from] as Array[Vector2i]
+	if not has_tile(from) or not has_tile(to):
+		return [] as Array[Vector2i]
+	var frontier: Array[Vector2i] = [from]
+	var came_from: Dictionary = {}
+	came_from[from] = from
+	while frontier.size() > 0:
+		var current: Vector2i = frontier.pop_front()
+		if current == to:
+			break
+		for neighbor in get_walkable_neighbors(current):
+			if not came_from.has(neighbor):
+				came_from[neighbor] = current
+				frontier.append(neighbor)
+	if not came_from.has(to):
+		return [] as Array[Vector2i]
+	var path: Array[Vector2i] = []
+	var current: Vector2i = to
+	while current != from:
+		path.push_front(current)
+		current = came_from[current] as Vector2i
+	path.push_front(from)
+	return path

@@ -84,3 +84,54 @@ func test_get_walkable_neighbors_edge_of_map() -> void:
 	var walkable := map.get_walkable_neighbors(corner)
 	TestAssert.assert_size(walkable, 1)
 	TestAssert.assert_contains(walkable, neighbor)
+
+
+func test_find_path_adjacent() -> void:
+	var map := MapData.new()
+	map.set_terrain(Vector2i(0, 0), _plains)
+	map.set_terrain(Vector2i(1, 0), _plains)
+	var path := map.find_path(Vector2i(0, 0), Vector2i(1, 0))
+	TestAssert.assert_size(path, 2)
+	TestAssert.assert_eq(path[0], Vector2i(0, 0))
+	TestAssert.assert_eq(path[1], Vector2i(1, 0))
+
+
+func test_find_path_two_steps() -> void:
+	var map := MapData.new()
+	map.set_terrain(Vector2i(0, 0), _plains)
+	map.set_terrain(Vector2i(1, 0), _plains)
+	map.set_terrain(Vector2i(2, 0), _plains)
+	var path := map.find_path(Vector2i(0, 0), Vector2i(2, 0))
+	TestAssert.assert_size(path, 3)
+	TestAssert.assert_eq(path[0], Vector2i(0, 0))
+	TestAssert.assert_eq(path[2], Vector2i(2, 0))
+
+
+func test_find_path_around_obstacle() -> void:
+	var map := MapData.new()
+	map.set_terrain(Vector2i(0, 0), _plains)
+	map.set_terrain(Vector2i(1, 0), _mountain)
+	map.set_terrain(Vector2i(2, 0), _plains)
+	map.set_terrain(Vector2i(0, 1), _plains)
+	map.set_terrain(Vector2i(1, 1), _plains)
+	var path := map.find_path(Vector2i(0, 0), Vector2i(2, 0))
+	TestAssert.assert_gt(path.size(), 0)
+	TestAssert.assert_eq(path[0], Vector2i(0, 0))
+	TestAssert.assert_eq(path[path.size() - 1], Vector2i(2, 0))
+	TestAssert.assert_not_contains(path, Vector2i(1, 0))
+
+
+func test_find_path_no_route_returns_empty() -> void:
+	var map := MapData.new()
+	map.set_terrain(Vector2i(0, 0), _plains)
+	map.set_terrain(Vector2i(2, 0), _plains)
+	var path := map.find_path(Vector2i(0, 0), Vector2i(2, 0))
+	TestAssert.assert_size(path, 0)
+
+
+func test_find_path_same_tile() -> void:
+	var map := MapData.new()
+	map.set_terrain(Vector2i(0, 0), _plains)
+	var path := map.find_path(Vector2i(0, 0), Vector2i(0, 0))
+	TestAssert.assert_size(path, 1)
+	TestAssert.assert_eq(path[0], Vector2i(0, 0))

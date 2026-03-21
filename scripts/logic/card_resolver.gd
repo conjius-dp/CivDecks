@@ -16,6 +16,10 @@ func _init(map: MapData) -> void:
 	_map = map
 
 
+func get_map_data() -> MapData:
+	return _map
+
+
 func get_valid_targets(card: CardData, origin: Vector2i) -> Array[Vector2i]:
 	match card.card_type:
 		CardData.CardType.MOVE:

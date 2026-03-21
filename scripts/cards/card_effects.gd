@@ -16,8 +16,16 @@ func execute_card(card: CardData, target_coord: Vector2i) -> bool:
 
 	match card.card_type:
 		CardData.CardType.MOVE:
-			var terrain: TerrainType = hex_map.get_terrain(target_coord)
-			player_unit.move_to(result.new_coord, terrain.height - 0.1)
+			var path := card_resolver.get_map_data().find_path(origin, result.new_coord)
+			if path.size() <= 1:
+				var terrain: TerrainType = hex_map.get_terrain(target_coord)
+				player_unit.move_to(result.new_coord, terrain.height - 0.1)
+			else:
+				var heights: Array[float] = []
+				for coord in path:
+					var terrain: TerrainType = hex_map.get_terrain(coord)
+					heights.append(terrain.height - 0.1)
+				player_unit.move_along_path(path, heights)
 		CardData.CardType.SCOUT:
 			for coord in result.revealed_tiles:
 				var tile: Node3D = hex_map.get_tile(coord)
