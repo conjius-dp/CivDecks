@@ -77,32 +77,28 @@ func _build_card_face(card: CardData) -> PanelContainer:
 	var iw := cw - b * 2
 	var gap := UIHelpers.SECTION_GAP
 
-	var outer := PanelContainer.new()
+	var outer := Control.new()
 	outer.custom_minimum_size = Vector2(cw, ch)
+	outer.size = Vector2(cw, ch)
 	outer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var outer_style := StyleBoxFlat.new()
-	outer_style.bg_color = Color(0.12, 0.08, 0.05)
-	outer_style.border_color = Color(0.55, 0.4, 0.15)
-	outer_style.set_border_width_all(b)
-	outer_style.set_corner_radius_all(6)
-	outer_style.content_margin_left = 0
-	outer_style.content_margin_right = 0
-	outer_style.content_margin_top = 0
-	outer_style.content_margin_bottom = 0
-	outer.add_theme_stylebox_override("panel", outer_style)
+	var bg := Panel.new()
+	bg.position = Vector2.ZERO
+	bg.size = Vector2(cw, ch)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var bg_style := StyleBoxFlat.new()
+	bg_style.bg_color = Color(0.12, 0.08, 0.05)
+	bg_style.border_color = Color(0.55, 0.4, 0.15)
+	bg_style.set_border_width_all(b)
+	bg_style.set_corner_radius_all(6)
+	bg.add_theme_stylebox_override("panel", bg_style)
+	outer.add_child(bg)
 
-	var inner := Control.new()
-	inner.set_anchors_preset(Control.PRESET_FULL_RECT)
-	inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	outer.add_child(inner)
-
-	var y := 0
+	var y := b
 
 	var hh := UIHelpers.HEADER_HEIGHT
-	_add_section(inner, dark, b, y, iw, hh)
-	var nl := _add_label(
-		inner, card.card_name, _font_bold,
-		b, y, iw, hh, Color.WHITE,
+	var header := _add_section(outer, dark, b, y, iw, hh)
+	var nl := _add_label_in(
+		header, card.card_name, _font_bold, Color.WHITE,
 		UIHelpers.fit_font_size(
 			card.card_name, iw - 12, hh - 8, 13, 9
 		),
@@ -112,7 +108,9 @@ func _build_card_face(card: CardData) -> PanelContainer:
 	y += hh + gap
 
 	var ah := UIHelpers.AVATAR_HEIGHT
-	var avatar_sec := _add_section(inner, light, b, y, iw, ah)
+	var avatar_sec := _add_section(
+		outer, light, b, y, iw, ah
+	)
 	var icon_tex: Texture2D = null
 	if card.icon_path != "":
 		icon_tex = load(card.icon_path) as Texture2D
@@ -132,10 +130,10 @@ func _build_card_face(card: CardData) -> PanelContainer:
 	y += ah + gap
 
 	var dh := UIHelpers.DESC_HEIGHT
-	_add_section(inner, base, b, y, iw, dh)
-	var dl := _add_label(
-		inner, card.description, _font_regular,
-		b, y, iw, dh, Color.WHITE,
+	var desc_sec := _add_section(outer, base, b, y, iw, dh)
+	var dl := _add_label_in(
+		desc_sec, card.description, _font_regular,
+		Color.WHITE,
 		UIHelpers.fit_font_size(
 			card.description, iw - 12, dh - 8, 11, 7
 		),
@@ -146,11 +144,11 @@ func _build_card_face(card: CardData) -> PanelContainer:
 	y += dh + gap
 
 	var fh := UIHelpers.FOOTER_HEIGHT
-	_add_section(inner, dark, b, y, iw, fh)
+	var footer := _add_section(outer, dark, b, y, iw, fh)
 	var ftxt := "Range %d" % card.range_value
-	var fl := _add_label(
-		inner, ftxt, _font_regular,
-		b, y, iw, fh, Color(1, 1, 1, 0.8),
+	var fl := _add_label_in(
+		footer, ftxt, _font_regular,
+		Color(1, 1, 1, 0.8),
 		UIHelpers.fit_font_size(ftxt, iw - 12, fh - 8, 11, 8),
 	)
 	fl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -176,18 +174,17 @@ func _add_section(
 	return sec
 
 
-func _add_label(
-	parent: Control, text: String, font: Font,
-	x: int, y: int, w: int, h: int,
+func _add_label_in(
+	section: PanelContainer, text: String, font: Font,
 	color: Color, font_size: int,
 ) -> Label:
 	var lbl := Label.new()
 	lbl.text = text
-	lbl.position = Vector2(x + 6, y + 4)
-	lbl.size = Vector2(w - 12, h - 8)
+	lbl.layout_mode = 1
+	lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
 	lbl.add_theme_font_override("font", font)
 	lbl.add_theme_font_size_override("font_size", font_size)
 	lbl.add_theme_color_override("font_color", color)
 	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	parent.add_child(lbl)
+	section.add_child(lbl)
 	return lbl

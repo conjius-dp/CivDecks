@@ -1,4 +1,4 @@
-extends PanelContainer
+extends Control
 
 signal drag_started(card: CardData)
 signal drag_ended(card: CardData, target: Vector2i, success: bool)
@@ -45,32 +45,29 @@ func setup(card: CardData) -> void:
 	var dark: Color = base.darkened(0.35)
 	var light: Color = base.lightened(0.2)
 
-	var outer := StyleBoxFlat.new()
-	outer.bg_color = Color(0.12, 0.08, 0.05)
-	outer.border_color = Color(0.55, 0.4, 0.15)
-	outer.set_border_width_all(UIHelpers.CARD_BORDER)
-	outer.set_corner_radius_all(6)
-	outer.content_margin_left = 0
-	outer.content_margin_right = 0
-	outer.content_margin_top = 0
-	outer.content_margin_bottom = 0
-	add_theme_stylebox_override("panel", outer)
-
-	var inner := Control.new()
-	inner.set_anchors_preset(Control.PRESET_FULL_RECT)
-	inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(inner)
+	var bg := Panel.new()
+	bg.position = Vector2.ZERO
+	bg.size = Vector2(
+		UIHelpers.CARD_WIDTH, UIHelpers.CARD_HEIGHT
+	)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var bg_style := StyleBoxFlat.new()
+	bg_style.bg_color = Color(0.12, 0.08, 0.05)
+	bg_style.border_color = Color(0.55, 0.4, 0.15)
+	bg_style.set_border_width_all(UIHelpers.CARD_BORDER)
+	bg_style.set_corner_radius_all(6)
+	bg.add_theme_stylebox_override("panel", bg_style)
+	add_child(bg)
 
 	var b := UIHelpers.CARD_BORDER
 	var cw := UIHelpers.CARD_WIDTH - b * 2
 	var gap := UIHelpers.SECTION_GAP
-	var y := 0
+	var y := b
 
 	var hh := UIHelpers.HEADER_HEIGHT
-	_add_section(inner, dark, b, y, cw, hh)
-	var name_lbl := _add_label(
-		inner, card.card_name, _font_bold,
-		b, y, cw, hh, Color.WHITE,
+	var header := _add_section(self, dark, b, y, cw, hh)
+	var name_lbl := _add_label_in(
+		header, card.card_name, _font_bold, Color.WHITE,
 		UIHelpers.fit_font_size(
 			card.card_name, cw - 12, hh - 8, 13, 9
 		),
@@ -80,15 +77,15 @@ func setup(card: CardData) -> void:
 	y += hh + gap
 
 	var ah := UIHelpers.AVATAR_HEIGHT
-	var avatar_sec := _add_section(inner, light, b, y, cw, ah)
+	var avatar_sec := _add_section(self, light, b, y, cw, ah)
 	_add_avatar(avatar_sec, card)
 	y += ah + gap
 
 	var dh := UIHelpers.DESC_HEIGHT
-	_add_section(inner, base, b, y, cw, dh)
-	var desc_lbl := _add_label(
-		inner, card.description, _font_regular,
-		b, y, cw, dh, Color.WHITE,
+	var desc_sec := _add_section(self, base, b, y, cw, dh)
+	var desc_lbl := _add_label_in(
+		desc_sec, card.description, _font_regular,
+		Color.WHITE,
 		UIHelpers.fit_font_size(
 			card.description, cw - 12, dh - 8, 11, 7
 		),
@@ -99,11 +96,11 @@ func setup(card: CardData) -> void:
 	y += dh + gap
 
 	var fh := UIHelpers.FOOTER_HEIGHT
-	_add_section(inner, dark, b, y, cw, fh)
+	var footer := _add_section(self, dark, b, y, cw, fh)
 	var ftxt := "Range %d" % card.range_value
-	var f_lbl := _add_label(
-		inner, ftxt, _font_regular,
-		b, y, cw, fh, Color(1, 1, 1, 0.8),
+	var f_lbl := _add_label_in(
+		footer, ftxt, _font_regular,
+		Color(1, 1, 1, 0.8),
 		UIHelpers.fit_font_size(ftxt, cw - 12, fh - 8, 11, 8),
 	)
 	f_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -131,20 +128,19 @@ func _add_section(
 	return sec
 
 
-func _add_label(
-	parent: Control, text: String, font: Font,
-	x: int, y: int, w: int, h: int,
+func _add_label_in(
+	section: PanelContainer, text: String, font: Font,
 	color: Color, font_size: int,
 ) -> Label:
 	var lbl := Label.new()
 	lbl.text = text
-	lbl.position = Vector2(x + 6, y + 4)
-	lbl.size = Vector2(w - 12, h - 8)
+	lbl.layout_mode = 1
+	lbl.set_anchors_preset(Control.PRESET_FULL_RECT)
 	lbl.add_theme_font_override("font", font)
 	lbl.add_theme_font_size_override("font_size", font_size)
 	lbl.add_theme_color_override("font_color", color)
 	lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	parent.add_child(lbl)
+	section.add_child(lbl)
 	return lbl
 
 
