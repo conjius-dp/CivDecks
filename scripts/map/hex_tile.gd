@@ -185,7 +185,7 @@ func place_settlement(
 			var nt: TerrainType = map_data.get_terrain(neighbor)
 			if nt and nt.height > max_h:
 				max_h = nt.height
-	var label_y := max_h - (terrain.height - 0.1) + 0.8
+	var label_y := max_h - (terrain.height - 0.1) + 1.5
 	var label := Label3D.new()
 	label.text = settlement_name
 	label.font = _font_bold
