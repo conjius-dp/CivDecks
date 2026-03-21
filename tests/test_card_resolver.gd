@@ -74,13 +74,12 @@ func test_get_move_targets_excludes_out_of_range() -> void:
 	TestAssert.assert_not_contains(targets, Vector2i(2, 0))
 
 
-func test_get_scout_targets() -> void:
+func test_get_scout_targets_only_at_exact_range() -> void:
 	var resolver := CardResolver.new(_map)
 	var targets := resolver.get_valid_targets(_scout_card, Vector2i(0, 0))
-	TestAssert.assert_contains(targets, Vector2i(0, 0))
-	TestAssert.assert_contains(targets, Vector2i(1, 0))
 	TestAssert.assert_contains(targets, Vector2i(2, 0))
-	TestAssert.assert_contains(targets, Vector2i(0, -1))
+	TestAssert.assert_not_contains(targets, Vector2i(0, 0))
+	TestAssert.assert_not_contains(targets, Vector2i(1, 0))
 
 
 func test_get_gather_targets() -> void:

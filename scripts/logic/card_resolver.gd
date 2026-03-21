@@ -65,8 +65,11 @@ func _get_scout_targets(origin: Vector2i, range_value: int) -> Array[Vector2i]:
 	var valid: Array[Vector2i] = []
 	var hexes := HexUtil.get_hexes_in_range(origin, range_value)
 	for c in hexes:
-		if _map.has_tile(c):
-			valid.append(c)
+		if c == origin:
+			continue
+		if HexUtil.axial_distance(origin, c) == range_value:
+			if _map.has_tile(c):
+				valid.append(c)
 	return valid
 
 
