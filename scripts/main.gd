@@ -5,6 +5,8 @@ var _move_2: CardData = preload("res://resources/cards/move_2.tres")
 var _scout: CardData = preload("res://resources/cards/scout.tres")
 var _gather: CardData = preload("res://resources/cards/gather.tres")
 var _settle: CardData = preload("res://resources/cards/settle.tres")
+var _selected_coord: Vector2i = Vector2i(-999, -999)
+var _selected_index: int = 0
 
 @onready var hex_map: Node3D = $HexMap
 @onready var player_unit: Node3D = $PlayerUnit
@@ -14,7 +16,6 @@ var _settle: CardData = preload("res://resources/cards/settle.tres")
 @onready var turn_manager: Node = $TurnManager
 @onready var game_ui: CanvasLayer = $GameUI
 @onready var arrow_indicator: MeshInstance3D = $ArrowIndicator
-
 
 
 func _ready() -> void:
@@ -162,17 +163,47 @@ func _handle_click(screen_pos: Vector2) -> void:
 		$CameraRig/CameraPivot/Camera3D, screen_pos
 	)
 	if coord == Vector2i(-999, -999):
+		_selected_coord = Vector2i(-999, -999)
 		game_ui.refresh_unit_info()
 		return
-	var map_data: MapData = hex_map.map_data
-	if map_data.has_settlement(coord):
-		var sname: String = map_data.get_settlement_name(coord)
+
+	var inhabitants := _get_inhabitants(coord)
+	if inhabitants.is_empty():
+		_selected_coord = Vector2i(-999, -999)
+		game_ui.refresh_unit_info()
+		return
+
+	if coord == _selected_coord:
+		_selected_index = (_selected_index + 1) % inhabitants.size()
+	else:
+		_selected_coord = coord
+		_selected_index = 0
+
+	_show_inhabitant(inhabitants[_selected_index], coord)
+
+
+func _get_inhabitants(coord: Vector2i) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	if player_unit.current_coord == coord:
+		result.append({"type": "unit", "unit": player_unit})
+	if hex_map.map_data.has_settlement(coord):
+		result.append({
+			"type": "settlement",
+			"name": hex_map.map_data.get_settlement_name(coord),
+		})
+	return result
+
+
+func _show_inhabitant(info: Dictionary, coord: Vector2i) -> void:
+	var itype: String = info["type"] as String
+	if itype == "unit":
+		game_ui.refresh_unit_info()
+	elif itype == "settlement":
+		var sname: String = info["name"] as String
 		var terrain: TerrainType = hex_map.get_terrain(coord)
 		game_ui.show_settlement_info(
 			sname, player_unit.avatar_color, coord, terrain
 		)
-	else:
-		game_ui.refresh_unit_info()
 
 
 func _highlight_active_unit() -> void:

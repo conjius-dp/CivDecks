@@ -13,7 +13,8 @@ var _disabled: bool = false
 
 
 func _ready() -> void:
-	var sz := UIHelpers.CARD_WIDTH
+	@warning_ignore("integer_division")
+	var sz: int = UIHelpers.CARD_WIDTH / 2
 	custom_minimum_size = Vector2(sz, sz)
 	size = Vector2(sz, sz)
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -23,7 +24,7 @@ func _ready() -> void:
 	_bg.size = Vector2(sz, sz)
 	_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	@warning_ignore("integer_division")
-	var half := sz / 2
+	var half: int = sz / 2
 	var bg_style := StyleBoxFlat.new()
 	bg_style.bg_color = Color(0.12, 0.08, 0.05)
 	bg_style.border_color = Color(0.55, 0.4, 0.15)
@@ -32,13 +33,15 @@ func _ready() -> void:
 	_bg.add_theme_stylebox_override("panel", bg_style)
 	add_child(_bg)
 
+	var inset: float = sz * 0.2
+	var icon_sz: float = sz - inset * 2.0
 	_icon = TextureRect.new()
 	_icon.texture = _tex
 	_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_icon.position = Vector2.ZERO
-	_icon.size = Vector2(sz, sz)
-	_icon.pivot_offset = Vector2(sz * 0.5, sz * 0.5)
+	_icon.position = Vector2(inset, inset)
+	_icon.size = Vector2(icon_sz, icon_sz)
+	_icon.pivot_offset = Vector2(icon_sz * 0.5, icon_sz * 0.5)
 	_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_icon)
 
