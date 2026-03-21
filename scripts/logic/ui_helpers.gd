@@ -111,20 +111,27 @@ static func create_panel_style() -> StyleBoxFlat:
 
 
 static func apply_parchment_bg(
-	panel: Control, gap: int = 0,
+	panel: Control, is_container: bool = true,
 ) -> void:
 	var tex: Texture2D = load(PARCHMENT_PATH) as Texture2D
 	if tex == null:
 		return
-	# Clip area fills the panel edge-to-edge (escaping content margins)
 	var clip := Control.new()
 	clip.set_anchors_preset(Control.PRESET_FULL_RECT)
-	var mh: int = PANEL_MARGIN_H
-	var mv: int = PANEL_MARGIN_V
-	clip.offset_left = -(mh - gap)
-	clip.offset_right = mh - gap
-	clip.offset_top = -(mv - gap)
-	clip.offset_bottom = mv - gap
+	if is_container:
+		# PanelContainer: expand clip from content area to border inner edge
+		var b: int = CARD_BORDER
+		clip.offset_left = -(PANEL_MARGIN_H - b)
+		clip.offset_right = PANEL_MARGIN_H - b
+		clip.offset_top = -(PANEL_MARGIN_V - b)
+		clip.offset_bottom = PANEL_MARGIN_V - b
+	else:
+		# Plain Panel: clip at border inner edge
+		var b: int = CARD_BORDER
+		clip.offset_left = b
+		clip.offset_right = -b
+		clip.offset_top = b
+		clip.offset_bottom = -b
 	clip.clip_contents = true
 	clip.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	panel.add_child(clip)

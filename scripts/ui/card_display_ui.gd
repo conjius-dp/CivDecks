@@ -67,7 +67,7 @@ func setup(card: CardData) -> void:
 	var bg_style := UIHelpers.create_panel_style()
 	bg.add_theme_stylebox_override("panel", bg_style)
 	add_child(bg)
-	UIHelpers.apply_parchment_bg(bg)
+	UIHelpers.apply_parchment_bg(bg, false)
 
 	var b := UIHelpers.CARD_BORDER
 	var cw := UIHelpers.CARD_WIDTH - b * 2

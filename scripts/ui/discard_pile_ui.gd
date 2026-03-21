@@ -102,7 +102,7 @@ func _build_card_face(card: CardData) -> PanelContainer:
 	var bg_style := UIHelpers.create_panel_style()
 	bg.add_theme_stylebox_override("panel", bg_style)
 	outer.add_child(bg)
-	UIHelpers.apply_parchment_bg(bg)
+	UIHelpers.apply_parchment_bg(bg, false)
 
 	var mh := UIHelpers.SECTION_MARGIN_H
 	var mv := UIHelpers.SECTION_MARGIN_V
