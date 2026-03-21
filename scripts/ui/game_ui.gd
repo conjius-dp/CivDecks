@@ -35,7 +35,6 @@ func _ready() -> void:
 		func() -> void: end_turn_pressed.emit()
 	)
 	end_turn_button.texture_normal = _hourglass_tex
-	end_turn_button.stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
 	card_hand.card_dropped.connect(
 		func(card: CardData, target: Vector2i) -> void:
 			card_dropped.emit(card, target)
