@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <!-- Boot shape -->
+  <path d="M22 18 L22 40 L18 44 L18 50 L42 50 L42 44 L34 40 L34 28 L30 18 Z" fill="none" stroke="white" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Speed lines -->
+  <line x1="10" y1="24" x2="20" y2="24" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <line x1="6" y1="32" x2="18" y2="32" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <line x1="10" y1="40" x2="20" y2="40" stroke="white" stroke-width="2" stroke-linecap="round"/>
+  <!-- Double arrow suggesting distance -->
+  <polyline points="46,20 54,28 46,36" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <polyline points="50,20 58,28 50,36" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

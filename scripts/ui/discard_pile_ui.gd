@@ -118,9 +118,13 @@ func _build_card_face(card: CardData) -> PanelContainer:
 	# Avatar
 	var ah := UIHelpers.AVATAR_HEIGHT
 	var avatar := _make_section(light, Vector2(0, ah))
-	var icon_tex: Texture2D = _card_icon_textures.get(
-		card.card_type, null
-	) as Texture2D
+	var icon_tex: Texture2D = null
+	if card.icon_path != "":
+		icon_tex = load(card.icon_path) as Texture2D
+	if icon_tex == null:
+		icon_tex = _card_icon_textures.get(
+			card.card_type, null
+		) as Texture2D
 	if icon_tex:
 		var tex_rect := TextureRect.new()
 		tex_rect.texture = icon_tex

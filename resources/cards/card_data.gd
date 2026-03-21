@@ -9,3 +9,4 @@ enum CardType { MOVE, SCOUT, GATHER }
 @export var range_value: int = 1
 @export var cost: int = 1
 @export var card_color: Color = Color.WHITE
+@export var icon_path: String = ""

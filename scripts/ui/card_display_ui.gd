@@ -117,9 +117,13 @@ func _apply_section_style(
 func _setup_avatar(card: CardData) -> void:
 	$VBox/Avatar/AvatarLabel.visible = false
 	$VBox/Avatar/AvatarArt.visible = false
-	var icon_tex: Texture2D = _card_icon_textures.get(
-		card.card_type, null
-	) as Texture2D
+	var icon_tex: Texture2D = null
+	if card.icon_path != "":
+		icon_tex = load(card.icon_path) as Texture2D
+	if icon_tex == null:
+		icon_tex = _card_icon_textures.get(
+			card.card_type, null
+		) as Texture2D
 	if icon_tex:
 		var tex_rect: TextureRect = $VBox/Avatar/AvatarIcon
 		tex_rect.texture = icon_tex
