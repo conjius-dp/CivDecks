@@ -32,6 +32,7 @@ mouse_filter = 2
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
+horizontal_alignment = 2
 text = "Scout"
 
 [node name="HealthLabel" type="RichTextLabel" parent="OuterVBox/HBox/Stats"]

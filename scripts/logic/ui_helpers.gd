@@ -104,14 +104,22 @@ static func create_panel_style() -> StyleBoxFlat:
 	return style
 
 
-static func icon_text(entity: String, value: String) -> String:
+static func icon_text(
+	entity: String, value: String,
+	align_right: bool = false,
+) -> String:
 	var path: String = ENTITY_ICONS.get(entity, "") as String
+	var text: String
 	if path == "":
-		return "%s: %s" % [entity, value]
-	var icon_sz: int = int(FONT_LABEL * 1.2)
-	return "[img=%d]%s[/img] %s %s" % [
-		icon_sz, path, entity, value,
-	]
+		text = "%s: %s" % [entity, value]
+	else:
+		var icon_sz: int = int(FONT_LABEL * 1.2)
+		text = "[img=%d]%s[/img] %s %s" % [
+			icon_sz, path, entity, value,
+		]
+	if align_right:
+		return "[right]%s[/right]" % text
+	return text
 
 
 static func set_bbcode(
