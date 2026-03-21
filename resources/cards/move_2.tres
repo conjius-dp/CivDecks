@@ -7,4 +7,4 @@ script = ExtResource("1")
 card_name = "Sprint"
 description = "Move up to 2 tiles away."
 range_value = 2
-card_color = Color(0.18, 0.545, 0.169, 1)
+card_color = Color(0.1, 0.35, 0.1, 1)
