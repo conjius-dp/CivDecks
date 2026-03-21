@@ -9,7 +9,7 @@ extends Node3D
 @export var tilt_min: float = 15.0
 @export var tilt_max: float = 90.0
 @export var tilt_speed: float = 8.0
-@export var orbit_speed: float = 2.0
+@export var orbit_speed: float = 2.6
 
 var _target_zoom: float = 15.0
 var _current_zoom: float = 15.0
