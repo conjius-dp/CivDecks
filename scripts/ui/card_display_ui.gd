@@ -62,7 +62,7 @@ func setup(card: CardData) -> void:
 	var b := UIHelpers.CARD_BORDER
 	var cw := UIHelpers.CARD_WIDTH - b * 2
 	var gap := UIHelpers.SECTION_GAP
-	var y := b
+	var y := UIHelpers.SECTION_TOP
 
 	var hh := UIHelpers.HEADER_HEIGHT
 	var header := _add_section(self, dark, b, y, cw, hh)

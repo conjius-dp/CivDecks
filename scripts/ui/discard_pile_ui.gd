@@ -93,7 +93,7 @@ func _build_card_face(card: CardData) -> PanelContainer:
 	bg.add_theme_stylebox_override("panel", bg_style)
 	outer.add_child(bg)
 
-	var y := b
+	var y := UIHelpers.SECTION_TOP
 
 	var hh := UIHelpers.HEADER_HEIGHT
 	var header := _add_section(outer, dark, b, y, iw, hh)

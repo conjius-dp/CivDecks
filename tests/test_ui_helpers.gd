@@ -33,5 +33,5 @@ func test_card_constants_add_up() -> void:
 	total += UIHelpers.DESC_HEIGHT
 	total += UIHelpers.FOOTER_HEIGHT
 	total += UIHelpers.SECTION_GAP * 3
-	var inner := UIHelpers.CARD_HEIGHT - UIHelpers.CARD_BORDER * 2
-	TestAssert.assert_eq(total, inner)
+	var avail := UIHelpers.CARD_HEIGHT - UIHelpers.SECTION_TOP - UIHelpers.CARD_BORDER
+	TestAssert.assert_eq(total, avail)
