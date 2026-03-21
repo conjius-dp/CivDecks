@@ -34,6 +34,7 @@ func _ready() -> void:
 		UIHelpers.CARD_WIDTH, 0
 	)
 	size.x = UIHelpers.CARD_WIDTH
+	size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	clip_contents = true
 	unit_name_label.add_theme_font_override("font", _font_bold)
 	unit_name_label.add_theme_font_size_override(
