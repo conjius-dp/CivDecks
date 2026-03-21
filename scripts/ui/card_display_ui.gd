@@ -126,22 +126,14 @@ func _add_section(
 	sec.size = Vector2(w, h)
 	sec.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	sec.clip_contents = true
-	var bg := TextureRect.new()
-	bg.texture = _parchment_tex
-	bg.stretch_mode = TextureRect.STRETCH_SCALE
-	bg.modulate = color
-	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	bg.size = Vector2(w, h)
-	if randi() % 2 == 0:
-		bg.pivot_offset = Vector2(w * 0.5, h * 0.5)
-		bg.rotation = PI
-	sec.add_child(bg)
-	var empty := StyleBoxEmpty.new()
-	empty.content_margin_left = UIHelpers.SECTION_MARGIN_H
-	empty.content_margin_right = UIHelpers.SECTION_MARGIN_H
-	empty.content_margin_top = UIHelpers.SECTION_MARGIN_V
-	empty.content_margin_bottom = UIHelpers.SECTION_MARGIN_V
-	sec.add_theme_stylebox_override("panel", empty)
+	var style := StyleBoxTexture.new()
+	style.texture = _parchment_tex
+	style.modulate_color = color
+	style.content_margin_left = UIHelpers.SECTION_MARGIN_H
+	style.content_margin_right = UIHelpers.SECTION_MARGIN_H
+	style.content_margin_top = UIHelpers.SECTION_MARGIN_V
+	style.content_margin_bottom = UIHelpers.SECTION_MARGIN_V
+	sec.add_theme_stylebox_override("panel", style)
 	parent.add_child(sec)
 	return sec
 
