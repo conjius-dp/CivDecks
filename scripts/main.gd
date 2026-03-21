@@ -30,6 +30,8 @@ func _ready() -> void:
 
 	var cam: Camera3D = $CameraRig/CameraPivot/Camera3D
 	arrow_indicator.setup_camera(cam)
+	player_unit.setup_camera(cam)
+	player_unit.set_selected(true)
 	game_ui.setup_refs(hex_map, cam, card_effects, player_unit, arrow_indicator)
 
 	# Connect signals
@@ -141,6 +143,7 @@ func _on_unit_moved() -> void:
 		player_unit.current_coord,
 		player_unit.state.sight_range,
 	)
+	_update_packing()
 	_highlight_active_unit()
 
 
@@ -158,6 +161,7 @@ func _on_settled(coord: Vector2i, settlement_name: String) -> void:
 			settlement_name, player_unit.avatar_color
 		)
 	_reveal_around(coord, player_unit.state.sight_range)
+	_update_packing()
 
 
 func _handle_click(screen_pos: Vector2) -> void:
@@ -199,13 +203,21 @@ func _get_inhabitants(coord: Vector2i) -> Array[Dictionary]:
 func _show_inhabitant(info: Dictionary, coord: Vector2i) -> void:
 	var itype: String = info["type"] as String
 	if itype == "unit":
+		player_unit.set_selected(true)
 		game_ui.refresh_unit_info()
 	elif itype == "settlement":
+		player_unit.set_selected(false)
 		var sname: String = info["name"] as String
 		var terrain: TerrainType = hex_map.get_terrain(coord)
 		game_ui.show_settlement_info(
 			sname, player_unit.avatar_color, coord, terrain
 		)
+
+
+func _update_packing() -> void:
+	var coord: Vector2i = player_unit.current_coord
+	var has_building: bool = hex_map.map_data.has_settlement(coord)
+	player_unit.offset_for_packing(has_building)
 
 
 func _on_action_pressed(action_name: String) -> void:

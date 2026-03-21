@@ -6,17 +6,26 @@ extends Node3D
 @export var zoom_max: float = 30.0
 @export var rotate_speed: float = 0.005
 @export var smooth_factor: float = 12.0
+@export var tilt_min: float = 5.0
+@export var tilt_max: float = 90.0
+@export var tilt_speed: float = 3.0
+@export var orbit_speed: float = 5.0
 
 var _target_zoom: float = 15.0
 var _current_zoom: float = 15.0
 var _target_position: Vector3 = Vector3.ZERO
+var _target_tilt: float = 60.0
+var _current_tilt: float = 60.0
 var _dragging: bool = false
 var _drag_origin: Vector3 = Vector3.ZERO
+
+@onready var _pivot: Node3D = $CameraPivot
 
 
 func _ready() -> void:
 	_target_position = global_position
 	_apply_zoom()
+	_apply_tilt()
 
 
 func _process(delta: float) -> void:
@@ -51,17 +60,40 @@ func _process(delta: float) -> void:
 	)
 	_apply_zoom()
 
+	_current_tilt = lerpf(
+		_current_tilt, _target_tilt, smooth_factor * delta
+	)
+	_apply_tilt()
+
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
+		var shift: bool = event.shift_pressed
+		var cmd: bool = event.meta_pressed or event.ctrl_pressed
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
-			_target_zoom = maxf(
-				zoom_min, _target_zoom - zoom_speed
-			)
+			if shift:
+				rotate_y(deg_to_rad(orbit_speed))
+			elif cmd:
+				_target_tilt = clampf(
+					_target_tilt - tilt_speed,
+					tilt_min, tilt_max,
+				)
+			else:
+				_target_zoom = maxf(
+					zoom_min, _target_zoom - zoom_speed
+				)
 		elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-			_target_zoom = minf(
-				zoom_max, _target_zoom + zoom_speed
-			)
+			if shift:
+				rotate_y(deg_to_rad(-orbit_speed))
+			elif cmd:
+				_target_tilt = clampf(
+					_target_tilt + tilt_speed,
+					tilt_min, tilt_max,
+				)
+			else:
+				_target_zoom = minf(
+					zoom_max, _target_zoom + zoom_speed
+				)
 		elif event.button_index == MOUSE_BUTTON_LEFT:
 			if event.pressed:
 				_dragging = true
@@ -90,6 +122,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _apply_zoom() -> void:
 	$CameraPivot/Camera3D.position.z = _current_zoom
+
+
+func _apply_tilt() -> void:
+	var rad := deg_to_rad(_current_tilt)
+	_pivot.rotation.x = -rad
 
 
 func _screen_to_ground(screen_pos: Vector2) -> Vector3:
