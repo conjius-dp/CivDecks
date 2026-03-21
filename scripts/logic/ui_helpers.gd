@@ -129,7 +129,7 @@ static func apply_parchment_bg(
 	var bg := TextureRect.new()
 	bg.texture = tex
 	bg.stretch_mode = TextureRect.STRETCH_SCALE
-	bg.modulate = Color(0.5, 0.38, 0.25, 1.0)
+	bg.modulate = Color(1.0, 1.0, 1.0, 1.0)
 	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	clip.add_child(bg)
