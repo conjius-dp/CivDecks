@@ -114,7 +114,7 @@ func _add_yield_sprite(
 
 func _get_yield_positions(count: int) -> Array[Vector3]:
 	var y_off := 0.15
-	var spacing := 0.28
+	var spacing := 0.56
 	var result: Array[Vector3] = []
 	var start_x := -spacing * (count - 1) * 0.5
 	for i in range(count):
