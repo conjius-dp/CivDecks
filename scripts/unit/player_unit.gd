@@ -48,6 +48,7 @@ func _ready() -> void:
 		return
 	_model = scene.instantiate()
 	_model.scale = Vector3(0.25, 0.25, 0.25)
+	_model.rotation.y = PI
 	add_child(_model)
 	_anim_player = _model.get_node_or_null(
 		"AnimationPlayer"
@@ -205,13 +206,22 @@ func _apply_color_wash() -> void:
 func _color_wash_recursive(node: Node) -> void:
 	if node is MeshInstance3D:
 		var mi: MeshInstance3D = node as MeshInstance3D
-		for surf_idx in range(mi.mesh.get_surface_count()):
-			var mat := mi.get_active_material(surf_idx)
-			if mat is StandardMaterial3D:
-				var m: StandardMaterial3D = mat.duplicate()
-				m.albedo_color = m.albedo_color.lerp(
-					avatar_color, 0.35
-				)
-				mi.set_surface_override_material(surf_idx, m)
+		if mi.mesh:
+			for surf_idx in range(mi.mesh.get_surface_count()):
+				var mat := mi.get_active_material(surf_idx)
+				if mat is StandardMaterial3D:
+					var m: StandardMaterial3D = mat.duplicate()
+					m.albedo_color = m.albedo_color.lerp(
+						avatar_color, 0.4
+					)
+					mi.set_surface_override_material(
+						surf_idx, m
+					)
+				elif mat == null:
+					var m := StandardMaterial3D.new()
+					m.albedo_color = avatar_color
+					mi.set_surface_override_material(
+						surf_idx, m
+					)
 	for child in node.get_children():
 		_color_wash_recursive(child)

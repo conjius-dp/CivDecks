@@ -104,11 +104,24 @@ func _unhandled_input(event: InputEvent) -> void:
 				_dragging = false
 
 	if event is InputEventPanGesture:
-		_target_zoom = clampf(
-			_target_zoom + event.delta.y * zoom_speed * 0.3,
-			zoom_min, zoom_max,
+		var pan_event: InputEventPanGesture = (
+			event as InputEventPanGesture
 		)
-		rotate_y(event.delta.x * rotate_speed * 10.0)
+		if pan_event.ctrl_pressed or pan_event.meta_pressed:
+			_target_tilt = clampf(
+				_target_tilt + pan_event.delta.y * tilt_speed,
+				tilt_min, tilt_max,
+			)
+		elif pan_event.shift_pressed:
+			rotate_y(
+				-pan_event.delta.y * deg_to_rad(orbit_speed)
+			)
+		else:
+			_target_zoom = clampf(
+				_target_zoom + pan_event.delta.y * zoom_speed * 0.3,
+				zoom_min, zoom_max,
+			)
+			rotate_y(pan_event.delta.x * rotate_speed * 10.0)
 
 	if event is InputEventMouseMotion:
 		if _dragging:
