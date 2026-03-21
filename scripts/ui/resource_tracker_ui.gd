@@ -7,6 +7,9 @@ var _font: Font = preload("res://assets/fonts/Cinzel-Regular.ttf")
 
 
 func _ready() -> void:
+	add_theme_stylebox_override(
+		"panel", UIHelpers.create_panel_style()
+	)
 	for lbl: Label in [materials_label, food_label]:
 		lbl.add_theme_font_override("font", _font)
 		lbl.add_theme_font_size_override(

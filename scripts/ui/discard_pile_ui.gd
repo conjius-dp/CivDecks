@@ -88,10 +88,7 @@ func _build_card_face(card: CardData) -> PanelContainer:
 	bg.position = Vector2.ZERO
 	bg.size = Vector2(cw, ch)
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var bg_style := StyleBoxFlat.new()
-	bg_style.bg_color = Color(0.12, 0.08, 0.05)
-	bg_style.border_color = Color(0.55, 0.4, 0.15)
-	bg_style.set_border_width_all(b)
+	var bg_style := UIHelpers.create_panel_style()
 	bg_style.set_corner_radius_all(UIHelpers.CARD_CORNER_RADIUS)
 	bg.add_theme_stylebox_override("panel", bg_style)
 	outer.add_child(bg)

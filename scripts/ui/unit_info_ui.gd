@@ -16,6 +16,9 @@ var _font_regular: Font = preload(
 
 
 func _ready() -> void:
+	add_theme_stylebox_override(
+		"panel", UIHelpers.create_panel_style()
+	)
 	unit_name_label.add_theme_font_override("font", _font_bold)
 	unit_name_label.add_theme_font_size_override(
 		"font_size", UIHelpers.FONT_UNIT_NAME

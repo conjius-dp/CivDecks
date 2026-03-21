@@ -77,6 +77,19 @@ static func fit_font_size(
 	return min_size
 
 
+static func create_panel_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.12, 0.08, 0.05)
+	style.border_color = Color(0.55, 0.4, 0.15)
+	style.set_border_width_all(CARD_BORDER)
+	style.set_corner_radius_all(CARD_CORNER_RADIUS)
+	style.content_margin_left = PANEL_MARGIN_H
+	style.content_margin_right = PANEL_MARGIN_H
+	style.content_margin_top = PANEL_MARGIN_V
+	style.content_margin_bottom = PANEL_MARGIN_V
+	return style
+
+
 static func s(value: int) -> int:
 	return int(value * UI_SCALE)
 
