@@ -147,14 +147,7 @@ func _make_section(
 	section.custom_minimum_size = min_size
 	section.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var style := StyleBoxTexture.new()
-	var atlas := AtlasTexture.new()
-	atlas.atlas = _parchment_tex
-	var tex_size := _parchment_tex.get_size()
-	var half := tex_size * 0.5
-	var ox := randf() * half.x
-	var oy := randf() * half.y
-	atlas.region = Rect2(ox, oy, half.x, half.y)
-	style.texture = atlas
+	style.texture = _parchment_tex
 	style.modulate_color = color
 	style.content_margin_left = 6.0
 	style.content_margin_right = 6.0
