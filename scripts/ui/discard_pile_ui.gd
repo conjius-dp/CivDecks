@@ -176,25 +176,16 @@ func _add_section(
 	sec.size = Vector2(w, h)
 	sec.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	sec.clip_contents = true
-	var empty := StyleBoxEmpty.new()
-	sec.add_theme_stylebox_override("panel", empty)
-	parent.add_child(sec)
-
-	var bg := Panel.new()
-	bg.position = Vector2.ZERO
-	bg.size = Vector2(w, h)
-	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	bg.z_index = -1
-	var bg_style := StyleBoxTexture.new()
-	bg_style.texture = _parchment_tex
-	bg_style.modulate_color = color
-	bg.add_theme_stylebox_override("panel", bg_style)
+	var style := StyleBoxTexture.new()
+	style.texture = _parchment_tex
+	style.modulate_color = color
 	if randi() % 2 == 0:
-		bg.pivot_offset = Vector2(w * 0.5, h * 0.5)
-		bg.rotation = PI
-	sec.add_child(bg)
-	sec.move_child(bg, 0)
-
+		var img := _parchment_tex.get_image().duplicate()
+		img.rotate_180()
+		var rotated := ImageTexture.create_from_image(img)
+		style.texture = rotated
+	sec.add_theme_stylebox_override("panel", style)
+	parent.add_child(sec)
 	return sec
 
 
