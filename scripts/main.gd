@@ -127,6 +127,10 @@ func _on_phase_changed(phase: int) -> void:
 
 
 func _on_unit_moved() -> void:
+	_reveal_around(
+		player_unit.current_coord,
+		player_unit.state.sight_range,
+	)
 	_highlight_active_unit()
 
 
@@ -143,6 +147,7 @@ func _on_settled(coord: Vector2i, settlement_name: String) -> void:
 		tile.place_settlement(
 			settlement_name, player_unit.avatar_color
 		)
+	_reveal_around(coord, player_unit.state.sight_range)
 
 
 func _highlight_active_unit() -> void:
