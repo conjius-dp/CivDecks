@@ -112,16 +112,16 @@ func _unhandled_input(event: InputEvent) -> void:
 				_target_tilt + pan_event.delta.y * tilt_speed,
 				tilt_min, tilt_max,
 			)
-		elif pan_event.shift_pressed:
-			rotate_y(
-				-pan_event.delta.y * deg_to_rad(orbit_speed)
-			)
 		else:
 			_target_zoom = clampf(
 				_target_zoom + pan_event.delta.y * zoom_speed * 0.3,
 				zoom_min, zoom_max,
 			)
-			rotate_y(pan_event.delta.x * rotate_speed * 10.0)
+		# Horizontal pan gesture always rotates (shift+scroll on macOS)
+		if absf(pan_event.delta.x) > 0.01:
+			rotate_y(
+				-pan_event.delta.x * deg_to_rad(orbit_speed)
+			)
 
 	if event is InputEventMouseMotion:
 		if _dragging:
