@@ -36,8 +36,11 @@ var _drag_offset: Vector2 = Vector2.ZERO
 var _original_position: Vector2 = Vector2.ZERO
 var _bg_panel: Panel
 var _sections: Array[PanelContainer] = []
+var _desc_section: PanelContainer
+var _desc_label: Label
 var _footer_section: PanelContainer
 var _footer_label: Label
+var _is_blocked: bool = false
 var _valid_targets: Array[Vector2i] = []
 
 
@@ -90,9 +93,9 @@ func setup(card: CardData) -> void:
 	y += ah + gap
 
 	var dh := UIHelpers.DESC_HEIGHT
-	var desc_sec := _add_section(self, base, b, y, cw, dh)
-	var desc_lbl := _add_label_in(
-		desc_sec, card.description, _font_bold,
+	_desc_section = _add_section(self, base, b, y, cw, dh)
+	_desc_label = _add_label_in(
+		_desc_section, card.description, _font_bold,
 		Color.WHITE,
 		UIHelpers.fit_font_size(
 			card.description, cw - mh * 2,
@@ -100,9 +103,9 @@ func setup(card: CardData) -> void:
 			UIHelpers.s(7),
 		),
 	)
-	desc_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	desc_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	desc_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_desc_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	y += dh + gap
 
 	var fh := UIHelpers.FOOTER_HEIGHT
@@ -231,6 +234,10 @@ func _start_drag(mouse_pos: Vector2) -> void:
 		_bg_panel.visible = false
 	for sec in _sections:
 		sec.self_modulate = Color(1, 1, 1, 0)
+	if _desc_section:
+		_desc_section.visible = false
+	if _desc_label:
+		_desc_label.visible = false
 	if _footer_section:
 		_footer_section.visible = false
 	if _footer_label:
@@ -241,11 +248,14 @@ func _start_drag(mouse_pos: Vector2) -> void:
 			card_data, active_unit.current_coord
 		)
 		if card_data.card_type == CardData.CardType.SETTLE:
-			var settle_color := Color(0.2, 1.0, 0.4, 1.0)
-			for coord in _valid_targets:
-				var tile: Node3D = hex_map.get_tile(coord)
-				if tile:
-					tile.pulse_highlight(settle_color)
+			if _valid_targets.is_empty():
+				_apply_blocked_settle()
+			else:
+				var settle_color := Color(0.2, 1.0, 0.4, 1.0)
+				for coord in _valid_targets:
+					var tile: Node3D = hex_map.get_tile(coord)
+					if tile:
+						tile.pulse_highlight(settle_color)
 		else:
 			hex_map.highlight_tiles(
 				_valid_targets, Color(0.3, 0.8, 1.0, 0.8)
@@ -358,14 +368,29 @@ func _is_valid_target(coord: Vector2i) -> bool:
 	return coord in _valid_targets
 
 
+func _apply_blocked_settle() -> void:
+	_is_blocked = true
+	modulate = Color(1.0, 0.3, 0.3, 0.6)
+	if active_unit:
+		var coord: Vector2i = active_unit.current_coord
+		var tile: Node3D = hex_map.get_tile(coord)
+		if tile:
+			tile.pulse_highlight(Color(1.0, 0.2, 0.2, 1.0))
+
+
 func _restore_card_visuals() -> void:
 	_returning = false
+	_is_blocked = false
 	z_index = 0
 	modulate = Color.WHITE
 	if _bg_panel:
 		_bg_panel.visible = true
 	for sec in _sections:
 		sec.self_modulate = Color.WHITE
+	if _desc_section:
+		_desc_section.visible = true
+	if _desc_label:
+		_desc_label.visible = true
 	if _footer_section:
 		_footer_section.visible = true
 	if _footer_label:
@@ -375,6 +400,12 @@ func _restore_card_visuals() -> void:
 func _stop_all_pulses() -> void:
 	for coord in _valid_targets:
 		var tile: Node3D = hex_map.get_tile(coord)
+		if tile and tile.has_method("stop_pulse"):
+			tile.stop_pulse()
+	if _is_blocked and active_unit:
+		var tile: Node3D = hex_map.get_tile(
+			active_unit.current_coord
+		)
 		if tile and tile.has_method("stop_pulse"):
 			tile.stop_pulse()
 
