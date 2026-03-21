@@ -80,7 +80,7 @@ func _on_clicked() -> void:
 	_icon.modulate = Color(0.7, 0.7, 0.7)
 	var tween := create_tween()
 	tween.tween_property(
-		_icon, "rotation", _icon.rotation + PI, 1.0
+		_icon, "rotation", _icon.rotation + PI, 0.2
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 	tween.tween_callback(func() -> void:
 		_animating = false

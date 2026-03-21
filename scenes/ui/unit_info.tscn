@@ -34,22 +34,28 @@ layout_mode = 2
 mouse_filter = 2
 text = "Scout"
 
-[node name="HealthLabel" type="Label" parent="OuterVBox/HBox/Stats"]
+[node name="HealthLabel" type="RichTextLabel" parent="OuterVBox/HBox/Stats"]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
+bbcode_enabled = true
+fit_content = true
 text = "HP: 10/10"
 
-[node name="AttackLabel" type="Label" parent="OuterVBox/HBox/Stats"]
+[node name="AttackLabel" type="RichTextLabel" parent="OuterVBox/HBox/Stats"]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
+bbcode_enabled = true
+fit_content = true
 text = "ATK: 2"
 
-[node name="DefenseLabel" type="Label" parent="OuterVBox/HBox/Stats"]
+[node name="DefenseLabel" type="RichTextLabel" parent="OuterVBox/HBox/Stats"]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
+bbcode_enabled = true
+fit_content = true
 text = "DEF: 1"
 
 [node name="ActionContainer" type="VBoxContainer" parent="OuterVBox"]

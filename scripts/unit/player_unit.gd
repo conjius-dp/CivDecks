@@ -209,7 +209,7 @@ func _color_wash_recursive(node: Node) -> void:
 		overlay.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		overlay.albedo_color = Color(
 			avatar_color.r, avatar_color.g,
-			avatar_color.b, 0.35,
+			avatar_color.b, 0.7,
 		)
 		overlay.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 		mi.material_overlay = overlay

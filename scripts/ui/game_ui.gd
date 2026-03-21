@@ -21,7 +21,7 @@ var _font_regular: Font = preload(
 @onready var card_hand: HBoxContainer = %CardHand
 @onready var draw_pile: VBoxContainer = %DrawPile
 @onready var discard_pile: VBoxContainer = %DiscardPile
-@onready var turn_label: Label = %TurnLabel
+@onready var turn_label: RichTextLabel = %TurnLabel
 @onready var end_turn_button: Control = %EndTurnButton
 @onready var info_label: Label = %InfoLabel
 @onready var unit_info: PanelContainer = %UnitInfo
@@ -70,7 +70,9 @@ func setup_refs(
 
 
 func update_turn(turn_number: int) -> void:
-	turn_label.text = "Turn: %d" % turn_number
+	turn_label.text = UIHelpers.icon_text(
+		"Turn", str(turn_number)
+	)
 
 
 func update_draw_count(count: int) -> void:
@@ -121,9 +123,11 @@ func _apply_sizes() -> void:
 	full_screen.add_theme_constant_override("margin_right", m)
 	full_screen.add_theme_constant_override("margin_bottom", 0)
 
-	turn_label.add_theme_font_override("font", _font_bold)
+	turn_label.add_theme_font_override(
+		"normal_font", _font_bold
+	)
 	turn_label.add_theme_font_size_override(
-		"font_size", UIHelpers.FONT_TURN
+		"normal_font_size", UIHelpers.FONT_TURN
 	)
 
 	info_label.add_theme_font_override("font", _font_regular)

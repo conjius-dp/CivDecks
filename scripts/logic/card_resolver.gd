@@ -113,6 +113,8 @@ func _get_settle_targets(origin: Vector2i) -> Array[Vector2i]:
 	var terrain: TerrainType = _map.get_terrain(origin)
 	if terrain == null or not terrain.is_passable:
 		return [] as Array[Vector2i]
+	if not terrain.is_settleable:
+		return [] as Array[Vector2i]
 	return [origin] as Array[Vector2i]
 
 
@@ -122,6 +124,8 @@ func _resolve_settle(target: Vector2i) -> CardResult:
 		return result
 	var terrain: TerrainType = _map.get_terrain(target)
 	if terrain == null or not terrain.is_passable:
+		return result
+	if not terrain.is_settleable:
 		return result
 	var sname := SettlementNames.get_random_name()
 	_map.place_settlement(target, sname)

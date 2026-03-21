@@ -7,13 +7,15 @@ var _font_bold: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
 var _count: int = 0
 
 @onready var _stack: Control = $Stack
-@onready var _count_label: Label = $CountLabel
+@onready var _count_label: RichTextLabel = $CountLabel
 
 
 func _ready() -> void:
-	_count_label.add_theme_font_override("font", _font_bold)
+	_count_label.add_theme_font_override(
+		"normal_font", _font_bold
+	)
 	_count_label.add_theme_font_size_override(
-		"font_size", UIHelpers.FONT_LABEL
+		"normal_font_size", UIHelpers.FONT_LABEL
 	)
 	_count_label.add_theme_color_override(
 		"font_color", Color(0.9, 0.85, 0.7)
@@ -29,7 +31,9 @@ func update_count(count: int) -> void:
 func _update_display() -> void:
 	if not is_inside_tree():
 		return
-	_count_label.text = "Draw: %d" % _count
+	_count_label.text = UIHelpers.icon_text(
+		"Draw", str(_count)
+	)
 	for child in _stack.get_children():
 		child.queue_free()
 	var cards_to_show := mini(_count, 5)

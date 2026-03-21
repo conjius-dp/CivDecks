@@ -7,7 +7,7 @@ var _font_regular: Font = preload(
 	"res://assets/fonts/Cinzel-Regular.ttf"
 )
 var _scout_icon: Texture2D = preload(
-	"res://assets/icons/move_64.svg"
+	"res://assets/icons/scout_64.svg"
 )
 var _settle_icon: Texture2D = preload(
 	"res://assets/icons/settle_64.svg"
@@ -15,9 +15,9 @@ var _settle_icon: Texture2D = preload(
 
 @onready var avatar_rect: TextureRect = %AvatarRect
 @onready var unit_name_label: Label = %UnitNameLabel
-@onready var health_label: Label = %HealthLabel
-@onready var attack_label: Label = %AttackLabel
-@onready var defense_label: Label = %DefenseLabel
+@onready var health_label: RichTextLabel = %HealthLabel
+@onready var attack_label: RichTextLabel = %AttackLabel
+@onready var defense_label: RichTextLabel = %DefenseLabel
 @onready var action_container: VBoxContainer = %ActionContainer
 
 
@@ -30,10 +30,14 @@ func _ready() -> void:
 	unit_name_label.add_theme_font_size_override(
 		"font_size", UIHelpers.FONT_UNIT_NAME
 	)
-	for lbl: Label in [health_label, attack_label, defense_label]:
-		lbl.add_theme_font_override("font", _font_regular)
+	for lbl: RichTextLabel in [
+		health_label, attack_label, defense_label,
+	]:
+		lbl.add_theme_font_override(
+			"normal_font", _font_regular
+		)
 		lbl.add_theme_font_size_override(
-			"font_size", UIHelpers.FONT_UNIT_STAT
+			"normal_font_size", UIHelpers.FONT_UNIT_STAT
 		)
 
 
@@ -45,16 +49,20 @@ func update_unit(unit: Node3D) -> void:
 	avatar_rect.texture = _scout_icon
 	avatar_rect.modulate = unit.avatar_color
 	unit_name_label.text = unit.state.unit_name
-	health_label.text = "HP: %d/%d" % [
-		unit.state.health, unit.state.max_health,
-	]
+	health_label.text = UIHelpers.icon_text(
+		"HP", "%d/%d" % [unit.state.health, unit.state.max_health]
+	)
 	health_label.visible = true
-	attack_label.text = "ATK: %d" % unit.state.attack
+	attack_label.text = UIHelpers.icon_text(
+		"ATK", str(unit.state.attack)
+	)
 	attack_label.visible = true
 	var eff_def: int = (
 		unit.state.defense + unit.state.defense_modifier
 	)
-	defense_label.text = "DEF: %d" % eff_def
+	defense_label.text = UIHelpers.icon_text(
+		"DEF", str(eff_def)
+	)
 	defense_label.visible = true
 	_clear_actions()
 
@@ -67,14 +75,14 @@ func update_settlement(
 	avatar_rect.texture = _settle_icon
 	avatar_rect.modulate = player_color
 	unit_name_label.text = settlement_name
-	health_label.text = "HP: 50/50"
+	health_label.text = UIHelpers.icon_text("HP", "50/50")
 	health_label.visible = true
 	if terrain:
 		attack_label.text = terrain.terrain_name
 	else:
 		attack_label.text = ""
 	attack_label.visible = true
-	defense_label.text = "DEF: 0"
+	defense_label.text = UIHelpers.icon_text("DEF", "0")
 	defense_label.visible = true
 	_clear_actions()
 	_add_action("Build")

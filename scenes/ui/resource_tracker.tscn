@@ -11,14 +11,18 @@ script = ExtResource("1")
 layout_mode = 2
 mouse_filter = 2
 
-[node name="MaterialsLabel" type="Label" parent="VBox"]
+[node name="MaterialsLabel" type="RichTextLabel" parent="VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
+bbcode_enabled = true
+fit_content = true
 text = "Materials: 0"
 
-[node name="FoodLabel" type="Label" parent="VBox"]
+[node name="FoodLabel" type="RichTextLabel" parent="VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
+bbcode_enabled = true
+fit_content = true
 text = "Food: 0"

@@ -58,6 +58,19 @@ const DESC_HEIGHT: int = (
 )
 
 
+const ENTITY_ICONS: Dictionary = {
+	"Materials": "res://assets/icons/entities/materials.svg",
+	"Food": "res://assets/icons/entities/food.svg",
+	"Range": "res://assets/icons/entities/range.svg",
+	"HP": "res://assets/icons/entities/hp.svg",
+	"ATK": "res://assets/icons/entities/attack.svg",
+	"DEF": "res://assets/icons/entities/defense.svg",
+	"Turn": "res://assets/icons/entities/turn.svg",
+	"Draw": "res://assets/icons/entities/card.svg",
+	"Discard": "res://assets/icons/entities/card.svg",
+}
+
+
 static func fit_font_size(
 	text: String, max_width: int, max_height: int,
 	max_size: int = 12, min_size: int = 7,
@@ -88,6 +101,16 @@ static func create_panel_style() -> StyleBoxFlat:
 	style.content_margin_top = PANEL_MARGIN_V
 	style.content_margin_bottom = PANEL_MARGIN_V
 	return style
+
+
+static func icon_text(entity: String, value: String) -> String:
+	var path: String = ENTITY_ICONS.get(entity, "") as String
+	if path == "":
+		return "%s: %s" % [entity, value]
+	var icon_sz: int = int(FONT_LABEL * 1.2)
+	return "[img=%d]%s[/img] %s %s" % [
+		icon_sz, path, entity, value,
+	]
 
 
 static func s(value: int) -> int:

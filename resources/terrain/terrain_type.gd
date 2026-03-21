@@ -10,3 +10,4 @@ extends Resource
 @export var materials_yield: int = 0
 @export var food_yield: int = 0
 @export var stops_movement: bool = false
+@export var is_settleable: bool = true
