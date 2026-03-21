@@ -4,10 +4,11 @@ extends RefCounted
 const CARD_WIDTH: int = 115
 const CARD_HEIGHT: int = 165
 const CARD_BORDER: int = 2
-const SECTION_TOP: int = 3
+const CARD_PADDING: int = 2
+const SECTION_TOP: int = CARD_BORDER + CARD_PADDING
 const SECTION_GAP: int = 2
-const HEADER_HEIGHT: int = 27
-const AVATAR_HEIGHT: int = 51
+const HEADER_HEIGHT: int = 26
+const AVATAR_HEIGHT: int = 49
 const DESC_HEIGHT: int = 46
 const FOOTER_HEIGHT: int = 30
 const CONTENT_WIDTH: int = CARD_WIDTH - 12
