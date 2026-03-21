@@ -79,8 +79,8 @@ func _add_yield_sprite(
 	# Background circle
 	var bg := MeshInstance3D.new()
 	var disc := CylinderMesh.new()
-	disc.top_radius = 0.12
-	disc.bottom_radius = 0.12
+	disc.top_radius = 0.156
+	disc.bottom_radius = 0.156
 	disc.height = 0.01
 	disc.radial_segments = 16
 	bg.mesh = disc
