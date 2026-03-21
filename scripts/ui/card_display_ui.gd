@@ -36,6 +36,8 @@ var _drag_offset: Vector2 = Vector2.ZERO
 var _original_position: Vector2 = Vector2.ZERO
 var _bg_panel: Panel
 var _sections: Array[PanelContainer] = []
+var _footer_section: PanelContainer
+var _footer_label: Label
 var _valid_targets: Array[Vector2i] = []
 
 
@@ -107,18 +109,18 @@ func setup(card: CardData) -> void:
 	y += dh + gap
 
 	var fh := UIHelpers.FOOTER_HEIGHT
-	var footer := _add_section(self, dark, b, y, cw, fh)
+	_footer_section = _add_section(self, dark, b, y, cw, fh)
 	var ftxt := "Range %d" % card.range_value
-	var f_lbl := _add_label_in(
-		footer, ftxt, _font_regular,
+	_footer_label = _add_label_in(
+		_footer_section, ftxt, _font_regular,
 		Color(1, 1, 1, 0.8),
 		UIHelpers.fit_font_size(
 			ftxt, cw - mh * 2, fh - mv * 2,
 			UIHelpers.FONT_BODY, UIHelpers.s(8),
 		),
 	)
-	f_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	f_lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_footer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_footer_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 
 
 func _add_section(
@@ -232,6 +234,10 @@ func _start_drag(mouse_pos: Vector2) -> void:
 		_bg_panel.visible = false
 	for sec in _sections:
 		sec.self_modulate = Color(1, 1, 1, 0)
+	if _footer_section:
+		_footer_section.visible = false
+	if _footer_label:
+		_footer_label.visible = false
 	_valid_targets.clear()
 	if hex_map and card_effects and active_unit:
 		_valid_targets = card_effects.get_valid_targets(
@@ -363,6 +369,10 @@ func _restore_card_visuals() -> void:
 		_bg_panel.visible = true
 	for sec in _sections:
 		sec.self_modulate = Color.WHITE
+	if _footer_section:
+		_footer_section.visible = true
+	if _footer_label:
+		_footer_label.visible = true
 
 
 func _stop_all_pulses() -> void:
