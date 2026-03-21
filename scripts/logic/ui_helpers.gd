@@ -97,25 +97,32 @@ static func fit_font_size(
 	return min_size
 
 
-static func create_panel_style() -> StyleBoxTexture:
-	var tex: Texture2D = load(PARCHMENT_PATH) as Texture2D
-	var style := StyleBoxTexture.new()
-	if tex:
-		style.texture = tex
-	style.modulate_color = Color(
-		0.25, 0.18, 0.12, PARCHMENT_OPACITY
-	)
-	var b := CARD_BORDER
-	style.expand_margin_left = b
-	style.expand_margin_right = b
-	style.expand_margin_top = b
-	style.expand_margin_bottom = b
-	style.content_margin_left = PANEL_MARGIN_H + b
-	style.content_margin_right = PANEL_MARGIN_H + b
-	style.content_margin_top = PANEL_MARGIN_V + b
-	style.content_margin_bottom = PANEL_MARGIN_V + b
-	style.draw_center = true
+static func create_panel_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.2, 0.14, 0.08, PARCHMENT_OPACITY)
+	style.border_color = Color(0.55, 0.4, 0.15)
+	style.set_border_width_all(CARD_BORDER)
+	style.set_corner_radius_all(CARD_CORNER_RADIUS)
+	style.content_margin_left = PANEL_MARGIN_H
+	style.content_margin_right = PANEL_MARGIN_H
+	style.content_margin_top = PANEL_MARGIN_V
+	style.content_margin_bottom = PANEL_MARGIN_V
 	return style
+
+
+static func apply_parchment_bg(panel: Control) -> void:
+	var tex: Texture2D = load(PARCHMENT_PATH) as Texture2D
+	if tex == null:
+		return
+	var bg := TextureRect.new()
+	bg.texture = tex
+	bg.stretch_mode = TextureRect.STRETCH_SCALE
+	bg.modulate = Color(0.35, 0.25, 0.18, 0.5)
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bg.show_behind_parent = true
+	panel.add_child(bg)
+	panel.move_child(bg, 0)
 
 
 static func create_circle_panel_style(

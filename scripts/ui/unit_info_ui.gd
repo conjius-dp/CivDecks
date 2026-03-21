@@ -29,6 +29,7 @@ func _ready() -> void:
 	add_theme_stylebox_override(
 		"panel", UIHelpers.create_panel_style()
 	)
+	UIHelpers.apply_parchment_bg(self)
 	custom_minimum_size = Vector2(
 		UIHelpers.CARD_WIDTH, 0
 	)
