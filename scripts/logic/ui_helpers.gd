@@ -126,7 +126,7 @@ static func set_bbcode(
 	label: RichTextLabel, bbcode: String,
 ) -> void:
 	label.clear()
-	label.append_text(bbcode)
+	label.append_text("[left]" + bbcode + "[/left]")
 
 
 static func s(value: int) -> int:
