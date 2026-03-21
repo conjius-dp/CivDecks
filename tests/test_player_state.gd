@@ -3,7 +3,7 @@ extends RefCounted
 
 func test_initial_stats() -> void:
 	var ps := PlayerState.new()
-	TestAssert.assert_eq(ps.unit_name, "Scout")
+	TestAssert.assert_eq(ps.unit_name, "Explorer")
 	TestAssert.assert_eq(ps.health, 10)
 	TestAssert.assert_eq(ps.max_health, 10)
 	TestAssert.assert_eq(ps.attack, 2)

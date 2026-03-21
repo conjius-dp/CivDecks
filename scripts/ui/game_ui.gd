@@ -26,9 +26,6 @@ var _font_regular: Font = preload(
 @onready var info_label: Label = %InfoLabel
 @onready var unit_info: PanelContainer = %UnitInfo
 @onready var resource_tracker: PanelContainer = %ResourceTracker
-@onready var left_panel: VBoxContainer = (
-	$FullScreen/VBox/MiddleArea/LeftPanel
-)
 @onready var discard_column: VBoxContainer = (
 	$FullScreen/VBox/BottomBar/HBox/DiscardColumn
 )
@@ -134,15 +131,6 @@ func _apply_sizes() -> void:
 	info_label.add_theme_font_size_override(
 		"font_size", UIHelpers.FONT_INFO
 	)
-
-	left_panel.add_theme_constant_override(
-		"separation", UIHelpers.SPACING
-	)
-	left_panel.offset_right = UIHelpers.LEFT_PANEL_WIDTH
-	left_panel.offset_bottom = UIHelpers.LEFT_PANEL_HEIGHT
-
-	resource_tracker.offset_left = -UIHelpers.RESOURCE_WIDTH
-	resource_tracker.offset_bottom = UIHelpers.RESOURCE_HEIGHT
 
 	info_label.offset_top = -UIHelpers.s(30)
 	info_label.offset_right = UIHelpers.LEFT_PANEL_WIDTH

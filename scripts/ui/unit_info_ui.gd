@@ -6,12 +6,14 @@ var _font_bold: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
 var _font_regular: Font = preload(
 	"res://assets/fonts/Cinzel-Regular.ttf"
 )
-var _scout_icon: Texture2D = preload(
-	"res://assets/icons/scout_64.svg"
+var _explorer_icon_path: String = (
+	"res://assets/icons/explorer_unit.svg"
 )
-var _settle_icon: Texture2D = preload(
+var _settle_icon_path: String = (
 	"res://assets/icons/settle_64.svg"
 )
+var _explorer_icon: Texture2D
+var _settle_icon: Texture2D
 
 @onready var avatar_rect: TextureRect = %AvatarRect
 @onready var unit_name_label: Label = %UnitNameLabel
@@ -22,10 +24,16 @@ var _settle_icon: Texture2D = preload(
 
 
 func _ready() -> void:
+	_explorer_icon = load(_explorer_icon_path) as Texture2D
+	_settle_icon = load(_settle_icon_path) as Texture2D
 	add_theme_stylebox_override(
 		"panel", UIHelpers.create_panel_style()
 	)
-	custom_minimum_size.x = UIHelpers.CARD_WIDTH
+	custom_minimum_size = Vector2(
+		UIHelpers.CARD_WIDTH, 0
+	)
+	size.x = UIHelpers.CARD_WIDTH
+	clip_contents = true
 	unit_name_label.add_theme_font_override("font", _font_bold)
 	unit_name_label.add_theme_font_size_override(
 		"font_size", UIHelpers.FONT_UNIT_NAME
@@ -46,7 +54,7 @@ func update_unit(unit: Node3D) -> void:
 		visible = false
 		return
 	visible = true
-	avatar_rect.texture = _scout_icon
+	avatar_rect.texture = _explorer_icon
 	avatar_rect.modulate = unit.avatar_color
 	unit_name_label.text = unit.state.unit_name
 	UIHelpers.set_bbcode(health_label, UIHelpers.icon_text(

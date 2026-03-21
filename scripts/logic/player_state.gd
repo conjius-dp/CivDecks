@@ -1,7 +1,7 @@
 class_name PlayerState
 extends RefCounted
 
-var unit_name: String = "Scout"
+var unit_name: String = "Explorer"
 var max_health: int = 10
 var health: int = 10
 var attack: int = 2
