@@ -5,7 +5,7 @@ extends Node3D
 @export var zoom_min: float = 3.0
 @export var zoom_max: float = 30.0
 @export var rotate_speed: float = 0.005
-@export var smooth_factor: float = 8.0
+@export var smooth_factor: float = 12.0
 
 var _target_zoom: float = 15.0
 var _current_zoom: float = 15.0
@@ -82,8 +82,7 @@ func _unhandled_input(event: InputEvent) -> void:
 		if _dragging:
 			var current := _screen_to_ground(event.position)
 			var diff := _drag_origin - current
-			global_position += diff
-			_target_position = global_position
+			_target_position += diff
 		if Input.is_mouse_button_pressed(MOUSE_BUTTON_MIDDLE):
 			rotate_y(-event.relative.x * rotate_speed)
 
