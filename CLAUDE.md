@@ -9,6 +9,7 @@
 - **Comments must be non-trivial.** Only add comments where the logic is genuinely non-obvious. Remove noisy/redundant comments from both test and production code.
 - **Use OOP principles in design.** Prefer inheritance, polymorphism, modularity, and delegation. Keep classes focused and responsibilities clear.
 - **Refactors are welcome when TDD'd.** Refactor when something needs an overhaul to become simpler. Always have tests covering the behavior before and after.
+- **Never add your own identity to git commits.** Do not include "Co-Authored-By: Claude" or any Claude/AI attribution in commit messages, code, or anywhere in the repo. Always use only the user's git identity.
 
 ## Development Notes
 
