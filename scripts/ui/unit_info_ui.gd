@@ -38,6 +38,7 @@ func _ready() -> void:
 	unit_name_label.add_theme_font_size_override(
 		"font_size", UIHelpers.FONT_UNIT_NAME
 	)
+	unit_name_label.clip_text = true
 	for lbl: RichTextLabel in [
 		health_label, attack_label, defense_label,
 	]:
@@ -47,6 +48,7 @@ func _ready() -> void:
 		lbl.add_theme_font_size_override(
 			"normal_font_size", UIHelpers.FONT_UNIT_STAT
 		)
+		lbl.autowrap_mode = TextServer.AUTOWRAP_OFF
 
 
 func update_unit(unit: Node3D) -> void:
