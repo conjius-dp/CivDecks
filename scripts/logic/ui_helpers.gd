@@ -115,7 +115,7 @@ static func _make_parchment_tex() -> Texture2D:
 
 static func create_panel_style() -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.88, 0.82, 0.72, 0.95)
+	style.bg_color = Color(0.88, 0.82, 0.72, 0.5)
 	style.border_color = Color(0.55, 0.4, 0.15)
 	style.set_border_width_all(CARD_BORDER)
 	style.set_corner_radius_all(CARD_CORNER_RADIUS)
@@ -138,7 +138,7 @@ static func apply_parchment_bg(
 		var bg := TextureRect.new()
 		bg.texture = ptex
 		bg.stretch_mode = TextureRect.STRETCH_SCALE
-		bg.modulate = Color(1.0, 1.0, 1.0, 0.5)
+		bg.modulate = Color(0.85, 0.75, 0.6, 0.8)
 		bg.show_behind_parent = true
 		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		panel.add_child(bg)
@@ -154,7 +154,7 @@ static func apply_parchment_bg(
 		var bg := TextureRect.new()
 		bg.texture = ptex
 		bg.stretch_mode = TextureRect.STRETCH_SCALE
-		bg.modulate = Color(1.0, 1.0, 1.0, 0.5)
+		bg.modulate = Color(0.85, 0.75, 0.6, 0.8)
 		bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 		panel.add_child(bg)
