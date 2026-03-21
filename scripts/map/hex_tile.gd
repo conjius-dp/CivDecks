@@ -5,6 +5,7 @@ var terrain: TerrainType
 var is_revealed: bool = false
 
 var _highlight_mat: StandardMaterial3D
+var _font_bold: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
 
 
 func setup(
@@ -70,6 +71,7 @@ func place_settlement(
 
 	var label := Label3D.new()
 	label.text = settlement_name
+	label.font = _font_bold
 	label.font_size = 48
 	label.pixel_size = 0.01
 	label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
