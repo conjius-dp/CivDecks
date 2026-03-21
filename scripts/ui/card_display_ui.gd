@@ -126,21 +126,22 @@ func _add_section(
 	sec.size = Vector2(w, h)
 	sec.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	sec.clip_contents = true
-	var tex: Texture2D = _parchment_tex
+	var bg := TextureRect.new()
+	bg.texture = _parchment_tex
+	bg.stretch_mode = TextureRect.STRETCH_SCALE
+	bg.modulate = color
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bg.size = Vector2(w, h)
 	if randi() % 2 == 0:
-		var atlas := AtlasTexture.new()
-		atlas.atlas = _parchment_tex
-		var sz := _parchment_tex.get_size()
-		atlas.region = Rect2(sz.x, sz.y, -sz.x, -sz.y)
-		tex = atlas
-	var style := StyleBoxTexture.new()
-	style.texture = tex
-	style.modulate_color = color
-	style.content_margin_left = UIHelpers.SECTION_MARGIN_H
-	style.content_margin_right = UIHelpers.SECTION_MARGIN_H
-	style.content_margin_top = UIHelpers.SECTION_MARGIN_V
-	style.content_margin_bottom = UIHelpers.SECTION_MARGIN_V
-	sec.add_theme_stylebox_override("panel", style)
+		bg.pivot_offset = Vector2(w * 0.5, h * 0.5)
+		bg.rotation = PI
+	sec.add_child(bg)
+	var empty := StyleBoxEmpty.new()
+	empty.content_margin_left = UIHelpers.SECTION_MARGIN_H
+	empty.content_margin_right = UIHelpers.SECTION_MARGIN_H
+	empty.content_margin_top = UIHelpers.SECTION_MARGIN_V
+	empty.content_margin_bottom = UIHelpers.SECTION_MARGIN_V
+	sec.add_theme_stylebox_override("panel", empty)
 	parent.add_child(sec)
 	return sec
 
