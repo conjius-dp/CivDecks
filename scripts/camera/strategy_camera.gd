@@ -134,7 +134,11 @@ func _unhandled_input(event: InputEvent) -> void:
 			global_position += diff
 			_target_position = global_position
 		if Input.is_mouse_button_pressed(MOUSE_BUTTON_MIDDLE):
-			rotate_y(-event.relative.x * rotate_speed)
+			rotate_y(-event.relative.x * rotate_speed * 2.0)
+			_target_tilt = clampf(
+				_target_tilt + event.relative.y * 0.3,
+				tilt_min, tilt_max,
+			)
 
 
 func _apply_zoom() -> void:

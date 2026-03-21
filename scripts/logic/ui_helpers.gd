@@ -75,8 +75,8 @@ static func fit_font_size(
 	text: String, max_width: int, max_height: int,
 	max_size: int = 12, min_size: int = 7,
 ) -> int:
-	var avg_char_w := 0.65
-	var line_h_factor := 1.4
+	var avg_char_w := 0.7
+	var line_h_factor := 1.5
 	for s in range(max_size, min_size - 1, -1):
 		var char_w := s * avg_char_w
 		var chars_per_line := int(max_width / char_w)

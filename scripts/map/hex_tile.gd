@@ -72,9 +72,10 @@ func _create_yield_markers() -> void:
 		sprite.texture = tex
 		sprite.pixel_size = 0.0005
 		sprite.billboard = BaseMaterial3D.BILLBOARD_DISABLED
-		sprite.axis = Vector3.AXIS_Y
+		sprite.double_sided = true
+		sprite.no_depth_test = true
 		sprite.position = positions[idx]
-		sprite.rotation_degrees = Vector3(-90, 0, 0)
+		sprite.rotation_degrees = Vector3(-90, 0, 180)
 		sprite.modulate = Color(
 			icon_data["color"].r, icon_data["color"].g,
 			icon_data["color"].b, 0.5,
@@ -146,22 +147,24 @@ func place_settlement(
 	player_color: Color = Color(0.9, 0.2, 0.2),
 ) -> void:
 	var tent_scene: PackedScene = load(_tent_path) as PackedScene
-	if tent_scene == null:
-		return
-	var tent: Node3D = tent_scene.instantiate()
-	tent.scale = Vector3(1.0, 1.0, 1.0)
-	tent.position = Vector3(0, 0.1, 0)
-	add_child(tent)
-	for child in tent.get_children():
-		if child is MeshInstance3D:
-			var mi: MeshInstance3D = child as MeshInstance3D
-			var mat := mi.get_active_material(0)
-			if mat is StandardMaterial3D:
-				var m: StandardMaterial3D = mat.duplicate()
-				m.albedo_color = m.albedo_color.lerp(
-					player_color, 0.3
-				)
-				mi.material_override = m
+	if tent_scene:
+		var tent: Node3D = tent_scene.instantiate()
+		tent.scale = Vector3(0.5, 0.5, 0.5)
+		tent.position = Vector3(0, 0.1, 0)
+		add_child(tent)
+		_color_wash_recursive(tent, player_color)
+	else:
+		var marker := MeshInstance3D.new()
+		var cylinder := CylinderMesh.new()
+		cylinder.top_radius = 0.15
+		cylinder.bottom_radius = 0.3
+		cylinder.height = 0.6
+		marker.mesh = cylinder
+		var mat := StandardMaterial3D.new()
+		mat.albedo_color = player_color
+		marker.material_override = mat
+		marker.position = Vector3(0, 0.4, 0)
+		add_child(marker)
 
 	var label := Label3D.new()
 	label.text = settlement_name
@@ -174,3 +177,21 @@ func place_settlement(
 	label.outline_modulate = Color(0.15, 0.1, 0.05)
 	label.outline_size = UIHelpers.SETTLEMENT_OUTLINE
 	add_child(label)
+
+
+func _color_wash_recursive(
+	node: Node, color: Color,
+) -> void:
+	if node is MeshInstance3D:
+		var mi: MeshInstance3D = node as MeshInstance3D
+		var overlay := StandardMaterial3D.new()
+		overlay.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		overlay.albedo_color = Color(
+			color.r, color.g, color.b, 0.7
+		)
+		overlay.shading_mode = (
+			BaseMaterial3D.SHADING_MODE_UNSHADED
+		)
+		mi.material_overlay = overlay
+	for child in node.get_children():
+		_color_wash_recursive(child, color)
