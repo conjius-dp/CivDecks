@@ -183,8 +183,10 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion:
 		global_position = event.global_position - _drag_offset
 		_update_hover(event.global_position)
-	elif event is InputEventMouseButton and not event.pressed:
-		if event.button_index == MOUSE_BUTTON_LEFT:
+	elif event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+			_cancel_drag()
+		elif event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
 			_end_drag(event.global_position)
 
 
@@ -204,6 +206,18 @@ func _start_drag(mouse_pos: Vector2) -> void:
 			_valid_targets, Color(0.3, 0.8, 1.0, 0.8)
 		)
 	drag_started.emit(card_data)
+
+
+func _cancel_drag() -> void:
+	_dragging = false
+	z_index = 0
+	modulate = Color.WHITE
+	scale = Vector2.ONE
+	hex_map.clear_highlights()
+	if arrow_indicator:
+		arrow_indicator.hide_arrow()
+	_valid_targets.clear()
+	global_position = _original_position
 
 
 func _end_drag(mouse_pos: Vector2) -> void:
