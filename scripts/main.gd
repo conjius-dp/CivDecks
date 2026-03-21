@@ -61,9 +61,13 @@ func _ready() -> void:
 	var start_terrain: TerrainType = hex_map.get_terrain(start_coord)
 	player_unit.place_at(start_coord, start_terrain.height - 0.1)
 
-	# Center camera on player
-	var start_world: Vector3 = HexUtil.axial_to_world(start_coord.x, start_coord.y)
-	camera_rig.global_position = Vector3(start_world.x, 0.0, start_world.z)
+	# Center camera on player unit
+	var start_world: Vector3 = HexUtil.axial_to_world(
+		start_coord.x, start_coord.y
+	)
+	var cam_pos := Vector3(start_world.x, 0.0, start_world.z)
+	camera_rig.global_position = cam_pos
+	camera_rig._target_position = cam_pos
 
 	# Reveal starting area (fog of war)
 	_reveal_around(start_coord, 2)
