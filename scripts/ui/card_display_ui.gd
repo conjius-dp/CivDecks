@@ -3,6 +3,8 @@ extends Control
 signal drag_started(card: CardData)
 signal drag_ended(card: CardData, target: Vector2i, success: bool)
 
+const MIN_DRAG_MS: int = 100
+
 var card_data: CardData
 var hex_map: Node3D
 var camera: Camera3D
@@ -32,6 +34,7 @@ var _font_bold: Font = preload(
 )
 var _dragging: bool = false
 var _returning: bool = false
+var _drag_start_time: int = 0
 var _drag_offset: Vector2 = Vector2.ZERO
 var _original_position: Vector2 = Vector2.ZERO
 var _bg_panel: Panel
@@ -39,7 +42,7 @@ var _sections: Array[PanelContainer] = []
 var _desc_section: PanelContainer
 var _desc_label: Label
 var _footer_section: PanelContainer
-var _footer_label: Label
+var _footer_label: Control
 var _is_blocked: bool = false
 var _valid_targets: Array[Vector2i] = []
 
@@ -94,7 +97,7 @@ func setup(card: CardData) -> void:
 	var dh := UIHelpers.DESC_HEIGHT
 	_desc_section = _add_section(self, base, b, y, cw, dh)
 	_desc_label = _add_label_in(
-		_desc_section, card.description, _font_bold,
+		_desc_section, card.description, _font_regular,
 		Color.WHITE,
 		UIHelpers.fit_font_size(
 			card.description, cw - mh * 2,
@@ -109,17 +112,29 @@ func setup(card: CardData) -> void:
 
 	var fh := UIHelpers.FOOTER_HEIGHT
 	_footer_section = _add_section(self, dark, b, y, cw, fh)
-	var ftxt := "Range %d" % card.range_value
-	_footer_label = _add_label_in(
-		_footer_section, ftxt, _font_bold,
-		Color(1, 1, 1, 0.8),
-		UIHelpers.fit_font_size(
-			ftxt, cw - mh * 2, fh - mv * 2,
-			UIHelpers.FONT_BODY, UIHelpers.s(8),
-		),
+	var range_rtl := RichTextLabel.new()
+	range_rtl.bbcode_enabled = true
+	range_rtl.fit_content = true
+	range_rtl.layout_mode = 1
+	range_rtl.set_anchors_preset(Control.PRESET_FULL_RECT)
+	range_rtl.add_theme_font_override("normal_font", _font_regular)
+	range_rtl.add_theme_font_size_override(
+		"normal_font_size", UIHelpers.FONT_UNIT_STAT
 	)
-	_footer_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_footer_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	range_rtl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_footer_section.add_child(range_rtl)
+	var r_icon_sz: int = int(UIHelpers.FONT_UNIT_STAT * 1.2)
+	var r_path: String = UIHelpers.ENTITY_ICONS.get(
+		"Range", ""
+	) as String
+	var r_num_sz: int = UIHelpers.FONT_STAT_NUM
+	UIHelpers.set_bbcode(
+		range_rtl,
+		"[center]Range [img=%d]%s[/img] [font_size=%d]%d[/font_size][/center]" % [
+			r_icon_sz, r_path, r_num_sz, card.range_value,
+		],
+	)
+	_footer_label = range_rtl
 
 
 func _add_section(
@@ -227,6 +242,7 @@ func _start_drag(mouse_pos: Vector2) -> void:
 	if _returning:
 		return
 	_dragging = true
+	_drag_start_time = Time.get_ticks_msec()
 	_original_position = global_position
 	_drag_offset = mouse_pos - global_position
 	z_index = 100
@@ -294,8 +310,9 @@ func _end_drag(mouse_pos: Vector2) -> void:
 		target != Vector2i(-999, -999)
 		and _is_valid_target(target)
 	)
+	var elapsed: int = Time.get_ticks_msec() - _drag_start_time
 	_valid_targets.clear()
-	if is_valid:
+	if is_valid and elapsed >= MIN_DRAG_MS:
 		_animate_to_discard(target)
 	else:
 		_returning = true

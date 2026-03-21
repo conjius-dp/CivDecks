@@ -23,7 +23,7 @@ var _font_regular: Font = preload(
 @onready var discard_pile: VBoxContainer = %DiscardPile
 @onready var turn_label: RichTextLabel = %TurnLabel
 @onready var end_turn_button: Control = %EndTurnButton
-@onready var info_label: Label = %InfoLabel
+@onready var info_label: RichTextLabel = %InfoLabel
 @onready var unit_info: PanelContainer = %UnitInfo
 @onready var resource_tracker: PanelContainer = %ResourceTracker
 @onready var discard_column: VBoxContainer = (
@@ -85,8 +85,11 @@ func on_card_played(card: CardData) -> void:
 
 
 func update_info(text: String) -> void:
-	info_label.text = text
-	info_label.visible = text != ""
+	if text == "":
+		info_label.visible = false
+		return
+	info_label.visible = true
+	UIHelpers.set_bbcode(info_label, "[center]" + text + "[/center]")
 
 
 func set_end_turn_enabled(enabled: bool) -> void:
@@ -127,13 +130,12 @@ func _apply_sizes() -> void:
 		"normal_font_size", UIHelpers.FONT_TURN
 	)
 
-	info_label.add_theme_font_override("font", _font_regular)
-	info_label.add_theme_font_size_override(
-		"font_size", UIHelpers.FONT_INFO
+	info_label.add_theme_font_override(
+		"normal_font", _font_bold
 	)
-
-	info_label.offset_top = -UIHelpers.s(30)
-	info_label.offset_right = UIHelpers.LEFT_PANEL_WIDTH
+	info_label.add_theme_font_size_override(
+		"normal_font_size", UIHelpers.FONT_UNIT_STAT
+	)
 
 	bottom_bar.custom_minimum_size = Vector2(
 		0, UIHelpers.BOTTOM_BAR_HEIGHT

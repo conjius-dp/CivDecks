@@ -29,10 +29,10 @@ var _cards: Array[CardData] = []
 
 func _ready() -> void:
 	_count_label.add_theme_font_override(
-		"normal_font", _font_bold
+		"normal_font", _font_regular
 	)
 	_count_label.add_theme_font_size_override(
-		"normal_font_size", UIHelpers.FONT_LABEL
+		"normal_font_size", UIHelpers.FONT_UNIT_STAT
 	)
 	_count_label.add_theme_color_override(
 		"font_color", Color(0.9, 0.85, 0.7)
@@ -59,12 +59,13 @@ func update_count(count: int) -> void:
 func _update_display() -> void:
 	if not is_inside_tree():
 		return
-	var icon_sz: int = int(UIHelpers.FONT_LABEL * 1.2)
-	var card_path: String = UIHelpers.ENTITY_ICONS.get(
+	var icon_sz: int = int(UIHelpers.FONT_UNIT_STAT * 1.2)
+	var path: String = UIHelpers.ENTITY_ICONS.get(
 		"Discard", ""
 	) as String
-	var bbcode := "Discard  [img=%d]%s[/img] %d" % [
-		icon_sz, card_path, _cards.size(),
+	var num_sz: int = UIHelpers.FONT_STAT_NUM
+	var bbcode := "[center]Discard [img=%d]%s[/img] [font_size=%d]%d[/font_size][/center]" % [
+		icon_sz, path, num_sz, _cards.size(),
 	]
 	UIHelpers.set_bbcode(_count_label, bbcode)
 	for child in _stack.get_children():
@@ -144,7 +145,7 @@ func _build_card_face(card: CardData) -> PanelContainer:
 	var dh := UIHelpers.DESC_HEIGHT
 	var desc_sec := _add_section(outer, base, b, y, iw, dh)
 	var dl := _add_label_in(
-		desc_sec, card.description, _font_bold,
+		desc_sec, card.description, _font_regular,
 		Color.WHITE,
 		UIHelpers.fit_font_size(
 			card.description, iw - mh * 2, dh - mv * 2,
@@ -158,17 +159,30 @@ func _build_card_face(card: CardData) -> PanelContainer:
 
 	var fh := UIHelpers.FOOTER_HEIGHT
 	var footer := _add_section(outer, dark, b, y, iw, fh)
-	var ftxt := "Range %d" % card.range_value
-	var fl := _add_label_in(
-		footer, ftxt, _font_bold,
-		Color(1, 1, 1, 0.8),
-		UIHelpers.fit_font_size(
-			ftxt, iw - mh * 2, fh - mv * 2,
-			UIHelpers.FONT_BODY, UIHelpers.s(8),
-		),
+	var range_rtl := RichTextLabel.new()
+	range_rtl.bbcode_enabled = true
+	range_rtl.fit_content = true
+	range_rtl.layout_mode = 1
+	range_rtl.set_anchors_preset(Control.PRESET_FULL_RECT)
+	range_rtl.add_theme_font_override(
+		"normal_font", _font_regular
 	)
-	fl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	fl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	range_rtl.add_theme_font_size_override(
+		"normal_font_size", UIHelpers.FONT_UNIT_STAT
+	)
+	range_rtl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	footer.add_child(range_rtl)
+	var ri_sz: int = int(UIHelpers.FONT_UNIT_STAT * 1.2)
+	var ri_path: String = UIHelpers.ENTITY_ICONS.get(
+		"Range", ""
+	) as String
+	var ri_num: int = UIHelpers.FONT_STAT_NUM
+	UIHelpers.set_bbcode(
+		range_rtl,
+		"[center]Range [img=%d]%s[/img] [font_size=%d]%d[/font_size][/center]" % [
+			ri_sz, ri_path, ri_num, card.range_value,
+		],
+	)
 
 	return outer
 

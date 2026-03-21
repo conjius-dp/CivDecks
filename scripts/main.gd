@@ -96,11 +96,21 @@ func _unhandled_input(event: InputEvent) -> void:
 		if coord != Vector2i(-999, -999):
 			var terrain: TerrainType = hex_map.get_terrain(coord)
 			if terrain:
-				game_ui.update_info(
-					"%s (%d,%d)" % [
-						terrain.terrain_name, coord.x, coord.y,
-					]
-				)
+				var info := "%s (%d,%d)" % [
+					terrain.terrain_name, coord.x, coord.y,
+				]
+				var yields: Array[String] = []
+				if terrain.materials_yield > 0:
+					yields.append(UIHelpers.icon_text(
+						"Materials", str(terrain.materials_yield)
+					))
+				if terrain.food_yield > 0:
+					yields.append(UIHelpers.icon_text(
+						"Food", str(terrain.food_yield)
+					))
+				if not yields.is_empty():
+					info += "\n" + " ".join(yields)
+				game_ui.update_info(info)
 		else:
 			game_ui.update_info("")
 
