@@ -97,22 +97,12 @@ static func fit_font_size(
 	return min_size
 
 
-static func create_panel_style() -> StyleBoxTexture:
-	var tex: Texture2D = load(PARCHMENT_PATH) as Texture2D
-	var style := StyleBoxTexture.new()
-	if tex:
-		var do_rotate: bool = randi() % 2 == 0
-		var do_mirror: bool = randi() % 2 == 0
-		if do_rotate or do_mirror:
-			var img := tex.get_image().duplicate()
-			if do_rotate:
-				img.rotate_180()
-			if do_mirror:
-				img.flip_x()
-			style.texture = ImageTexture.create_from_image(img)
-		else:
-			style.texture = tex
-	style.modulate_color = Color(0.95, 0.88, 0.75, 1.0)
+static func create_panel_style() -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0, 0, 0, 0)
+	style.border_color = Color(0.55, 0.4, 0.15)
+	style.set_border_width_all(CARD_BORDER)
+	style.set_corner_radius_all(CARD_CORNER_RADIUS)
 	style.content_margin_left = PANEL_MARGIN_H
 	style.content_margin_right = PANEL_MARGIN_H
 	style.content_margin_top = PANEL_MARGIN_V
@@ -121,9 +111,33 @@ static func create_panel_style() -> StyleBoxTexture:
 
 
 static func apply_parchment_bg(
-	_panel: Control, _is_container: bool = true,
+	panel: Control, _is_container: bool = true,
 ) -> void:
-	pass
+	var tex: Texture2D = load(PARCHMENT_PATH) as Texture2D
+	if tex == null:
+		return
+	var bg := TextureRect.new()
+	var do_rotate: bool = randi() % 2 == 0
+	var do_mirror: bool = randi() % 2 == 0
+	if do_rotate or do_mirror:
+		var img := tex.get_image().duplicate()
+		if do_rotate:
+			img.rotate_180()
+		if do_mirror:
+			img.flip_x()
+		bg.texture = ImageTexture.create_from_image(img)
+	else:
+		bg.texture = tex
+	bg.stretch_mode = TextureRect.STRETCH_SCALE
+	bg.modulate = Color(0.95, 0.88, 0.75, 1.0)
+	bg.show_behind_parent = true
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.add_child(bg)
+	bg.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg.offset_left = -(PANEL_MARGIN_H)
+	bg.offset_right = PANEL_MARGIN_H
+	bg.offset_top = -(PANEL_MARGIN_V)
+	bg.offset_bottom = PANEL_MARGIN_V
 
 
 static func create_circle_panel_style(
