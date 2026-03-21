@@ -6,7 +6,7 @@ extends MeshInstance3D
 @export var arrowhead_length: float = 1.6
 @export var arrowhead_width: float = 1.4
 @export var arrow_color: Color = Color(0.7, 0.15, 0.1, 0.85)
-@export var y_offset: float = 0.15
+@export var y_offset: float = 0.7
 
 var _immediate_mesh: ImmediateMesh
 var _material: StandardMaterial3D
@@ -17,10 +17,10 @@ func _ready() -> void:
 	mesh = _immediate_mesh
 
 	_material = StandardMaterial3D.new()
-	_material.albedo_color = arrow_color
 	_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	_material.vertex_color_use_as_albedo = true
 	material_override = _material
 
 	visible = false
@@ -51,36 +51,42 @@ func _draw_arrow(from_pos: Vector3, to_pos: Vector3) -> void:
 	var perp := Vector3(-dir.z, 0.0, dir.x)
 	var half_w := arrow_width * 0.5
 
-	# Shorten the shaft to leave room for the arrowhead
 	var shaft_length := maxf(0.0, total_length - arrowhead_length)
 
 	_immediate_mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLES)
 
-	# Draw dashed shaft segments
 	var pos := 0.0
 	while pos < shaft_length:
 		var seg_end := minf(pos + dash_length, shaft_length)
 		var p0 := start + dir * pos
 		var p1 := start + dir * seg_end
 
-		# Quad as two triangles
 		var v0 := p0 + perp * half_w
 		var v1 := p0 - perp * half_w
 		var v2 := p1 + perp * half_w
 		var v3 := p1 - perp * half_w
 
-		_immediate_mesh.surface_set_color(arrow_color)
+		var t0 := pos / total_length
+		var t1 := seg_end / total_length
+		var c0 := _color_at(t0)
+		var c1 := _color_at(t1)
+
+		_immediate_mesh.surface_set_color(c0)
 		_immediate_mesh.surface_add_vertex(v0)
+		_immediate_mesh.surface_set_color(c0)
 		_immediate_mesh.surface_add_vertex(v1)
+		_immediate_mesh.surface_set_color(c1)
 		_immediate_mesh.surface_add_vertex(v2)
 
+		_immediate_mesh.surface_set_color(c0)
 		_immediate_mesh.surface_add_vertex(v1)
+		_immediate_mesh.surface_set_color(c1)
 		_immediate_mesh.surface_add_vertex(v3)
+		_immediate_mesh.surface_set_color(c1)
 		_immediate_mesh.surface_add_vertex(v2)
 
 		pos = seg_end + gap_length
 
-	# Arrowhead triangle
 	var head_base := start + dir * shaft_length
 	var head_tip := end
 	var head_half_w := arrowhead_width * 0.5
@@ -89,9 +95,20 @@ func _draw_arrow(from_pos: Vector3, to_pos: Vector3) -> void:
 	var h1 := head_base - perp * head_half_w
 	var h2 := head_tip
 
-	_immediate_mesh.surface_set_color(arrow_color)
+	var t_base := shaft_length / total_length
+	var c_base := _color_at(t_base)
+	var c_tip := _color_at(1.0)
+
+	_immediate_mesh.surface_set_color(c_base)
 	_immediate_mesh.surface_add_vertex(h0)
+	_immediate_mesh.surface_set_color(c_base)
 	_immediate_mesh.surface_add_vertex(h1)
+	_immediate_mesh.surface_set_color(c_tip)
 	_immediate_mesh.surface_add_vertex(h2)
 
 	_immediate_mesh.surface_end()
+
+
+func _color_at(t: float) -> Color:
+	var alpha := lerpf(0.05, arrow_color.a, t)
+	return Color(arrow_color.r, arrow_color.g, arrow_color.b, alpha)
