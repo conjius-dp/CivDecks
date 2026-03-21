@@ -6,6 +6,7 @@ var is_revealed: bool = false
 
 var _highlight_mat: StandardMaterial3D
 var _font_bold: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
+var _tent_path: String = "res://assets/models/buildings/tent.gltf"
 
 
 func setup(
@@ -57,17 +58,23 @@ func place_settlement(
 	settlement_name: String,
 	player_color: Color = Color(0.9, 0.2, 0.2),
 ) -> void:
-	var marker := MeshInstance3D.new()
-	var cylinder := CylinderMesh.new()
-	cylinder.top_radius = 0.15
-	cylinder.bottom_radius = 0.3
-	cylinder.height = 0.6
-	marker.mesh = cylinder
-	var mat := StandardMaterial3D.new()
-	mat.albedo_color = player_color
-	marker.material_override = mat
-	marker.position = Vector3(0, 0.4, 0)
-	add_child(marker)
+	var tent_scene: PackedScene = load(_tent_path) as PackedScene
+	if tent_scene == null:
+		return
+	var tent: Node3D = tent_scene.instantiate()
+	tent.scale = Vector3(0.4, 0.4, 0.4)
+	tent.position = Vector3(0, 0.15, 0)
+	add_child(tent)
+	for child in tent.get_children():
+		if child is MeshInstance3D:
+			var mi: MeshInstance3D = child as MeshInstance3D
+			var mat := mi.get_active_material(0)
+			if mat is StandardMaterial3D:
+				var m: StandardMaterial3D = mat.duplicate()
+				m.albedo_color = m.albedo_color.lerp(
+					player_color, 0.3
+				)
+				mi.material_override = m
 
 	var label := Label3D.new()
 	label.text = settlement_name
