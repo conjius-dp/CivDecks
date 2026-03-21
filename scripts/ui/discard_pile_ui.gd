@@ -74,6 +74,7 @@ func _update_display() -> void:
 	for i in range(cards_to_show):
 		var card: CardData = _cards[start_idx + i]
 		var panel := _build_card_face(card)
+		panel.modulate = Color(0.5, 0.5, 0.5, 0.8)
 		var off := UIHelpers.STACK_OFFSET
 		panel.position = Vector2(i * off, -i * off)
 		_stack.add_child(panel)
