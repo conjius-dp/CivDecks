@@ -77,7 +77,7 @@ static func _ensure_yield_shared() -> void:
 		_yield_bg_mesh.top_radius = 0.156
 		_yield_bg_mesh.bottom_radius = 0.156
 		_yield_bg_mesh.height = 0.01
-		_yield_bg_mesh.radial_segments = 16
+		_yield_bg_mesh.radial_segments = 8
 	if _parchment_tex == null:
 		_parchment_tex = load(
 			"res://assets/textures/ui/parchment_256_grayscale.png"

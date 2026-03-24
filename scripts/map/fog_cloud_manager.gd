@@ -22,8 +22,8 @@ func _setup_multimesh() -> void:
 	var sphere := SphereMesh.new()
 	sphere.radius = 1.0
 	sphere.height = 1.0
-	sphere.radial_segments = 10
-	sphere.rings = 5
+	sphere.radial_segments = 6
+	sphere.rings = 3
 	_multimesh.mesh = sphere
 	_multimesh.instance_count = 0
 

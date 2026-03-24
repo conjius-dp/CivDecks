@@ -25,6 +25,7 @@ var _mountain_mesh: Mesh
 var _mountain_mat: StandardMaterial3D
 var _water_mat: StandardMaterial3D
 var _forest_decorator: ForestDecorator
+var _terrain_batches: Dictionary = {}
 
 
 func generate_map() -> void:
@@ -68,6 +69,15 @@ func generate_map() -> void:
 			var tile: Node3D = _hex_tile_scene.instantiate()
 			add_child(tile)
 			tile.setup(coord, terrain, mesh, shape, mat)
+			tile.get_node("MeshInstance3D").visible = false
+			var batch_key: String = terrain.resource_path
+			if not _terrain_batches.has(batch_key):
+				_terrain_batches[batch_key] = {
+					"mesh": mesh, "mat": mat, "xforms": [],
+				}
+			_terrain_batches[batch_key]["xforms"].append(
+				Transform3D(Basis.IDENTITY, tile.position)
+			)
 
 			var highlight_mesh: MeshInstance3D = tile.get_node("HighlightMesh")
 			highlight_mesh.mesh = _outline_mesh
@@ -83,6 +93,7 @@ func generate_map() -> void:
 				coord, tile.position, terrain.height,
 			)
 	_forest_decorator.build_multimeshes()
+	_build_terrain_multimeshes()
 	fog_cloud_manager.rebuild()
 
 
@@ -145,6 +156,29 @@ func _pick_terrain(noise_val: float) -> TerrainType:
 	if noise_val < 0.4:
 		return _terrain_forest
 	return _terrain_mountain
+
+
+func _build_terrain_multimeshes() -> void:
+	for key: String in _terrain_batches:
+		var batch: Dictionary = _terrain_batches[key]
+		var xforms: Array = batch["xforms"]
+		var mesh: Mesh = batch["mesh"] as Mesh
+		var mat: StandardMaterial3D = (
+			batch["mat"] as StandardMaterial3D
+		)
+		var mm := MultiMesh.new()
+		mm.transform_format = MultiMesh.TRANSFORM_3D
+		mm.mesh = mesh
+		mm.instance_count = xforms.size()
+		for i in xforms.size():
+			mm.set_instance_transform(
+				i, xforms[i] as Transform3D
+			)
+		var mmi := MultiMeshInstance3D.new()
+		mmi.multimesh = mm
+		mmi.material_override = mat
+		add_child(mmi)
+	_terrain_batches.clear()
 
 
 func _setup_mountain_assets() -> void:
