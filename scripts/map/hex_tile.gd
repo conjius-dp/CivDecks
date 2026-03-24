@@ -105,6 +105,10 @@ func _add_yield_sprite(
 	bg.cast_shadow = (
 		GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 	)
+	bg.visibility_range_end = 30.0
+	bg.visibility_range_fade_mode = (
+		GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
+	)
 	add_child(bg)
 
 	# Icon sprite lying flat facing sky
@@ -118,6 +122,10 @@ func _add_yield_sprite(
 	sprite.modulate = Color(1.0, 1.0, 1.0, 0.8)
 	sprite.cast_shadow = (
 		GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+	)
+	sprite.visibility_range_end = 30.0
+	sprite.visibility_range_fade_mode = (
+		GeometryInstance3D.VISIBILITY_RANGE_FADE_SELF
 	)
 	add_child(sprite)
 	_yield_sprites.append(sprite)

@@ -1,5 +1,5 @@
 class_name ForestDecorator
-extends RefCounted
+extends Node3D
 
 const TREE_SCENE_PATH := (
 	"res://assets/models/trees/Trees collection.fbx"
@@ -11,9 +11,9 @@ const TARGET_HEIGHT := 0.25
 const TREE_HEIGHT_JITTER := 0.2
 
 var _tree_meshes: Array[Mesh] = []
-var _tree_materials: Array[Array] = []
 var _tree_scales: Array[float] = []
 var _tree_radii: Array[float] = []
+var _pending: Array[Array] = []
 
 
 func load_trees() -> void:
@@ -31,9 +31,7 @@ func load_trees() -> void:
 			var recentered: ArrayMesh = _recenter_mesh(
 				mi.mesh, center
 			)
-			_tree_meshes.append(recentered)
-			var mats: Array = []
-			for s in mi.mesh.get_surface_count():
+			for s in recentered.get_surface_count():
 				var orig: Material = mi.mesh.surface_get_material(s)
 				if orig is StandardMaterial3D:
 					var light_mat: StandardMaterial3D = (
@@ -42,10 +40,10 @@ func load_trees() -> void:
 					light_mat.albedo_color = (
 						light_mat.albedo_color.lightened(0.55)
 					)
-					mats.append(light_mat)
-				else:
-					mats.append(orig)
-			_tree_materials.append(mats)
+					recentered.surface_set_material(s, light_mat)
+				elif orig:
+					recentered.surface_set_material(s, orig)
+			_tree_meshes.append(recentered)
 			var mesh_height: float = aabb.size.y
 			var scale: float
 			if mesh_height > 0.0:
@@ -64,6 +62,59 @@ func load_trees() -> void:
 			) * scale
 			_tree_radii.append(maxf(half_x, half_z))
 	root.queue_free()
+	for _i in _tree_meshes.size():
+		_pending.append([])
+
+
+func collect_tile(tile: Node3D) -> void:
+	if _tree_meshes.is_empty():
+		return
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash(tile.coord)
+	var count: int = rng.randi_range(MIN_TREES, MAX_TREES)
+	var placements: Array[Array] = _distribute_trees(rng, count)
+	var tile_pos: Vector3 = tile.position
+	for placement in placements:
+		var pos: Vector2 = placement[0] as Vector2
+		var tree_idx: int = placement[1] as int
+		var base_scale: float = _tree_scales[tree_idx]
+		var scale_factor: float = base_scale * rng.randf_range(
+			1.0 - TREE_HEIGHT_JITTER,
+			1.0 + TREE_HEIGHT_JITTER,
+		)
+		var rot_y: float = rng.randf() * TAU
+		var world_pos := Vector3(
+			tile_pos.x + pos.x,
+			tile_pos.y + 0.05,
+			tile_pos.z + pos.y,
+		)
+		var basis := Basis(Vector3.UP, rot_y).scaled(
+			Vector3(scale_factor, scale_factor, scale_factor)
+		)
+		var xform := Transform3D(basis, world_pos)
+		_pending[tree_idx].append(xform)
+
+
+func build_multimeshes() -> void:
+	for i in _tree_meshes.size():
+		var transforms: Array = _pending[i]
+		if transforms.is_empty():
+			continue
+		var mm := MultiMesh.new()
+		mm.transform_format = MultiMesh.TRANSFORM_3D
+		mm.mesh = _tree_meshes[i]
+		mm.instance_count = transforms.size()
+		for j in transforms.size():
+			mm.set_instance_transform(
+				j, transforms[j] as Transform3D
+			)
+		var mmi := MultiMeshInstance3D.new()
+		mmi.multimesh = mm
+		mmi.cast_shadow = (
+			GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		)
+		add_child(mmi)
+	_pending.clear()
 
 
 func _recenter_mesh(
@@ -87,39 +138,6 @@ func _recenter_mesh(
 			Mesh.PRIMITIVE_TRIANGLES, arrays, [], {}, fmt
 		)
 	return result
-
-
-func decorate_tile(tile: Node3D) -> void:
-	if _tree_meshes.is_empty():
-		return
-	var rng := RandomNumberGenerator.new()
-	rng.seed = hash(tile.coord)
-	var count: int = rng.randi_range(MIN_TREES, MAX_TREES)
-	var placements: Array[Array] = _distribute_trees(rng, count)
-	for placement in placements:
-		var pos: Vector2 = placement[0] as Vector2
-		var tree_idx: int = placement[1] as int
-		var mi := MeshInstance3D.new()
-		mi.mesh = _tree_meshes[tree_idx]
-		for s in mi.mesh.get_surface_count():
-			if s < _tree_materials[tree_idx].size():
-				mi.set_surface_override_material(
-					s, _tree_materials[tree_idx][s]
-				)
-		var base_scale: float = _tree_scales[tree_idx]
-		var scale_factor: float = base_scale * rng.randf_range(
-			1.0 - TREE_HEIGHT_JITTER,
-			1.0 + TREE_HEIGHT_JITTER,
-		)
-		mi.scale = Vector3(
-			scale_factor, scale_factor, scale_factor
-		)
-		mi.rotation.y = rng.randf() * TAU
-		mi.position = Vector3(pos.x, 0.05, pos.y)
-		mi.cast_shadow = (
-			GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		)
-		tile.add_child(mi)
 
 
 func _distribute_trees(

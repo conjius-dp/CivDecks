@@ -32,6 +32,7 @@ func generate_map() -> void:
 	_setup_mountain_assets()
 	_setup_water_assets()
 	_forest_decorator = ForestDecorator.new()
+	add_child(_forest_decorator)
 	_forest_decorator.load_trees()
 	fog_cloud_manager = FogCloudManager.new()
 	add_child(fog_cloud_manager)
@@ -70,15 +71,18 @@ func generate_map() -> void:
 
 			var highlight_mesh: MeshInstance3D = tile.get_node("HighlightMesh")
 			highlight_mesh.mesh = _outline_mesh
+			highlight_mesh.visibility_range_end = 40.0
 			var fog_mesh: MeshInstance3D = tile.get_node("FogOverlay")
 			fog_mesh.mesh = _get_cached_mesh(0.02)
+			fog_mesh.visibility_range_end = 50.0
 
 			tiles[coord] = tile
 			if terrain == _terrain_forest:
-				_forest_decorator.decorate_tile(tile)
+				_forest_decorator.collect_tile(tile)
 			fog_cloud_manager.add_fog(
 				coord, tile.position, terrain.height,
 			)
+	_forest_decorator.build_multimeshes()
 	fog_cloud_manager.rebuild()
 
 
