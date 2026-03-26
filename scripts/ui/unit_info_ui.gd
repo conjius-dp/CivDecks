@@ -42,11 +42,23 @@ func _ready() -> void:
 	)
 	UIHelpers.apply_parchment_bg(self)
 	custom_minimum_size = Vector2(
-		UIHelpers.CARD_WIDTH, 0
+		UIHelpers.LEFT_PANEL_WIDTH, 0
 	)
-	size.x = UIHelpers.CARD_WIDTH
+	size.x = UIHelpers.LEFT_PANEL_WIDTH
 	size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 	clip_contents = true
+	var vbox: VBoxContainer = $VBox
+	vbox.add_theme_constant_override(
+		"separation", UIHelpers.SPACING_SMALL
+	)
+	var body_hbox: HBoxContainer = $VBox/BodyHBox
+	body_hbox.add_theme_constant_override(
+		"separation", UIHelpers.SPACING_SMALL
+	)
+	if action_container:
+		action_container.add_theme_constant_override(
+			"separation", UIHelpers.SPACING_SMALL
+		)
 	unit_name_label.add_theme_font_override("font", _font_bold)
 	unit_name_label.add_theme_font_size_override(
 		"font_size", UIHelpers.FONT_UNIT_NAME
