@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 card_name = "Ore"
-description = "Raw ore, ready for the smelter"
+description = ""
 card_type = 4
 range_value = 0
 cost = 0

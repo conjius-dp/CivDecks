@@ -5,7 +5,7 @@
 [resource]
 script = ExtResource("1")
 card_name = "Chicken"
-description = "A plump hen, ready for the cooking pot"
+description = ""
 card_type = 4
 range_value = 0
 cost = 0
