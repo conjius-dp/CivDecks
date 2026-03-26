@@ -106,7 +106,7 @@ func test_end_turn_flow() -> void:
 	TestAssert.assert_gt(gs.deck.hand.size(), 0)
 
 
-func test_gather_accumulates_resources() -> void:
+func test_gather_adds_resource_cards_to_deck() -> void:
 	var gs := _make_game()
 	var gather_in_hand: CardData = null
 	for c in gs.deck.hand:
@@ -117,8 +117,54 @@ func test_gather_accumulates_resources() -> void:
 		return
 	var result := gs.play_card(gather_in_hand, Vector2i(1, 0))
 	TestAssert.assert_true(result.success)
-	TestAssert.assert_eq(gs.player.materials, 1)
-	TestAssert.assert_eq(gs.player.food, 0)
+	var totals: Dictionary = gs.deck.count_resources()
+	TestAssert.assert_eq(totals["materials"], 1)
+	TestAssert.assert_eq(totals["food"], 0)
+
+
+func test_gather_mixed_terrain_produces_both_types() -> void:
+	var forest := TerrainType.new()
+	forest.terrain_name = "Forest"
+	forest.is_passable = true
+	forest.stops_movement = true
+	forest.materials_yield = 1
+	forest.food_yield = 1
+	var map := MapData.new()
+	map.set_terrain(Vector2i(0, 0), _plains)
+	map.set_terrain(Vector2i(1, 0), forest)
+	var deck: Array[CardData] = [_gather_card, _move_card, _move_card, _move_card, _move_card]
+	var gs := GameState.new()
+	gs.setup(map, deck, Vector2i(0, 0))
+	var gather_in_hand: CardData = null
+	for c in gs.deck.hand:
+		if c.card_type == CardData.CardType.GATHER:
+			gather_in_hand = c
+			break
+	if gather_in_hand == null:
+		return
+	gs.play_card(gather_in_hand, Vector2i(1, 0))
+	var totals: Dictionary = gs.deck.count_resources()
+	TestAssert.assert_eq(totals["materials"], 1)
+	TestAssert.assert_eq(totals["food"], 1)
+
+
+func test_gather_cards_in_discard_survive_reshuffle() -> void:
+	var gs := _make_game()
+	var gather_in_hand: CardData = null
+	for c in gs.deck.hand:
+		if c.card_type == CardData.CardType.GATHER:
+			gather_in_hand = c
+			break
+	if gather_in_hand == null:
+		return
+	gs.play_card(gather_in_hand, Vector2i(1, 0))
+	var totals_before: Dictionary = gs.deck.count_resources()
+	gs.end_turn()
+	var totals_after: Dictionary = gs.deck.count_resources()
+	TestAssert.assert_eq(
+		totals_after["materials"], totals_before["materials"],
+		"resource cards survive turn cycling",
+	)
 
 
 func test_get_valid_targets() -> void:

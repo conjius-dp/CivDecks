@@ -33,6 +33,24 @@ func discard_hand() -> void:
 	hand.clear()
 
 
+func add_to_discard(card: CardData) -> void:
+	discard_pile.append(card)
+
+
+func count_resources() -> Dictionary:
+	var totals := {"food": 0, "materials": 0}
+	for pile: Array[CardData] in [draw_pile, hand, discard_pile]:
+		for card: CardData in pile:
+			if card.card_type != CardData.CardType.RESOURCE:
+				continue
+			match card.resource_type:
+				CardData.ResourceType.FOOD:
+					totals["food"] += card.resource_value
+				CardData.ResourceType.MATERIALS:
+					totals["materials"] += card.resource_value
+	return totals
+
+
 func _draw_card() -> void:
 	if draw_pile.is_empty():
 		if discard_pile.is_empty():

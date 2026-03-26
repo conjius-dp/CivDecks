@@ -1,7 +1,7 @@
 extends Node
 
 signal effect_completed
-signal gathered(materials: int, food: int)
+signal gathered(cards: Array[CardData])
 signal settled(coord: Vector2i, settlement_name: String)
 signal turn_should_end
 
@@ -45,9 +45,7 @@ func execute_card(
 			for coord in result.revealed_tiles:
 				hex_map.reveal_tile(coord)
 		CardData.CardType.GATHER:
-			gathered.emit(
-				result.materials_gained, result.food_gained
-			)
+			gathered.emit(result.gained_cards)
 		CardData.CardType.SETTLE:
 			settled.emit(
 				result.settled_coord,

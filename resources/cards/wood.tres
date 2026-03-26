@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="CardData" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://resources/cards/card_data.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+card_name = "Wood"
+description = "Seasoned timber, strong and reliable"
+card_type = 4
+range_value = 0
+cost = 0
+card_color = Color(0.55, 0.35, 0.15, 1)
+icon_scale = 0.9
+resource_type = 2
+resource_value = 1

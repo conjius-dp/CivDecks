@@ -175,11 +175,17 @@ func _on_unit_moved() -> void:
 	_highlight_active_unit()
 
 
-func _on_gathered(materials: int, food: int) -> void:
-	player_unit.state.add_resources(materials, food)
-	game_ui.update_resources(
-		player_unit.state.materials, player_unit.state.food
+func _on_gathered(cards: Array[CardData]) -> void:
+	for card: CardData in cards:
+		card_manager.deck_manager.add_to_discard(card)
+	_update_resource_display()
+
+
+func _update_resource_display() -> void:
+	var totals: Dictionary = (
+		card_manager.deck_manager.count_resources()
 	)
+	game_ui.update_resources(totals["materials"], totals["food"])
 
 
 func _on_settled(coord: Vector2i, settlement_name: String) -> void:

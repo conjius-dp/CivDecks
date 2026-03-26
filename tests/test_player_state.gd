@@ -24,18 +24,6 @@ func test_move_to() -> void:
 	TestAssert.assert_eq(ps.current_coord, Vector2i(1, 0))
 
 
-func test_add_resources() -> void:
-	var ps := PlayerState.new()
-	TestAssert.assert_eq(ps.materials, 0)
-	TestAssert.assert_eq(ps.food, 0)
-	ps.add_resources(3, 2)
-	TestAssert.assert_eq(ps.materials, 3)
-	TestAssert.assert_eq(ps.food, 2)
-	ps.add_resources(1, 1)
-	TestAssert.assert_eq(ps.materials, 4)
-	TestAssert.assert_eq(ps.food, 3)
-
-
 func test_take_damage() -> void:
 	var ps := PlayerState.new()
 	ps.take_damage(3)

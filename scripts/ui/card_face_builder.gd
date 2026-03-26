@@ -130,6 +130,8 @@ static func build_face(
 
 
 static func _build_range_label(card: CardData) -> Control:
+	if card.card_type == CardData.CardType.RESOURCE:
+		return _build_resource_footer(card)
 	if card.range_value == 0:
 		var lbl := Label.new()
 		lbl.text = "This tile"
@@ -166,6 +168,43 @@ static func _build_range_label(card: CardData) -> Control:
 		"[center]Range  [img=%d]%s[/img]"
 		+ "  [font_size=%d]%d[/font_size][/center]"
 	) % [r_icon_sz, r_path, r_num_sz, card.range_value]
+	UIHelpers.set_bbcode(rtl, text)
+	return rtl
+
+
+static func _build_resource_footer(
+	card: CardData,
+) -> Control:
+	var rtl := RichTextLabel.new()
+	rtl.bbcode_enabled = true
+	rtl.fit_content = true
+	rtl.layout_mode = 1
+	rtl.set_anchors_preset(Control.PRESET_FULL_RECT)
+	rtl.add_theme_font_override("normal_font", _font_bold)
+	rtl.add_theme_color_override("default_color", Color.BLACK)
+	rtl.add_theme_font_size_override(
+		"normal_font_size", UIHelpers.FONT_UNIT_STAT
+	)
+	rtl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var type_name: String
+	var icon_name: String
+	if card.resource_type == CardData.ResourceType.FOOD:
+		type_name = "Food"
+		icon_name = "Food"
+	else:
+		type_name = "Materials"
+		icon_name = "Materials"
+	var icon_sz: int = int(
+		UIHelpers.FONT_UNIT_STAT * 1.2 * UIHelpers.ICON_SCALE
+	)
+	var icon_path: String = UIHelpers.ENTITY_ICONS.get(
+		icon_name, ""
+	) as String
+	var num_sz: int = UIHelpers.FONT_STAT_NUM
+	var text := (
+		"[center]%s  [img=%d]%s[/img]"
+		+ "  [font_size=%d]%d[/font_size][/center]"
+	) % [type_name, icon_sz, icon_path, num_sz, card.resource_value]
 	UIHelpers.set_bbcode(rtl, text)
 	return rtl
 

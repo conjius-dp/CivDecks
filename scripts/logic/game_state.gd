@@ -37,7 +37,8 @@ func play_card(card: CardData, target: Vector2i) -> CardResolver.CardResult:
 		CardData.CardType.MOVE:
 			player.move_to(result.new_coord)
 		CardData.CardType.GATHER:
-			player.add_resources(result.materials_gained, result.food_gained)
+			for gained_card: CardData in result.gained_cards:
+				deck.add_to_discard(gained_card)
 
 	deck.play_card(card)
 

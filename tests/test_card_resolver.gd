@@ -126,8 +126,96 @@ func test_resolve_gather() -> void:
 	var resolver := CardResolver.new(_map)
 	var result := resolver.resolve_card(_gather_card, Vector2i(1, 0), Vector2i(0, 0))
 	TestAssert.assert_true(result.success)
-	TestAssert.assert_eq(result.materials_gained, 1)
-	TestAssert.assert_eq(result.food_gained, 0)
+	TestAssert.assert_gt(
+		result.gained_cards.size(), 0, "gather produces cards"
+	)
+	var mat_total := 0
+	for card: CardData in result.gained_cards:
+		TestAssert.assert_eq(
+			card.card_type, CardData.CardType.RESOURCE,
+			"gained card is RESOURCE type",
+		)
+		if card.resource_type == CardData.ResourceType.MATERIALS:
+			mat_total += card.resource_value
+	TestAssert.assert_eq(mat_total, 1, "1 material from plains")
+
+
+func test_resolve_gather_food_terrain() -> void:
+	var forest := TerrainType.new()
+	forest.terrain_name = "Forest"
+	forest.is_passable = true
+	forest.stops_movement = true
+	forest.materials_yield = 1
+	forest.food_yield = 1
+	_map.set_terrain(Vector2i(1, -1), forest)
+	var resolver := CardResolver.new(_map)
+	var result := resolver.resolve_card(
+		_gather_card, Vector2i(1, -1), Vector2i(0, 0)
+	)
+	TestAssert.assert_true(result.success)
+	var food_total := 0
+	var mat_total := 0
+	for card: CardData in result.gained_cards:
+		if card.resource_type == CardData.ResourceType.FOOD:
+			food_total += card.resource_value
+		elif card.resource_type == CardData.ResourceType.MATERIALS:
+			mat_total += card.resource_value
+	TestAssert.assert_eq(food_total, 1)
+	TestAssert.assert_eq(mat_total, 1)
+
+
+func test_resolve_gather_cards_are_independent() -> void:
+	var resolver := CardResolver.new(_map)
+	var r1 := resolver.resolve_card(
+		_gather_card, Vector2i(1, 0), Vector2i(0, 0)
+	)
+	var r2 := resolver.resolve_card(
+		_gather_card, Vector2i(1, 0), Vector2i(0, 0)
+	)
+	if r1.gained_cards.size() > 0 and r2.gained_cards.size() > 0:
+		r1.gained_cards[0].resource_value = 999
+		TestAssert.assert_eq(
+			r2.gained_cards[0].resource_value, 1,
+			"mutating one card does not affect another",
+		)
+
+
+func test_resolve_gather_cards_have_correct_fields() -> void:
+	var resolver := CardResolver.new(_map)
+	var result := resolver.resolve_card(
+		_gather_card, Vector2i(1, 0), Vector2i(0, 0)
+	)
+	for card: CardData in result.gained_cards:
+		TestAssert.assert_eq(
+			card.card_type, CardData.CardType.RESOURCE,
+		)
+		TestAssert.assert_true(
+			card.resource_type != CardData.ResourceType.NONE,
+			"resource_type is set",
+		)
+		TestAssert.assert_true(
+			card.resource_value > 0, "resource_value > 0"
+		)
+		TestAssert.assert_true(
+			card.card_name.length() > 0, "card has a name"
+		)
+
+
+func test_resolve_gather_no_yield_terrain() -> void:
+	var desert := TerrainType.new()
+	desert.terrain_name = "Desert"
+	desert.is_passable = true
+	desert.materials_yield = 0
+	desert.food_yield = 0
+	_map.set_terrain(Vector2i(1, -1), desert)
+	var resolver := CardResolver.new(_map)
+	var targets := resolver.get_valid_targets(
+		_gather_card, Vector2i(0, 0)
+	)
+	TestAssert.assert_not_contains(
+		targets, Vector2i(1, -1),
+		"desert with no yield not a valid gather target",
+	)
 
 
 func test_settle_valid_targets() -> void:

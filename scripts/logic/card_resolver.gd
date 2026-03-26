@@ -3,13 +3,15 @@ extends RefCounted
 
 var _map: MapData
 
+var _food_cards: Array[CardData] = []
+var _material_cards: Array[CardData] = []
+
 
 class CardResult extends RefCounted:
 	var success: bool = false
 	var new_coord: Vector2i = Vector2i.ZERO
 	var revealed_tiles: Array[Vector2i] = []
-	var materials_gained: int = 0
-	var food_gained: int = 0
+	var gained_cards: Array[CardData] = []
 	var settled_coord: Vector2i = Vector2i(-999, -999)
 	var settlement_name: String = ""
 	var ends_turn: bool = false
@@ -17,6 +19,51 @@ class CardResult extends RefCounted:
 
 func _init(map: MapData) -> void:
 	_map = map
+	_load_resource_pools()
+
+
+func _load_resource_pools() -> void:
+	var food_paths := [
+		"res://resources/cards/chicken.tres",
+		"res://resources/cards/beef.tres",
+		"res://resources/cards/pork.tres",
+	]
+	var mat_paths := [
+		"res://resources/cards/ore.tres",
+		"res://resources/cards/iron.tres",
+		"res://resources/cards/copper.tres",
+		"res://resources/cards/wood.tres",
+		"res://resources/cards/glass.tres",
+	]
+	for p: String in food_paths:
+		var card: CardData = load(p) as CardData
+		if card:
+			_food_cards.append(card)
+	for p: String in mat_paths:
+		var card: CardData = load(p) as CardData
+		if card:
+			_material_cards.append(card)
+
+
+func _pick_resource_card(
+	res_type: CardData.ResourceType,
+) -> CardData:
+	var pool: Array[CardData]
+	if res_type == CardData.ResourceType.FOOD:
+		pool = _food_cards
+	else:
+		pool = _material_cards
+	if pool.is_empty():
+		var fallback := CardData.new()
+		fallback.card_type = CardData.CardType.RESOURCE
+		fallback.resource_type = res_type
+		fallback.resource_value = 1
+		if res_type == CardData.ResourceType.FOOD:
+			fallback.card_name = "Food"
+		else:
+			fallback.card_name = "Materials"
+		return fallback
+	return pool[randi() % pool.size()].duplicate()
 
 
 func get_map_data() -> MapData:
@@ -141,6 +188,12 @@ func _resolve_gather(target: Vector2i) -> CardResult:
 	if terrain == null:
 		return result
 	result.success = true
-	result.materials_gained = terrain.materials_yield
-	result.food_gained = terrain.food_yield
+	for _i in terrain.materials_yield:
+		result.gained_cards.append(
+			_pick_resource_card(CardData.ResourceType.MATERIALS)
+		)
+	for _i in terrain.food_yield:
+		result.gained_cards.append(
+			_pick_resource_card(CardData.ResourceType.FOOD)
+		)
 	return result
