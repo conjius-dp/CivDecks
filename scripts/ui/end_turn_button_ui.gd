@@ -5,16 +5,17 @@ signal pressed
 var _tex: Texture2D = preload(
 	"res://assets/icons/hourglass_64.svg"
 )
+var _font: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
 var _icon: TextureRect
 var _bg: Panel
+var _label: Label
 var _hovering: bool = false
 var _animating: bool = false
 var _disabled: bool = false
 
 
 func _ready() -> void:
-	@warning_ignore("integer_division")
-	var sz: int = UIHelpers.CARD_WIDTH / 2
+	var sz: int = UIHelpers.CARD_WIDTH
 	custom_minimum_size = Vector2(sz, sz)
 	size = Vector2(sz, sz)
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -30,17 +31,32 @@ func _ready() -> void:
 	add_child(_bg)
 	UIHelpers.apply_parchment_bg(_bg, false, true)
 
-	var inset: float = sz * 0.25
-	var icon_sz: float = sz - inset * 2.0
+	var icon_sz: float = sz * 0.35
+	var icon_x: float = (sz - icon_sz) * 0.5
+	var icon_y: float = sz * 0.15
 	_icon = TextureRect.new()
 	_icon.texture = _tex
 	_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_icon.position = Vector2(inset, inset)
+	_icon.position = Vector2(icon_x, icon_y)
 	_icon.size = Vector2(icon_sz, icon_sz)
 	_icon.pivot_offset = Vector2(icon_sz * 0.5, icon_sz * 0.5)
 	_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_icon)
+
+	_label = Label.new()
+	_label.text = "End Turn"
+	_label.add_theme_font_override("font", _font)
+	_label.add_theme_font_size_override(
+		"font_size", UIHelpers.s(9)
+	)
+	_label.add_theme_color_override("font_color", Color.BLACK)
+	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_label.position = Vector2(0, sz * 0.55)
+	_label.size = Vector2(sz, sz * 0.2)
+	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_label.autowrap_mode = TextServer.AUTOWRAP_OFF
+	add_child(_label)
 
 
 func set_disabled(value: bool) -> void:

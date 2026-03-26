@@ -156,7 +156,6 @@ func _on_end_turn() -> void:
 	game_ui.card_hand.show_cards(
 		card_manager.deck_manager.cards
 	)
-	_update_resource_display()
 
 
 func _on_turn_started(turn_number: int) -> void:
@@ -184,14 +183,6 @@ func _on_gathered(gained_cards: Array[CardData]) -> void:
 	game_ui.card_hand.show_cards(
 		card_manager.deck_manager.cards
 	)
-	_update_resource_display()
-
-
-func _update_resource_display() -> void:
-	var totals: Dictionary = (
-		card_manager.deck_manager.count_resources()
-	)
-	game_ui.update_resources(totals["materials"], totals["food"])
 
 
 func _on_settled(coord: Vector2i, settlement_name: String) -> void:

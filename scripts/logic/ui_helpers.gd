@@ -46,7 +46,7 @@ const SETTLEMENT_FONT_SIZE: int = int(14.5 * UI_SCALE)
 const SETTLEMENT_OUTLINE: int = int(4 * UI_SCALE)
 
 const CARD_OVERLAP: int = int(15 * UI_SCALE)
-const HAND_HIDDEN_Y: float = 100.0
+const HAND_HIDDEN_Y: float = 50.0
 const HAND_DEFAULT_SCALE: Vector2 = Vector2(1.0, 1.0)
 const HAND_FOCUS_SCALE: Vector2 = Vector2(1.4, 1.4)
 const HAND_TWEEN_DURATION: float = 0.18

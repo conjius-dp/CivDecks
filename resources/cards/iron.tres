@@ -10,6 +10,7 @@ card_type = 4
 range_value = 0
 cost = 0
 card_color = Color(0.55, 0.6, 0.65, 1)
+icon_path = "res://assets/icons/resources/iron.svg"
 icon_scale = 0.9
 resource_type = 2
 resource_value = 1

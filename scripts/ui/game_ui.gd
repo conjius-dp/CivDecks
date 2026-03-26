@@ -23,7 +23,6 @@ var _font_regular: Font = _font_bold
 @onready var end_turn_button: Control = %EndTurnButton
 @onready var info_label: RichTextLabel = %InfoLabel
 @onready var unit_info: PanelContainer = %UnitInfo
-@onready var resource_tracker: PanelContainer = %ResourceTracker
 
 
 func _ready() -> void:
@@ -106,8 +105,6 @@ func show_settlement_info(
 	unit_info.update_settlement(sname, color, coord, terrain)
 
 
-func update_resources(materials: int, food: int) -> void:
-	resource_tracker.update_resources(materials, food)
 
 
 func _apply_styles() -> void:
