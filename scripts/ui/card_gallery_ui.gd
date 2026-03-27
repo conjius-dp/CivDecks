@@ -1,16 +1,20 @@
 class_name CardGalleryUI
 extends Control
 
-const COLS := 4
+signal closed
+
+const COLS := 5
 const ROW_GAP := 20
 const COL_GAP := 16
 const PADDING := 30
+const ANIM_DURATION := 0.35
 
 var _cards: Array[CardData] = []
 var _scroll_offset: float = 0.0
 var _max_scroll: float = 0.0
 var _container: Control
 var _bg: ColorRect
+var _animating: bool = false
 
 
 func _ready() -> void:
@@ -18,7 +22,7 @@ func _ready() -> void:
 	set_anchors_preset(Control.PRESET_FULL_RECT)
 
 	_bg = ColorRect.new()
-	_bg.color = Color(0.0, 0.0, 0.0, 0.7)
+	_bg.color = Color(0.0, 0.0, 0.0, 0.0)
 	_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_bg)
@@ -33,12 +37,43 @@ func show_gallery(cards: Array[CardData]) -> void:
 	_scroll_offset = 0.0
 	_rebuild()
 	visible = true
+	_animating = true
+	var vp_h: float = get_viewport_rect().size.y
+	_container.position.y = vp_h
+	_bg.color = Color(0.0, 0.0, 0.0, 0.0)
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(
+		_container, "position:y", -_scroll_offset,
+		ANIM_DURATION,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(
+		_bg, "color:a", 0.7, ANIM_DURATION,
+	).set_trans(Tween.TRANS_SINE)
+	tween.chain().tween_callback(
+		func() -> void: _animating = false
+	)
 
 
 func hide_gallery() -> void:
-	visible = false
-	for child in _container.get_children():
-		child.queue_free()
+	_animating = true
+	var vp_h: float = get_viewport_rect().size.y
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(
+		_container, "position:y", vp_h,
+		ANIM_DURATION,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tween.tween_property(
+		_bg, "color:a", 0.0, ANIM_DURATION,
+	).set_trans(Tween.TRANS_SINE)
+	tween.chain().tween_callback(func() -> void:
+		visible = false
+		_animating = false
+		for child in _container.get_children():
+			child.queue_free()
+		closed.emit()
+	)
 
 
 func _rebuild() -> void:
@@ -86,7 +121,6 @@ func _rebuild() -> void:
 		PADDING * 2 + total_rows * (ch + ROW_GAP) - ROW_GAP
 	)
 	_max_scroll = maxf(0.0, total_h - vp_size.y)
-	_apply_scroll()
 
 
 func _apply_scroll() -> void:
@@ -94,6 +128,8 @@ func _apply_scroll() -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
+	if _animating:
+		return
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 			hide_gallery()

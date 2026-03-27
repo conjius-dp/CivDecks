@@ -116,10 +116,34 @@ func show_settlement_info(
 func _toggle_gallery() -> void:
 	if card_gallery.visible:
 		card_gallery.hide_gallery()
-		full_screen.visible = true
+		_slide_hand_in()
 	else:
-		full_screen.visible = false
+		_slide_hand_out()
 		card_gallery.show_gallery(_current_cards)
+
+
+func _slide_hand_out() -> void:
+	var vp_h: float = get_viewport_rect().size.y
+	var offset: float = float(UIHelpers.BOTTOM_BAR_HEIGHT) + 50.0
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(
+		bottom_bar, "position:y", offset, 0.35,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tween.tween_property(
+		bottom_bar, "modulate:a", 0.0, 0.25,
+	).set_trans(Tween.TRANS_SINE)
+
+
+func _slide_hand_in() -> void:
+	var tween := create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(
+		bottom_bar, "position:y", 0.0, 0.35,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(
+		bottom_bar, "modulate:a", 1.0, 0.25,
+	).set_trans(Tween.TRANS_SINE)
 
 
 func set_current_cards(cards: Array[CardData]) -> void:
