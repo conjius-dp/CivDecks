@@ -253,4 +253,15 @@ func _on_drag_ended(
 	if success:
 		card_dropped.emit(card, target)
 	else:
+		for child in get_children():
+			if child.card_data == card:
+				var tw := child.create_tween()
+				tw.tween_property(
+					child, "scale",
+					UIHelpers.HAND_DEFAULT_SCALE, 0.2,
+				).set_trans(Tween.TRANS_SINE).set_ease(
+					Tween.EASE_OUT
+				)
+				child.z_index = 0
+				break
 		_layout_cards()
