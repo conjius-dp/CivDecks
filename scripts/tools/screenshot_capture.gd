@@ -36,15 +36,25 @@ func _capture(filename: String) -> void:
 
 
 func _open_gallery() -> void:
-	var press := InputEventMouseButton.new()
-	press.button_index = MOUSE_BUTTON_RIGHT
-	press.pressed = true
-	press.position = Vector2(960, 900)
-	press.global_position = press.position
-	Input.parse_input_event(press)
-	var release := InputEventMouseButton.new()
-	release.button_index = MOUSE_BUTTON_RIGHT
-	release.pressed = false
-	release.position = Vector2(960, 900)
-	release.global_position = release.position
-	Input.parse_input_event(release)
+	var game_ui := _find_node_by_script("game_ui.gd")
+	if game_ui and game_ui.has_method("_toggle_gallery"):
+		game_ui._toggle_gallery()
+		print("Gallery opened via _toggle_gallery")
+	else:
+		print("ERROR: could not find game_ui to open gallery")
+
+
+func _find_node_by_script(script_name: String) -> Node:
+	return _search_tree(get_tree().root, script_name)
+
+
+func _search_tree(node: Node, script_name: String) -> Node:
+	if node.get_script():
+		var path: String = node.get_script().resource_path
+		if path.ends_with(script_name):
+			return node
+	for child in node.get_children():
+		var found := _search_tree(child, script_name)
+		if found:
+			return found
+	return null
