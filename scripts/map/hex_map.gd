@@ -38,17 +38,28 @@ func generate_map() -> void:
 	fog_cloud_manager = FogCloudManager.new()
 	add_child(fog_cloud_manager)
 
+	var base_seed: int = noise_seed if noise_seed != 0 else randi()
 	var noise := FastNoiseLite.new()
-	noise.seed = noise_seed if noise_seed != 0 else randi()
+	noise.seed = base_seed
 	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX
-	noise.frequency = 0.08
+	noise.frequency = 0.04
+	var detail := FastNoiseLite.new()
+	detail.seed = base_seed + 1
+	detail.noise_type = FastNoiseLite.TYPE_CELLULAR
+	detail.frequency = 0.15
 
 	for q in range(map_width):
 		for r in range(map_height):
 			@warning_ignore("integer_division")
 			var coord := Vector2i(q, r - q / 2)
 			var world_pos := HexUtil.axial_to_world(coord.x, coord.y)
-			var noise_val := noise.get_noise_2d(world_pos.x * 3.0, world_pos.z * 3.0)
+			var base_val := noise.get_noise_2d(
+				world_pos.x * 3.0, world_pos.z * 3.0
+			)
+			var cell_val := detail.get_noise_2d(
+				world_pos.x * 3.0, world_pos.z * 3.0
+			)
+			var noise_val := base_val * 0.75 + cell_val * 0.25
 
 			var terrain := _pick_terrain(noise_val)
 			map_data.set_terrain(coord, terrain)
