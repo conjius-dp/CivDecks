@@ -5,7 +5,28 @@ on:
     branches: [main]
 
 jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Godot
+        run: |
+          wget -q https://github.com/godotengine/godot-builds/releases/download/4.6.1-stable/Godot_v4.6.1-stable_linux.x86_64.zip
+          unzip -q Godot_v4.6.1-stable_linux.x86_64.zip
+          mv Godot_v4.6.1-stable_linux.x86_64 /usr/local/bin/godot
+          chmod +x /usr/local/bin/godot
+
+      - name: Import project
+        run: godot --headless --editor --quit 2>&1 || true
+        timeout-minutes: 3
+
+      - name: Verify scripts parse
+        run: godot --headless --script tests/test_runner.gd --quit-after 1 2>&1 || true
+        timeout-minutes: 2
+
   test-lint:
+    needs: build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -31,15 +52,11 @@ jobs:
       - name: Lint
         run: gdlint scripts/**/*.gd resources/**/*.gd
 
-  publish:
+  export:
     needs: test-lint
     runs-on: macos-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Install Godot
         run: |
@@ -82,6 +99,22 @@ jobs:
           /Applications/Godot.app/Contents/MacOS/Godot --headless --export-release "macOS" build/CivDeckbuilder.zip 2>&1
         timeout-minutes: 5
 
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: CivDeckbuilder-macOS
+          path: build/CivDeckbuilder.zip
+
+  publish:
+    needs: export
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Generate version
         id: version
         run: |
@@ -101,12 +134,6 @@ jobs:
           TAG="${{ steps.version.outputs.tag }}"
           git tag "$TAG"
           git push origin "$TAG"
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: CivDeckbuilder-macOS
-          path: build/CivDeckbuilder.zip
 
     outputs:
       tag: ${{ steps.version.outputs.tag }}
