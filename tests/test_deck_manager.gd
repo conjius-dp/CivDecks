@@ -119,6 +119,35 @@ func test_count_resources_sums_values() -> void:
 	TestAssert.assert_eq(totals["food"], 4)
 
 
+func test_reorder_card_to_front() -> void:
+	var dm := DeckManager.new()
+	dm.initialize(
+		[_card_a, _card_b, _card_c] as Array[CardData]
+	)
+	dm.reorder_card(_card_c, 0)
+	TestAssert.assert_eq(dm.cards[0], _card_c)
+	TestAssert.assert_eq(dm.cards[1], _card_a)
+	TestAssert.assert_eq(dm.cards[2], _card_b)
+
+
+func test_reorder_card_to_end() -> void:
+	var dm := DeckManager.new()
+	dm.initialize(
+		[_card_a, _card_b, _card_c] as Array[CardData]
+	)
+	dm.reorder_card(_card_a, 3)
+	TestAssert.assert_eq(dm.cards[0], _card_b)
+	TestAssert.assert_eq(dm.cards[1], _card_c)
+	TestAssert.assert_eq(dm.cards[2], _card_a)
+
+
+func test_reorder_card_not_in_deck() -> void:
+	var dm := DeckManager.new()
+	dm.initialize([_card_a, _card_b] as Array[CardData])
+	dm.reorder_card(_card_c, 0)
+	TestAssert.assert_size(dm.cards, 2)
+
+
 func test_play_same_card_twice_fails() -> void:
 	var dm := DeckManager.new()
 	dm.initialize([_card_a, _card_b] as Array[CardData])

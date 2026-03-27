@@ -8,6 +8,7 @@ var camera: Camera3D
 var card_effects: Node
 var active_unit: Node3D
 var arrow_indicator: Control
+var deck_manager: DeckManager
 
 var _card_display_scene: PackedScene = preload(
 	"res://scenes/ui/card_display.tscn"
@@ -248,20 +249,62 @@ func _on_drag_started(_card: CardData) -> void:
 
 func _on_drag_ended(
 	card: CardData, target: Vector2i, success: bool,
+	drop_pos: Vector2,
 ) -> void:
 	_any_dragging = false
 	if success:
 		card_dropped.emit(card, target)
-	else:
-		for child in get_children():
-			if child.card_data == card:
-				var tw := child.create_tween()
-				tw.tween_property(
-					child, "scale",
-					UIHelpers.HAND_DEFAULT_SCALE, 0.2,
-				).set_trans(Tween.TRANS_SINE).set_ease(
-					Tween.EASE_OUT
-				)
-				child.z_index = 0
-				break
-		_layout_cards()
+		return
+	var in_hand := _is_in_hand_area(drop_pos)
+	if in_hand and deck_manager:
+		var new_idx := _get_insert_index(drop_pos)
+		deck_manager.reorder_card(card, new_idx)
+		_reorder_children_to_match()
+	for child in get_children():
+		if child.card_data == card:
+			var tw := child.create_tween()
+			tw.tween_property(
+				child, "scale",
+				UIHelpers.HAND_DEFAULT_SCALE, 0.2,
+			).set_trans(Tween.TRANS_SINE).set_ease(
+				Tween.EASE_OUT
+			)
+			child.z_index = 0
+			break
+	_layout_cards()
+
+
+func _is_in_hand_area(screen_pos: Vector2) -> bool:
+	var vp_h: float = get_viewport_rect().size.y
+	var hand_top: float = vp_h - float(UIHelpers.CARD_HEIGHT) - 40.0
+	return screen_pos.y >= hand_top
+
+
+func _get_insert_index(screen_pos: Vector2) -> int:
+	var local_x: float = screen_pos.x - global_position.x
+	var cards := _get_card_children()
+	var n := cards.size()
+	if n == 0:
+		return 0
+	for i in n:
+		var rest := _get_rest_position(cards[i])
+		var mid_x: float = rest.x + float(UIHelpers.CARD_WIDTH) * 0.5
+		if local_x < mid_x:
+			return i
+	return n
+
+
+func _reorder_children_to_match() -> void:
+	if not deck_manager:
+		return
+	var card_map: Dictionary = {}
+	for child in get_children():
+		if child.has_method("setup"):
+			card_map[child.card_data] = child
+	var idx := 0
+	for card: CardData in deck_manager.cards:
+		var ctrl: Control = card_map.get(card) as Control
+		if ctrl:
+			get_children()
+			move_child(ctrl, idx)
+			idx += 1

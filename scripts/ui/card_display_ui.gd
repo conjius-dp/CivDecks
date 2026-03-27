@@ -1,7 +1,7 @@
 extends Control
 
 signal drag_started(card: CardData)
-signal drag_ended(card: CardData, target: Vector2i, success: bool)
+signal drag_ended(card: CardData, target: Vector2i, success: bool, drop_pos: Vector2)
 
 const MIN_DRAG_MS: int = 100
 
@@ -78,9 +78,8 @@ func _input(event: InputEvent) -> void:
 	if not _dragging:
 		return
 	if event is InputEventMouseMotion:
-		if card_data.card_type == CardData.CardType.RESOURCE:
-			global_position = event.global_position - _drag_offset
-		else:
+		global_position = event.global_position - _drag_offset
+		if card_data.card_type != CardData.CardType.RESOURCE:
 			_update_hover(event.global_position)
 		return
 	if event is InputEventMouseButton:
@@ -98,9 +97,6 @@ func _start_drag(mouse_pos: Vector2) -> void:
 	_original_position = global_position
 	_drag_offset = mouse_pos - global_position
 	z_index = 100
-	if card_data.card_type == CardData.CardType.RESOURCE:
-		_start_resource_reject()
-		return
 	var icon_tex := CardFaceBuilder.get_card_icon(card_data)
 	if icon_tex:
 		UIHelpers.set_drag_cursor(
@@ -128,22 +124,6 @@ func _start_drag(mouse_pos: Vector2) -> void:
 		if active_unit and active_unit.has_method("set_targeting_move"):
 			active_unit.set_targeting_move(true)
 	drag_started.emit(card_data)
-
-
-func _start_resource_reject() -> void:
-	drag_started.emit(card_data)
-	await get_tree().create_timer(0.2).timeout
-	_dragging = false
-	z_index = 0
-	drag_ended.emit(card_data, Vector2i.ZERO, false)
-	var tween := create_tween()
-	tween.tween_property(
-		self, "modulate", Color(1.0, 0.3, 0.3, 0.5), 0.1
-	).set_trans(Tween.TRANS_SINE)
-	tween.tween_interval(0.1)
-	tween.tween_property(
-		self, "modulate", Color.WHITE, 0.1
-	).set_trans(Tween.TRANS_SINE)
 
 
 func _cancel_drag() -> void:
@@ -174,17 +154,20 @@ func _end_drag(mouse_pos: Vector2) -> void:
 	var elapsed: int = Time.get_ticks_msec() - _drag_start_time
 	_valid_targets.clear()
 	if is_valid and elapsed >= MIN_DRAG_MS:
-		_animate_to_discard(target)
+		_animate_to_discard(target, mouse_pos)
 	else:
 		_restore_card_visuals()
-		drag_ended.emit(card_data, Vector2i.ZERO, false)
+		drag_ended.emit(
+			card_data, Vector2i.ZERO, false, mouse_pos
+		)
 
 
-func _animate_to_discard(target: Vector2i) -> void:
+func _animate_to_discard(
+	target: Vector2i, mouse_pos: Vector2,
+) -> void:
 	z_index = 0
 	UIHelpers.restore_default_cursor()
-	drag_ended.emit(card_data, target, true
-	)
+	drag_ended.emit(card_data, target, true, mouse_pos)
 
 
 func _update_hover(mouse_pos: Vector2) -> void:

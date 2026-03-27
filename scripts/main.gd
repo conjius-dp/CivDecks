@@ -45,6 +45,7 @@ func _ready() -> void:
 	player_unit.setup_camera(cam)
 	player_unit.set_selected(true)
 	game_ui.setup_refs(hex_map, cam, card_effects, player_unit, arrow_indicator)
+	game_ui.card_hand.deck_manager = card_manager.deck_manager
 
 	# Connect signals
 	game_ui.card_dropped.connect(_on_card_dropped)

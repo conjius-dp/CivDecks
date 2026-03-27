@@ -24,6 +24,15 @@ func end_turn() -> void:
 	used_this_turn.clear()
 
 
+func reorder_card(card: CardData, new_index: int) -> void:
+	var old_idx := cards.find(card)
+	if old_idx == -1:
+		return
+	cards.remove_at(old_idx)
+	new_index = clampi(new_index, 0, cards.size())
+	cards.insert(new_index, card)
+
+
 func add_card(card: CardData) -> void:
 	cards.append(card)
 
