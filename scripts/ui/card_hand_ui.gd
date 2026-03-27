@@ -260,6 +260,9 @@ func _on_drag_ended(
 		var new_idx := _get_insert_index(drop_pos)
 		deck_manager.reorder_card(card, new_idx)
 		_reorder_children_to_match()
+	var is_resource: bool = (
+		card.card_type == CardData.CardType.RESOURCE
+	)
 	for child in get_children():
 		if child.card_data == card:
 			var tw := child.create_tween()
@@ -270,6 +273,17 @@ func _on_drag_ended(
 				Tween.EASE_OUT
 			)
 			child.z_index = 0
+			if is_resource and not in_hand:
+				var flash := child.create_tween()
+				flash.tween_property(
+					child, "modulate",
+					Color(1.0, 0.3, 0.3, 0.5), 0.1,
+				).set_trans(Tween.TRANS_SINE)
+				flash.tween_interval(0.1)
+				flash.tween_property(
+					child, "modulate",
+					Color.WHITE, 0.1,
+				).set_trans(Tween.TRANS_SINE)
 			break
 	_layout_cards()
 
