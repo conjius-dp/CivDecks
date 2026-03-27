@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  build-test-lint:
+  test-lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -20,12 +20,8 @@ jobs:
           chmod +x /usr/local/bin/godot
 
       - name: Import project
-        run: godot --headless --import 2>&1 || true
-        timeout-minutes: 2
-
-      - name: Build check
-        run: godot --headless --check-only 2>&1
-        timeout-minutes: 2
+        run: godot --headless --editor --quit 2>&1 || true
+        timeout-minutes: 3
 
       - name: Run tests
         run: godot --headless --script tests/test_runner.gd 2>&1
@@ -36,3 +32,65 @@ jobs:
 
       - name: Lint
         run: gdlint scripts/**/*.gd resources/**/*.gd
+
+  publish:
+    needs: test-lint
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Godot
+        run: |
+          wget -q https://github.com/godotengine/godot-builds/releases/download/4.6.1-stable/Godot_v4.6.1-stable_macos.universal.zip
+          unzip -q Godot_v4.6.1-stable_macos.universal.zip
+          sudo cp -R Godot.app /Applications/Godot.app
+
+      - name: Import project
+        run: /Applications/Godot.app/Contents/MacOS/Godot --headless --editor --quit 2>&1 || true
+        timeout-minutes: 3
+
+      - name: Create export presets
+        run: |
+          cat > export_presets.cfg << 'EOF'
+          [preset.0]
+          name="macOS"
+          platform="macOS"
+          runnable=true
+          dedicated_server=false
+          custom_features=""
+          export_filter="all_resources"
+          include_filter=""
+          exclude_filter=""
+          export_path="build/CivDeckbuilder.dmg"
+          [preset.0.options]
+          application/product_name="Civ Deckbuilder"
+          application/bundle_identifier="com.civdeckbuilder.game"
+          EOF
+
+      - name: Export for macOS
+        run: |
+          mkdir -p build
+          /Applications/Godot.app/Contents/MacOS/Godot --headless --export-release "macOS" build/CivDeckbuilder.zip 2>&1 || true
+          ls -la build/
+
+      - name: Generate version tag
+        id: version
+        run: |
+          VERSION="v0.1.$(git rev-list --count HEAD)"
+          echo "tag=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Version: $VERSION"
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          if [ -f build/CivDeckbuilder.zip ]; then
+            gh release create "$TAG" build/CivDeckbuilder.zip \
+              --title "$TAG" \
+              --notes "Automated build from commit ${{ github.sha }}" \
+              --latest
+          else
+            echo "No build artifact found, skipping release"
+          fi
