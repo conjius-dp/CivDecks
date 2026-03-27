@@ -17,7 +17,7 @@ A hex-based civilization strategy game with deckbuilding mechanics, built in God
 Explore a procedurally generated world, play cards to move, scout, gather resources, and
 settle - all driven by a single visible deck of action and resource cards.
 
-## Playing
+## I Just Wanna Play
 
 Download the [latest stable build](https://github.com/conjius/civ-deckbuilder/releases/latest), unzip it, and run on macOS.
 
