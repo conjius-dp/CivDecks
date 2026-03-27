@@ -48,6 +48,7 @@ func generate_map() -> void:
 	detail.noise_type = FastNoiseLite.TYPE_CELLULAR
 	detail.frequency = 0.15
 
+	# Pass 1: assign terrain via noise + create tile nodes
 	for q in range(map_width):
 		for r in range(map_height):
 			@warning_ignore("integer_division")
@@ -60,49 +61,60 @@ func generate_map() -> void:
 				world_pos.x * 3.0, world_pos.z * 3.0
 			)
 			var noise_val := base_val * 0.75 + cell_val * 0.25
-
-			var terrain := _pick_terrain(noise_val)
-			map_data.set_terrain(coord, terrain)
-
-			var mesh: Mesh
-			var mat: StandardMaterial3D
-			if terrain == _terrain_mountain and _mountain_mesh:
-				mesh = _mountain_mesh
-				mat = _mountain_mat
-			elif terrain == _terrain_water and _water_mat:
-				mesh = _get_cached_mesh(BASE_HEX_HEIGHT)
-				mat = _water_mat
-			else:
-				mesh = _get_cached_mesh(BASE_HEX_HEIGHT)
-				mat = _get_cached_terrain_mat(terrain)
-			var shape := _get_cached_shape(BASE_HEX_HEIGHT)
-
+			map_data.set_terrain(coord, _pick_terrain(noise_val))
 			var tile: Node3D = _hex_tile_scene.instantiate()
 			add_child(tile)
-			tile.setup(coord, terrain, mesh, shape, mat)
-			tile.get_node("MeshInstance3D").visible = false
-			var batch_key: String = terrain.resource_path
-			if not _terrain_batches.has(batch_key):
-				_terrain_batches[batch_key] = {
-					"mesh": mesh, "mat": mat, "xforms": [],
-				}
-			_terrain_batches[batch_key]["xforms"].append(
-				Transform3D(Basis.IDENTITY, tile.position)
+			tile.coord = coord
+			tile.position = HexUtil.axial_to_world(
+				coord.x, coord.y
 			)
-
-			var highlight_mesh: MeshInstance3D = tile.get_node("HighlightMesh")
-			highlight_mesh.mesh = _outline_mesh
-			highlight_mesh.visibility_range_end = 40.0
-			var fog_mesh: MeshInstance3D = tile.get_node("FogOverlay")
-			fog_mesh.mesh = _get_cached_mesh(0.02)
-			fog_mesh.visibility_range_end = 50.0
-
+			tile.position.y = 0.0
 			tiles[coord] = tile
-			if terrain == _terrain_forest:
-				_forest_decorator.collect_tile(tile)
-			fog_cloud_manager.add_fog(
-				coord, tile.position, terrain.height,
-			)
+
+	# Place water clumps over existing terrain
+	_place_water_clumps()
+
+	# Pass 2: set up visuals from final terrain
+	for coord: Vector2i in tiles:
+		var tile: Node3D = tiles[coord] as Node3D
+		var terrain: TerrainType = map_data.get_terrain(coord)
+		var mesh: Mesh
+		var mat: StandardMaterial3D
+		if terrain == _terrain_mountain and _mountain_mesh:
+			mesh = _mountain_mesh
+			mat = _mountain_mat
+		elif terrain == _terrain_water and _water_mat:
+			mesh = _get_cached_mesh(BASE_HEX_HEIGHT)
+			mat = _water_mat
+		else:
+			mesh = _get_cached_mesh(BASE_HEX_HEIGHT)
+			mat = _get_cached_terrain_mat(terrain)
+		var shape := _get_cached_shape(BASE_HEX_HEIGHT)
+		tile.setup(coord, terrain, mesh, shape, mat)
+		tile.get_node("MeshInstance3D").visible = false
+		var batch_key: String = terrain.resource_path
+		if not _terrain_batches.has(batch_key):
+			_terrain_batches[batch_key] = {
+				"mesh": mesh, "mat": mat, "xforms": [],
+			}
+		_terrain_batches[batch_key]["xforms"].append(
+			Transform3D(Basis.IDENTITY, tile.position)
+		)
+		var highlight_mesh: MeshInstance3D = (
+			tile.get_node("HighlightMesh")
+		)
+		highlight_mesh.mesh = _outline_mesh
+		highlight_mesh.visibility_range_end = 40.0
+		var fog_mesh: MeshInstance3D = (
+			tile.get_node("FogOverlay")
+		)
+		fog_mesh.mesh = _get_cached_mesh(0.02)
+		fog_mesh.visibility_range_end = 50.0
+		if terrain == _terrain_forest:
+			_forest_decorator.collect_tile(tile)
+		fog_cloud_manager.add_fog(
+			coord, tile.position, terrain.height,
+		)
 	_forest_decorator.build_multimeshes()
 	_build_terrain_multimeshes()
 	fog_cloud_manager.rebuild()
@@ -158,8 +170,6 @@ func raycast_to_hex(camera: Camera3D, mouse_pos: Vector2) -> Vector2i:
 
 
 func _pick_terrain(noise_val: float) -> TerrainType:
-	if noise_val < -0.38:
-		return _terrain_water
 	if noise_val < -0.05:
 		return _terrain_desert
 	if noise_val < 0.15:
@@ -167,6 +177,60 @@ func _pick_terrain(noise_val: float) -> TerrainType:
 	if noise_val < 0.4:
 		return _terrain_forest
 	return _terrain_mountain
+
+
+func _place_water_clumps() -> void:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash(noise_seed) + 42
+	var all_coords: Array[Vector2i] = []
+	for coord: Vector2i in tiles:
+		all_coords.append(coord)
+	var water_budget: int = int(all_coords.size() * 0.08)
+	var placed := 0
+	var water_set: Dictionary = {}
+	while placed < water_budget:
+		var seed_coord: Vector2i = all_coords[
+			rng.randi_range(0, all_coords.size() - 1)
+		]
+		if water_set.has(seed_coord):
+			continue
+		var clump_size: int
+		if rng.randf() < 0.3:
+			clump_size = rng.randi_range(1, 3)
+		else:
+			clump_size = rng.randi_range(6, 10)
+		var clump: Array[Vector2i] = _grow_clump(
+			seed_coord, clump_size, water_set, rng
+		)
+		for c in clump:
+			water_set[c] = true
+			map_data.set_terrain(c, _terrain_water)
+		placed += clump.size()
+
+
+func _grow_clump(
+	seed_coord: Vector2i, target_size: int,
+	existing: Dictionary,
+	rng: RandomNumberGenerator,
+) -> Array[Vector2i]:
+	var result: Array[Vector2i] = [seed_coord]
+	var frontier: Array[Vector2i] = [seed_coord]
+	while result.size() < target_size and not frontier.is_empty():
+		var idx: int = rng.randi_range(0, frontier.size() - 1)
+		var current: Vector2i = frontier[idx]
+		frontier.remove_at(idx)
+		var neighbors := HexUtil.get_neighbors(current)
+		neighbors.shuffle()
+		for n in neighbors:
+			if result.size() >= target_size:
+				break
+			if existing.has(n) or n in result:
+				continue
+			if not tiles.has(n):
+				continue
+			result.append(n)
+			frontier.append(n)
+	return result
 
 
 func _build_terrain_multimeshes() -> void:
