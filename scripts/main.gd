@@ -18,6 +18,8 @@ var _wood: CardData = preload("res://resources/cards/wood.tres")
 var _glass: CardData = preload("res://resources/cards/glass.tres")
 var _selected_coord: Vector2i = Vector2i(-999, -999)
 var _selected_index: int = 0
+var _last_hover_time: int = 0
+var _last_hover_coord: Vector2i = Vector2i(-999, -999)
 
 @onready var hex_map: Node3D = $HexMap
 @onready var player_unit: Node3D = $PlayerUnit
@@ -105,11 +107,18 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ui_cancel"):
 		get_tree().quit()
 
-	# Show terrain info on hover
+	# Show terrain info on hover (throttled)
 	if event is InputEventMouseMotion:
+		var now: int = Time.get_ticks_msec()
+		if now - _last_hover_time < 50:
+			return
+		_last_hover_time = now
 		var coord: Vector2i = hex_map.raycast_to_hex(
 			$CameraRig/CameraPivot/Camera3D, event.position
 		)
+		if coord == _last_hover_coord:
+			return
+		_last_hover_coord = coord
 		if coord != Vector2i(-999, -999):
 			var terrain: TerrainType = hex_map.get_terrain(coord)
 			if terrain:

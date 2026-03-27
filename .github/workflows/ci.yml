@@ -134,7 +134,7 @@ jobs:
         id: version
         run: |
           PATCH=$(git rev-list --count HEAD)
-          IS_STABLE=${{ contains(github.event.head_commit.message, '@stable-release') }}
+          IS_STABLE=${{ contains(github.event.head_commit.message, '#stable-release') }}
           if [ "$IS_STABLE" = "true" ]; then
             VERSION="v0.1.${PATCH}"
           else

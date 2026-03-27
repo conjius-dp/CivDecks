@@ -26,6 +26,7 @@ var _mountain_mat: StandardMaterial3D
 var _water_mat: StandardMaterial3D
 var _forest_decorator: ForestDecorator
 var _terrain_batches: Dictionary = {}
+var _highlighted_coords: Array[Vector2i] = []
 
 
 func generate_map() -> void:
@@ -147,11 +148,16 @@ func highlight_tiles(
 		var tile: Node3D = get_tile(coord)
 		if tile:
 			tile.set_highlighted(true, color)
+			if coord not in _highlighted_coords:
+				_highlighted_coords.append(coord)
 
 
 func clear_highlights() -> void:
-	for tile: Node3D in tiles.values():
-		tile.set_highlighted(false)
+	for coord in _highlighted_coords:
+		var tile: Node3D = get_tile(coord)
+		if tile:
+			tile.set_highlighted(false)
+	_highlighted_coords.clear()
 
 
 func raycast_to_hex(camera: Camera3D, mouse_pos: Vector2) -> Vector2i:

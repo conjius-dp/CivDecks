@@ -370,6 +370,5 @@ func _reorder_children_to_match() -> void:
 	for card: CardData in deck_manager.cards:
 		var ctrl: Control = card_map.get(card) as Control
 		if ctrl:
-			get_children()
 			move_child(ctrl, idx)
 			idx += 1
