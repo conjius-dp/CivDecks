@@ -6,7 +6,7 @@ var _output_dir: String = ""
 
 
 func _ready() -> void:
-	_output_dir = OS.get_executable_path().get_base_dir()
+	_output_dir = ProjectSettings.globalize_path("res://")
 	var dir := DirAccess.open(_output_dir)
 	if dir and not dir.dir_exists("screenshots"):
 		dir.make_dir("screenshots")
