@@ -15,8 +15,8 @@ echo -e '\n[autoload]\nScreenshotCapture="*res://scripts/tools/screenshot_captur
 echo "==> Importing project..."
 $GODOT --headless --editor --quit 2>/dev/null || true
 
-echo "==> Launching game (will auto-quit after screenshots)..."
-$GODOT --path . --resolution 1920x1080 2>/dev/null &
+echo "==> Launching game offscreen (will auto-quit after screenshots)..."
+$GODOT --path . --resolution 1920x1080 --position -3000,0 2>/dev/null &
 PID=$!
 sleep 10
 kill $PID 2>/dev/null; wait $PID 2>/dev/null || true

@@ -56,6 +56,3 @@ textures/vram_compression/import_etc2_astc=true
 
 [autoload]
 ScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"
-
-[autoload]
-ScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"
