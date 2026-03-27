@@ -107,7 +107,7 @@ jobs:
           path: build/civ-deckbuilder.zip
 
   publish:
-    needs: [build-test-lint, build-native]
+    needs: build-test-lint
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -139,7 +139,7 @@ jobs:
           fi
 
   release:
-    needs: publish
+    needs: [publish, build-native]
     runs-on: ubuntu-latest
     permissions:
       contents: write
