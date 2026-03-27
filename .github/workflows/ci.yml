@@ -176,23 +176,21 @@ jobs:
           key: godot-linux-${{ env.GODOT_VERSION }}
       - name: setup
         run: |
-          sudo apt-get update -qq && sudo apt-get install -y -qq xvfb
+          sudo apt-get install -y -qq xvfb 2>/dev/null || true
           if [ ! -f /usr/local/bin/godot ]; then
             wget -q https://github.com/godotengine/godot-builds/releases/download/${GODOT_VERSION}-stable/Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
             unzip -q Godot_v${GODOT_VERSION}-stable_linux.x86_64.zip
             mv Godot_v${GODOT_VERSION}-stable_linux.x86_64 /usr/local/bin/godot
             chmod +x /usr/local/bin/godot
           fi
-      - name: import
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" godot --editor --quit 2>&1 || true
       - name: capture
         run: |
           echo -e '\n[autoload]\nScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"' >> project.godot
           mkdir -p screenshots
-          timeout 60 xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" godot --path . 2>&1 || true
+          timeout 45 xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" godot --path . 2>&1 || true
           cp ~/.local/share/godot/app_userdata/civ-deckbuilder/screenshots/*.png screenshots/ 2>/dev/null || true
           ls -la screenshots/
-        timeout-minutes: 2
+        timeout-minutes: 1
       - name: upload
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
