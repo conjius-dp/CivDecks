@@ -185,7 +185,7 @@ func _place_water_clumps() -> void:
 	var all_coords: Array[Vector2i] = []
 	for coord: Vector2i in tiles:
 		all_coords.append(coord)
-	var water_budget: int = int(all_coords.size() * 0.08)
+	var water_budget: int = int(all_coords.size() * 0.15)
 	var placed := 0
 	var water_set: Dictionary = {}
 	while placed < water_budget:
