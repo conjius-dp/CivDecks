@@ -6,10 +6,9 @@ var _output_dir: String = ""
 
 
 func _ready() -> void:
-	_output_dir = ProjectSettings.globalize_path("res://")
-	var dir := DirAccess.open(_output_dir)
-	if dir and not dir.dir_exists("screenshots"):
-		dir.make_dir("screenshots")
+	_output_dir = OS.get_user_data_dir()
+	DirAccess.make_dir_recursive_absolute(_output_dir + "/screenshots")
+	print("Screenshot output dir: " + _output_dir)
 
 
 func _process(_delta: float) -> void:
