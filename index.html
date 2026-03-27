@@ -66,7 +66,7 @@ function closeModal(){
 }
 function closeAndBack(){
   if(cameFromExternal){window.location=document.referrer}
-  else{history.back()}
+  else{closeModal();history.replaceState(null,'',location.pathname)}
 }
 function navigate(dir){
   currentIdx=(currentIdx+dir+srcs.length)%srcs.length
