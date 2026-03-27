@@ -1,0 +1,13 @@
+#!/bin/bash
+# Takes screenshots on #stable-release pushes using local GPU
+
+# Check if any commit being pushed contains #stable-release
+while read local_ref local_sha remote_ref remote_sha; do
+    if [ "$remote_ref" = "refs/heads/main" ]; then
+        COMMITS=$(git log --oneline "$remote_sha..$local_sha" 2>/dev/null || git log --oneline -5)
+        if echo "$COMMITS" | grep -q "#stable-release"; then
+            echo "==> #stable-release detected, taking screenshots..."
+            bash "$(git rev-parse --show-toplevel)/scripts/tools/take_screenshots.sh"
+        fi
+    fi
+done

@@ -1,0 +1,46 @@
+#!/bin/bash
+# Takes screenshots locally using your GPU, then pushes to gh-pages
+set -e
+
+GODOT="/Applications/Godot.app/Contents/MacOS/Godot"
+PROJECT_DIR="$(cd "$(dirname "$0")/../.." && pwd)"
+SS_DIR="$HOME/Library/Application Support/Godot/app_userdata/civ-deckbuilder/screenshots"
+
+cd "$PROJECT_DIR"
+
+echo "==> Injecting screenshot autoload..."
+cp project.godot project.godot.bak
+echo -e '\n[autoload]\nScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"' >> project.godot
+
+echo "==> Importing project..."
+$GODOT --headless --editor --quit 2>/dev/null || true
+
+echo "==> Launching game (will auto-quit after screenshots)..."
+$GODOT --path . --resolution 1920x1080 2>/dev/null &
+PID=$!
+sleep 10
+kill $PID 2>/dev/null; wait $PID 2>/dev/null || true
+
+echo "==> Restoring project.godot..."
+mv project.godot.bak project.godot
+
+echo "==> Checking screenshots..."
+if [ ! -f "$SS_DIR/screenshot-main.png" ] || [ ! -f "$SS_DIR/screenshot-gallery.png" ]; then
+    echo "FAIL: Screenshots not captured"
+    ls -la "$SS_DIR/" 2>/dev/null
+    exit 1
+fi
+
+echo "==> Pushing to gh-pages..."
+TMPDIR=$(mktemp -d)
+git clone --branch gh-pages --depth 1 "$(git remote get-url origin)" "$TMPDIR"
+cp "$SS_DIR/screenshot-main.png" "$TMPDIR/"
+cp "$SS_DIR/screenshot-gallery.png" "$TMPDIR/"
+cp scripts/tools/gh-pages-index.html "$TMPDIR/index.html"
+cd "$TMPDIR"
+git add screenshot-main.png screenshot-gallery.png index.html
+git commit -m "Update screenshots from local machine" || true
+git push
+rm -rf "$TMPDIR"
+
+echo "==> Done! Screenshots pushed to gh-pages."
