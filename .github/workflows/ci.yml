@@ -31,15 +31,10 @@ jobs:
       - name: Lint
         run: pip install -q gdtoolkit && gdlint scripts/**/*.gd resources/**/*.gd
 
-  publish-release:
-    needs: build-test-lint
+  export:
     runs-on: macos-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Install Godot + export templates
         run: |
@@ -76,6 +71,28 @@ jobs:
           /Applications/Godot.app/Contents/MacOS/Godot --headless --export-release "macOS" build/civ-deckbuilder.zip 2>&1
         timeout-minutes: 5
 
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: civ-deckbuilder-macOS
+          path: build/civ-deckbuilder.zip
+
+  release:
+    needs: [build-test-lint, export]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: civ-deckbuilder-macOS
+          path: build
+
       - name: Create release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -105,7 +122,7 @@ jobs:
           fi
 
   screenshots:
-    needs: publish-release
+    needs: release
     runs-on: macos-latest
     permissions:
       contents: write
