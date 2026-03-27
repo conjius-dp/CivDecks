@@ -52,11 +52,15 @@ jobs:
       - name: Lint
         run: gdlint scripts/**/*.gd resources/**/*.gd
 
-  export:
+  publish:
     needs: test-lint
     runs-on: macos-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Install Godot
         run: |
@@ -99,15 +103,86 @@ jobs:
           /Applications/Godot.app/Contents/MacOS/Godot --headless --export-release "macOS" build/civ-deckbuilder.zip 2>&1
         timeout-minutes: 5
 
+      - name: Generate version
+        id: version
+        run: |
+          PATCH=$(git rev-list --count HEAD)
+          IS_STABLE=${{ contains(github.event.head_commit.message, '#stable-release') }}
+          if [ "$IS_STABLE" = "true" ]; then
+            VERSION="v0.1.${PATCH}"
+          else
+            VERSION="v0.1.${PATCH}-nightly"
+          fi
+          echo "tag=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "is_stable=$IS_STABLE" >> "$GITHUB_OUTPUT"
+          echo "Version: $VERSION (stable=$IS_STABLE)"
+
+      - name: Create tag
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          git tag "$TAG"
+          git push origin "$TAG"
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: civ-deckbuilder-macOS
           path: build/civ-deckbuilder.zip
 
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      is_stable: ${{ steps.version.outputs.is_stable }}
+
+  release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: civ-deckbuilder-macOS
+          path: build
+
+      - name: Rename artifact with version
+        run: |
+          TAG="${{ needs.publish.outputs.tag }}"
+          mv build/civ-deckbuilder.zip "build/civ-deckbuilder-${TAG}-macOS.zip"
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ needs.publish.outputs.tag }}"
+          IS_STABLE="${{ needs.publish.outputs.is_stable }}"
+          if [ "$IS_STABLE" = "true" ]; then
+            gh release create "$TAG" "build/civ-deckbuilder-${TAG}-macOS.zip" \
+              --title "$TAG" \
+              --notes "Automated build from commit ${{ github.sha }}" \
+              --latest
+          else
+            gh release create "$TAG" "build/civ-deckbuilder-${TAG}-macOS.zip" \
+              --title "$TAG" \
+              --notes "Automated build from commit ${{ github.sha }}" \
+              --prerelease
+          fi
+
+      - name: Update stable tag
+        if: needs.publish.outputs.is_stable == 'true'
+        run: |
+          git tag -f stable
+          git push origin stable --force
+
   screenshots:
-    needs: export
+    needs: release
     runs-on: macos-latest
+    permissions:
+      contents: write
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
@@ -135,100 +210,14 @@ jobs:
           ls -la screenshots/
         timeout-minutes: 1
 
-      - name: Upload screenshots
-        uses: actions/upload-artifact@v4
-        with:
-          name: screenshots
-          path: |
-            screenshots/screenshot-main.png
-            screenshots/screenshot-gallery.png
-
-  publish:
-    needs: export
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Generate version
-        id: version
-        run: |
-          PATCH=$(git rev-list --count HEAD)
-          IS_STABLE=${{ contains(github.event.head_commit.message, '#stable-release') }}
-          if [ "$IS_STABLE" = "true" ]; then
-            VERSION="v0.1.${PATCH}"
-          else
-            VERSION="v0.1.${PATCH}-nightly"
-          fi
-          echo "tag=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "is_stable=$IS_STABLE" >> "$GITHUB_OUTPUT"
-          echo "Version: $VERSION (stable=$IS_STABLE)"
-
-      - name: Create tag
-        run: |
-          TAG="${{ steps.version.outputs.tag }}"
-          git tag "$TAG"
-          git push origin "$TAG"
-
-    outputs:
-      tag: ${{ steps.version.outputs.tag }}
-      is_stable: ${{ steps.version.outputs.is_stable }}
-
-  release:
-    needs: [publish, screenshots]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: civ-deckbuilder-macOS
-          path: build
-
-      - name: Download screenshots
-        uses: actions/download-artifact@v4
-        with:
-          name: screenshots
-          path: screenshots
-        continue-on-error: true
-
-      - name: Rename artifact with version
-        run: |
-          TAG="${{ needs.publish.outputs.tag }}"
-          mv build/civ-deckbuilder.zip "build/civ-deckbuilder-${TAG}-macOS.zip"
-
-      - name: Create GitHub release
+      - name: Upload screenshots to release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG="${{ needs.publish.outputs.tag }}"
-          IS_STABLE="${{ needs.publish.outputs.is_stable }}"
-          FILES="build/civ-deckbuilder-${TAG}-macOS.zip"
+          TAG="${{ needs.release.outputs.tag || '' }}"
+          if [ -z "$TAG" ]; then
+            TAG=$(gh release list --limit 1 --json tagName --jq '.[0].tagName')
+          fi
           if [ -f screenshots/screenshot-main.png ]; then
-            FILES="$FILES screenshots/screenshot-main.png screenshots/screenshot-gallery.png"
+            gh release upload "$TAG" screenshots/screenshot-main.png screenshots/screenshot-gallery.png --clobber
           fi
-          if [ "$IS_STABLE" = "true" ]; then
-            gh release create "$TAG" $FILES \
-              --title "$TAG" \
-              --notes "Automated build from commit ${{ github.sha }}" \
-              --latest
-          else
-            gh release create "$TAG" $FILES \
-              --title "$TAG" \
-              --notes "Automated build from commit ${{ github.sha }}" \
-              --prerelease
-          fi
-
-      - name: Update stable tag
-        if: needs.publish.outputs.is_stable == 'true'
-        run: |
-          git tag -f stable
-          git push origin stable --force
