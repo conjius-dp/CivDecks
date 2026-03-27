@@ -190,16 +190,16 @@ jobs:
         run: |
           echo -e '\n[autoload]\nScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"' >> project.godot
           mkdir -p screenshots
-          /Applications/Godot.app/Contents/MacOS/Godot --headless --editor --quit 2>&1 | tail -3 || true
-          /Applications/Godot.app/Contents/MacOS/Godot --path . 2>&1 &
+          /Applications/Godot.app/Contents/MacOS/Godot --editor --quit 2>&1 | tail -3 || true
+          /Applications/Godot.app/Contents/MacOS/Godot --path . --resolution 1920x1080 2>&1 &
           GODOT_PID=$!
           sleep 15
           kill $GODOT_PID 2>/dev/null || true
           wait $GODOT_PID 2>/dev/null || true
-          cp ~/.local/share/godot/app_userdata/civ-deckbuilder/screenshots/*.png screenshots/ 2>/dev/null || true
+          SS_DIR="$HOME/Library/Application Support/Godot/app_userdata/civ-deckbuilder/screenshots"
+          cp "$SS_DIR"/*.png screenshots/ 2>/dev/null || true
           ls -la screenshots/
-          kill %1 2>/dev/null || true
-      - name: validate
+      - name: validate-image-assets
         run: |
           FAIL=0
           for f in screenshot-main.png screenshot-gallery.png; do
