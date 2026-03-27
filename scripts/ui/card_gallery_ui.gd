@@ -151,8 +151,6 @@ func _input(event: InputEvent) -> void:
 			)
 			_apply_scroll()
 			get_viewport().set_input_as_handled()
-		else:
-			get_viewport().set_input_as_handled()
 	if event is InputEventPanGesture:
 		_scroll_offset = clampf(
 			_scroll_offset + event.delta.y * 20.0,
