@@ -7,9 +7,9 @@
 [![macOS](https://img.shields.io/badge/-macOS-999?logo=apple&logoColor=white&style=flat-square)](https://github.com/conjius/civ-deckbuilder/releases/latest)&nbsp;&nbsp;[![Godot 4.6](https://img.shields.io/badge/-Godot%204.6-478CBF?logo=godotengine&logoColor=white&style=flat-square)](https://godotengine.org/article/godot-4-6-release/)&nbsp;&nbsp;[![Python 3.12.0](https://img.shields.io/badge/-Python%203.12.0-3776AB?logo=python&logoColor=white&style=flat-square)](https://www.python.org/downloads/)&nbsp;&nbsp;[![GitHub Actions](https://img.shields.io/badge/-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white&style=flat-square)](https://github.com/conjius/civ-deckbuilder/actions)
 
 <p align="center">
-  <a href="https://github.com/conjius/civ-deckbuilder/releases/latest/download/screenshot-main.png"><img src="https://github.com/conjius/civ-deckbuilder/releases/latest/download/screenshot-main.png" width="48%" alt=""></a>
+  <a href="https://conjius.github.io/civ-deckbuilder/screenshot-main.png"><img src="https://conjius.github.io/civ-deckbuilder/screenshot-main.png" width="48%" alt=""></a>
   &nbsp;
-  <a href="https://github.com/conjius/civ-deckbuilder/releases/latest/download/screenshot-gallery.png"><img src="https://github.com/conjius/civ-deckbuilder/releases/latest/download/screenshot-gallery.png" width="48%" alt=""></a>
+  <a href="https://conjius.github.io/civ-deckbuilder/screenshot-gallery.png"><img src="https://conjius.github.io/civ-deckbuilder/screenshot-gallery.png" width="48%" alt=""></a>
 </p>
 
 A hex-based civilization strategy game with deckbuilding mechanics, built in Godot 4.6.
