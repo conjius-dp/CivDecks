@@ -8,7 +8,7 @@ const MIN_TREES := 5
 const MAX_TREES := 10
 const MIN_SPACING := 0.15
 const CHUNK_SIZE := 8
-const TARGET_HEIGHT := 0.4
+const TARGET_HEIGHT := 0.6
 const TREE_HEIGHT_JITTER := 0.2
 
 var _tree_meshes: Array[Mesh] = []
