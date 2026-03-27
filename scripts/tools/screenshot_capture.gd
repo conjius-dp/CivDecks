@@ -2,30 +2,36 @@ extends Node
 
 var _frame_count: int = 0
 var _state: int = 0
+var _output_dir: String = ""
+
+
+func _ready() -> void:
+	_output_dir = OS.get_executable_path().get_base_dir()
+	var dir := DirAccess.open(_output_dir)
+	if dir and not dir.dir_exists("screenshots"):
+		dir.make_dir("screenshots")
 
 
 func _process(_delta: float) -> void:
 	_frame_count += 1
-	if _state == 0 and _frame_count >= 90:
-		_capture("screenshots/screenshot-main.png")
+	if _state == 0 and _frame_count >= 120:
+		_capture("screenshot-main.png")
 		_open_gallery()
 		_state = 1
 		_frame_count = 0
-	elif _state == 1 and _frame_count >= 60:
-		_capture("screenshots/screenshot-gallery.png")
+	elif _state == 1 and _frame_count >= 90:
+		_capture("screenshot-gallery.png")
 		get_tree().quit()
 
 
-func _capture(path: String) -> void:
-	var dir := DirAccess.open("res://")
-	if dir and not dir.dir_exists("screenshots"):
-		dir.make_dir("screenshots")
+func _capture(filename: String) -> void:
+	var path: String = _output_dir + "/screenshots/" + filename
 	var img := get_viewport().get_texture().get_image()
 	if img:
 		img.save_png(path)
 		print("Captured: " + path)
 	else:
-		print("Failed to capture: " + path)
+		print("Failed to capture: " + filename)
 
 
 func _open_gallery() -> void:

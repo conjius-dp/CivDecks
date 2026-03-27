@@ -102,23 +102,23 @@ jobs:
       - name: Capture screenshots
         run: |
           mkdir -p screenshots
-          /Applications/Godot.app/Contents/MacOS/Godot --path . --autoload res://scripts/tools/screenshot_capture.gd 2>&1 || true
-          ls -la screenshots/
-        timeout-minutes: 2
+          echo '[autoload]' >> project.godot
+          echo 'ScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"' >> project.godot
+          /Applications/Godot.app/Contents/MacOS/Godot --path . --quit-after 15 2>&1 || true
+          git checkout project.godot
+          cp screenshots/screenshot-*.png build/ 2>/dev/null || true
+          ls -la screenshots/ build/
+        timeout-minutes: 1
         continue-on-error: true
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
           name: civ-deckbuilder-macOS
-          path: build/civ-deckbuilder.zip
-
-      - name: Upload screenshots
-        if: hashFiles('screenshots/screenshot-main.png') != ''
-        uses: actions/upload-artifact@v4
-        with:
-          name: screenshots
-          path: screenshots/
+          path: |
+            build/civ-deckbuilder.zip
+            build/screenshot-main.png
+            build/screenshot-gallery.png
 
   publish:
     needs: export
@@ -170,13 +170,6 @@ jobs:
           name: civ-deckbuilder-macOS
           path: build
 
-      - name: Download screenshots
-        uses: actions/download-artifact@v4
-        with:
-          name: screenshots
-          path: screenshots
-        continue-on-error: true
-
       - name: Rename artifact with version
         run: |
           TAG="${{ needs.publish.outputs.tag }}"
@@ -189,8 +182,8 @@ jobs:
           TAG="${{ needs.publish.outputs.tag }}"
           IS_STABLE="${{ needs.publish.outputs.is_stable }}"
           FILES="build/civ-deckbuilder-${TAG}-macOS.zip"
-          if [ -f screenshots/screenshot-main.png ]; then
-            FILES="$FILES screenshots/screenshot-main.png screenshots/screenshot-gallery.png"
+          if [ -f build/screenshot-main.png ]; then
+            FILES="$FILES build/screenshot-main.png build/screenshot-gallery.png"
           fi
           if [ "$IS_STABLE" = "true" ]; then
             gh release create "$TAG" $FILES \
@@ -204,19 +197,8 @@ jobs:
               --prerelease
           fi
 
-      - name: Update stable tag and screenshots
+      - name: Update stable tag
         if: needs.publish.outputs.is_stable == 'true'
         run: |
           git tag -f stable
           git push origin stable --force
-          gh release delete stable --yes 2>/dev/null || true
-          STABLE_FILES=""
-          if [ -f screenshots/screenshot-main.png ]; then
-            STABLE_FILES="screenshots/screenshot-main.png screenshots/screenshot-gallery.png"
-          fi
-          if [ -n "$STABLE_FILES" ]; then
-            gh release create stable $STABLE_FILES \
-              --title "stable" \
-              --notes "Latest stable release screenshots" \
-              --latest
-          fi
