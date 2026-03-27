@@ -13,19 +13,12 @@ var _cards: Array[CardData] = []
 var _scroll_offset: float = 0.0
 var _max_scroll: float = 0.0
 var _container: Control
-var _bg: ColorRect
 var _animating: bool = false
 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	set_anchors_preset(Control.PRESET_FULL_RECT)
-
-	_bg = ColorRect.new()
-	_bg.color = Color(0.0, 0.0, 0.0, 0.0)
-	_bg.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(_bg)
 
 	_container = Control.new()
 	_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -40,17 +33,12 @@ func show_gallery(cards: Array[CardData]) -> void:
 	_animating = true
 	var vp_h: float = get_viewport().get_visible_rect().size.y
 	_container.position.y = vp_h
-	_bg.color = Color(0.0, 0.0, 0.0, 0.0)
 	var tween := create_tween()
-	tween.set_parallel(true)
 	tween.tween_property(
 		_container, "position:y", -_scroll_offset,
 		ANIM_DURATION,
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tween.tween_property(
-		_bg, "color:a", 0.8, 0.25,
-	).set_trans(Tween.TRANS_SINE)
-	tween.chain().tween_callback(
+	tween.tween_callback(
 		func() -> void: _animating = false
 	)
 
@@ -59,15 +47,11 @@ func hide_gallery() -> void:
 	_animating = true
 	var vp_h: float = get_viewport().get_visible_rect().size.y
 	var tween := create_tween()
-	tween.set_parallel(true)
 	tween.tween_property(
 		_container, "position:y", vp_h,
 		ANIM_DURATION,
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-	tween.tween_property(
-		_bg, "color:a", 0.0, 0.25,
-	).set_trans(Tween.TRANS_SINE)
-	tween.chain().tween_callback(func() -> void:
+	tween.tween_callback(func() -> void:
 		visible = false
 		_animating = false
 		for child in _container.get_children():

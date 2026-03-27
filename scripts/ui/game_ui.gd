@@ -14,6 +14,7 @@ var card_gallery: CardGalleryUI
 var _fps_label: Label
 var _current_cards: Array[CardData] = []
 var _hand_original_pos: Vector2 = Vector2.ZERO
+var _dim_overlay: ColorRect
 var _font_bold: Font = preload(
 	"res://assets/fonts/Cinzel-Bold.ttf"
 )
@@ -29,6 +30,22 @@ var _font_regular: Font = _font_bold
 
 
 func _ready() -> void:
+	_dim_overlay = ColorRect.new()
+	_dim_overlay.color = Color.WHITE
+	_dim_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_dim_overlay.visible = false
+	var blur_shader: Shader = load(
+		"res://assets/shaders/screen_blur.gdshader"
+	) as Shader
+	if blur_shader:
+		var mat := ShaderMaterial.new()
+		mat.shader = blur_shader
+		mat.set_shader_parameter("blur_amount", 0.0)
+		mat.set_shader_parameter(
+			"tint_color", Color(0.0, 0.0, 0.0, 0.0)
+		)
+		_dim_overlay.material = mat
+	add_child(_dim_overlay)
 	card_gallery = CardGalleryUI.new()
 	card_gallery.visible = false
 	add_child(card_gallery)
@@ -116,11 +133,65 @@ func show_settlement_info(
 
 func _toggle_gallery() -> void:
 	if card_gallery.visible:
+		_animate_overlay(false)
 		card_gallery.hide_gallery()
 		_slide_hand_in()
 	else:
+		_animate_overlay(true)
 		_slide_hand_out()
 		card_gallery.show_gallery(_current_cards)
+
+
+func _animate_overlay(show: bool) -> void:
+	var mat: ShaderMaterial = (
+		_dim_overlay.material as ShaderMaterial
+	)
+	if show:
+		var vp := get_viewport().get_visible_rect().size
+		_dim_overlay.position = Vector2.ZERO
+		_dim_overlay.size = vp
+		_dim_overlay.visible = true
+		if mat:
+			var tween := create_tween()
+			tween.set_parallel(true)
+			tween.tween_method(
+				func(v: float) -> void:
+					mat.set_shader_parameter(
+						"blur_amount", v
+					),
+				0.0, 3.0, 0.3,
+			).set_trans(Tween.TRANS_SINE)
+			tween.tween_method(
+				func(v: float) -> void:
+					mat.set_shader_parameter(
+						"tint_color",
+						Color(0.0, 0.0, 0.0, v),
+					),
+				0.0, 0.55, 0.3,
+			).set_trans(Tween.TRANS_SINE)
+	else:
+		if mat:
+			var tween := create_tween()
+			tween.set_parallel(true)
+			tween.tween_method(
+				func(v: float) -> void:
+					mat.set_shader_parameter(
+						"blur_amount", v
+					),
+				3.0, 0.0, 0.25,
+			).set_trans(Tween.TRANS_SINE)
+			tween.tween_method(
+				func(v: float) -> void:
+					mat.set_shader_parameter(
+						"tint_color",
+						Color(0.0, 0.0, 0.0, v),
+					),
+				0.55, 0.0, 0.25,
+			).set_trans(Tween.TRANS_SINE)
+			tween.chain().tween_callback(
+				func() -> void:
+					_dim_overlay.visible = false
+			)
 
 
 func _slide_hand_out() -> void:
