@@ -45,6 +45,10 @@ func show_cards_with_drag(
 	for child in get_children():
 		if child.card_data == drag_card:
 			child.scale = UIHelpers.HAND_FOCUS_SCALE
+			child.global_position = (
+				mouse_pos
+				- child.size * UIHelpers.HAND_FOCUS_SCALE * 0.5
+			)
 			_any_dragging = true
 			child._start_drag(mouse_pos)
 			break
