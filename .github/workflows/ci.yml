@@ -69,7 +69,9 @@ jobs:
           fi
       - name: export
         run: |
-          godot --headless --editor --quit 2>&1 || true
+          if [ ! -d .godot/imported ]; then
+            godot --headless --editor --quit 2>&1 || true
+          fi
           cat > export_presets.cfg << 'PRESETS'
           [preset.0]
           name="macOS"
