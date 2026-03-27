@@ -138,12 +138,12 @@ func _animate_overlay(show: bool) -> void:
 		_dim_overlay.size = vp
 		_dim_overlay.color = Color(0.0, 0.0, 0.0, 0.0)
 		_dim_overlay.visible = true
-		var tween := create_tween()
+		var tween := _dim_overlay.create_tween()
 		tween.tween_property(
 			_dim_overlay, "color:a", 0.6, 0.25,
 		).set_trans(Tween.TRANS_SINE)
 	else:
-		var tween := create_tween()
+		var tween := _dim_overlay.create_tween()
 		tween.tween_property(
 			_dim_overlay, "color:a", 0.0, 0.25,
 		).set_trans(Tween.TRANS_SINE)
@@ -159,7 +159,7 @@ func _slide_hand_out() -> void:
 		_hand_original_pos.y
 		+ float(UIHelpers.BOTTOM_BAR_HEIGHT) + 50.0
 	)
-	var tween := create_tween()
+	var tween := bottom_bar.create_tween()
 	tween.set_parallel(true)
 	tween.tween_property(
 		bottom_bar, "position:y", target_y, 0.35,
@@ -170,7 +170,7 @@ func _slide_hand_out() -> void:
 
 
 func _slide_hand_in() -> void:
-	var tween := create_tween()
+	var tween := bottom_bar.create_tween()
 	tween.set_parallel(true)
 	tween.tween_property(
 		bottom_bar, "position:y", _hand_original_pos.y, 0.35,
