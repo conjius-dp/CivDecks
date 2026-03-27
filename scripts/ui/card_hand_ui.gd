@@ -290,11 +290,8 @@ func _on_drag_ended(
 
 func _is_in_hand_area(screen_pos: Vector2) -> bool:
 	var vp_h: float = get_viewport_rect().size.y
-	var focused_top: float = (
-		vp_h - float(UIHelpers.CARD_HEIGHT)
-		- float(UIHelpers.BOTTOM_BAR_HEIGHT) * 0.2
-	)
-	return screen_pos.y >= focused_top - 100.0
+	var hand_top: float = vp_h - float(UIHelpers.CARD_HEIGHT)
+	return screen_pos.y >= hand_top
 
 
 func _get_insert_index(screen_pos: Vector2) -> int:
