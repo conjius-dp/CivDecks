@@ -175,12 +175,15 @@ jobs:
             chmod +x /usr/local/bin/godot
           fi
 
+      - name: Import project
+        run: |
+          xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" godot --editor --quit 2>&1 || true
+
       - name: Capture screenshots
         run: |
-          godot --headless --editor --quit 2>&1 || true
           echo -e '\n[autoload]\nScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"' >> project.godot
           mkdir -p screenshots
-          xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" godot --path . --quit-after 30 2>&1 || true
+          timeout 60 xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" godot --path . 2>&1 || true
           cp ~/.local/share/godot/app_userdata/civ-deckbuilder/screenshots/*.png screenshots/ 2>/dev/null || true
           ls -la screenshots/
         timeout-minutes: 2
