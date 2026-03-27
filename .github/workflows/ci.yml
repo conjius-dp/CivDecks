@@ -85,9 +85,16 @@ jobs:
       - name: Generate version
         id: version
         run: |
-          VERSION="v0.1.$(git rev-list --count HEAD)"
+          PATCH=$(git rev-list --count HEAD)
+          IS_STABLE=${{ contains(github.event.head_commit.message, '@stable-release') }}
+          if [ "$IS_STABLE" = "true" ]; then
+            VERSION="v0.1.${PATCH}"
+          else
+            VERSION="v0.1.${PATCH}-nightly"
+          fi
           echo "tag=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "Version: $VERSION"
+          echo "is_stable=$IS_STABLE" >> "$GITHUB_OUTPUT"
+          echo "Version: $VERSION (stable=$IS_STABLE)"
 
       - name: Create tag
         run: |
@@ -101,6 +108,10 @@ jobs:
           name: CivDeckbuilder-macOS
           path: build/CivDeckbuilder.zip
 
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      is_stable: ${{ steps.version.outputs.is_stable }}
+
   release:
     needs: publish
     runs-on: ubuntu-latest
@@ -110,12 +121,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Get version
-        id: version
-        run: |
-          VERSION="v0.1.$(git rev-list --count HEAD)"
-          echo "tag=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Download build artifact
         uses: actions/download-artifact@v4
@@ -127,8 +132,20 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          TAG="${{ steps.version.outputs.tag }}"
+          TAG="${{ needs.publish.outputs.tag }}"
+          IS_STABLE="${{ needs.publish.outputs.is_stable }}"
+          PRERELEASE=""
+          if [ "$IS_STABLE" != "true" ]; then
+            PRERELEASE="--prerelease"
+          fi
           gh release create "$TAG" build/CivDeckbuilder.zip \
             --title "$TAG" \
             --notes "Automated build from commit ${{ github.sha }}" \
-            --latest
+            --latest \
+            $PRERELEASE
+
+      - name: Update stable tag
+        if: needs.publish.outputs.is_stable == 'true'
+        run: |
+          git tag -f stable
+          git push origin stable --force
