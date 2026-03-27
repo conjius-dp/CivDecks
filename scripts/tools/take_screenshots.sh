@@ -11,11 +11,13 @@ cd "$PROJECT_DIR"
 echo "==> Injecting screenshot autoload..."
 cp project.godot project.godot.bak
 echo -e '\n[autoload]\nScreenshotCapture="*res://scripts/tools/screenshot_capture.gd"' >> project.godot
+# Start window off-screen and transparent
+sed -i '' 's/\[display\]/[display]\nwindow\/size\/initial_position_type=0\nwindow\/size\/initial_position=Vector2i(-4000, -4000)/' project.godot
 
 echo "==> Importing project..."
 $GODOT --headless --editor --quit 2>/dev/null || true
 
-echo "==> Launching game offscreen (will auto-quit after screenshots)..."
+echo "==> Launching game hidden (will auto-quit after screenshots)..."
 $GODOT --path . --resolution 1920x1080 2>/dev/null &
 PID=$!
 sleep 10
