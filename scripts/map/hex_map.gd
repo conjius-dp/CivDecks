@@ -174,7 +174,7 @@ func _pick_terrain(noise_val: float) -> TerrainType:
 		return _terrain_desert
 	if noise_val < 0.15:
 		return _terrain_plains
-	if noise_val < 0.4:
+	if noise_val < 0.3:
 		return _terrain_forest
 	return _terrain_mountain
 
@@ -198,7 +198,7 @@ func _place_water_clumps() -> void:
 		if rng.randf() < 0.3:
 			clump_size = rng.randi_range(1, 3)
 		else:
-			clump_size = rng.randi_range(6, 10)
+			clump_size = rng.randi_range(15, 25)
 		var clump: Array[Vector2i] = _grow_clump(
 			seed_coord, clump_size, water_set, rng
 		)
