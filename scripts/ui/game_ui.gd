@@ -124,7 +124,8 @@ func _toggle_gallery() -> void:
 
 
 func _slide_hand_out() -> void:
-	_hand_original_pos = bottom_bar.position
+	if _hand_original_pos == Vector2.ZERO:
+		_hand_original_pos = bottom_bar.position
 	var target_y: float = (
 		_hand_original_pos.y
 		+ float(UIHelpers.BOTTOM_BAR_HEIGHT) + 50.0

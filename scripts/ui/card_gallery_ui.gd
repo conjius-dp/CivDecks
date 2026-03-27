@@ -48,7 +48,7 @@ func show_gallery(cards: Array[CardData]) -> void:
 		ANIM_DURATION,
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	tween.tween_property(
-		_bg, "color:a", 0.7, ANIM_DURATION,
+		_bg, "color:a", 0.8, 0.25,
 	).set_trans(Tween.TRANS_SINE)
 	tween.chain().tween_callback(
 		func() -> void: _animating = false
@@ -65,7 +65,7 @@ func hide_gallery() -> void:
 		ANIM_DURATION,
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	tween.tween_property(
-		_bg, "color:a", 0.0, ANIM_DURATION,
+		_bg, "color:a", 0.0, 0.25,
 	).set_trans(Tween.TRANS_SINE)
 	tween.chain().tween_callback(func() -> void:
 		visible = false
