@@ -6,31 +6,44 @@ var _output_dir: String = ""
 
 
 func _ready() -> void:
-	_output_dir = OS.get_user_data_dir()
-	DirAccess.make_dir_recursive_absolute(_output_dir + "/screenshots")
-	print("Screenshot output dir: " + _output_dir)
+	_output_dir = OS.get_user_data_dir() + "/screenshots"
+	DirAccess.make_dir_recursive_absolute(_output_dir)
+	print("Screenshot dir: " + _output_dir)
 
 
 func _process(_delta: float) -> void:
 	_frame_count += 1
-	if _state == 0 and _frame_count >= 120:
+	if _state == 0 and _frame_count == 120:
 		_capture("screenshot-main.png")
 		_open_gallery()
 		_state = 1
 		_frame_count = 0
-	elif _state == 1 and _frame_count >= 90:
+	elif _state == 1 and _frame_count == 90:
 		_capture("screenshot-gallery.png")
 		get_tree().quit()
 
 
 func _capture(filename: String) -> void:
-	var path: String = _output_dir + "/screenshots/" + filename
-	var img := get_viewport().get_texture().get_image()
-	if img:
-		img.save_png(path)
-		print("Captured: " + path)
+	var path: String = _output_dir + "/" + filename
+	print("Attempting capture: " + path + " frame=" + str(_frame_count))
+	var vp := get_viewport()
+	if vp == null:
+		print("ERROR: viewport is null")
+		return
+	var tex := vp.get_texture()
+	if tex == null:
+		print("ERROR: viewport texture is null")
+		return
+	var img := tex.get_image()
+	if img == null:
+		print("ERROR: get_image returned null")
+		return
+	print("Image size: " + str(img.get_size()))
+	var err := img.save_png(path)
+	if err != OK:
+		print("ERROR: save_png failed with error " + str(err))
 	else:
-		print("Failed to capture: " + filename)
+		print("Captured: " + path)
 
 
 func _open_gallery() -> void:
