@@ -39,19 +39,35 @@ func show_cards_with_drag(
 	for child in get_children():
 		child.queue_free()
 	for card in cards:
+		if card == drag_card:
+			continue
 		_add_card_display(card)
+	var drag_display: Control = (
+		_card_display_scene.instantiate()
+	)
+	add_child(drag_display)
+	drag_display.setup(drag_card)
+	drag_display.set_face_up(true)
+	drag_display.hex_map = hex_map
+	drag_display.camera = camera
+	drag_display.card_effects = card_effects
+	drag_display.active_unit = active_unit
+	drag_display.arrow_indicator = arrow_indicator
+	drag_display.drag_started.connect(_on_drag_started)
+	drag_display.drag_ended.connect(_on_drag_ended)
+	drag_display.pivot_offset = Vector2(
+		UIHelpers.CARD_WIDTH * 0.5,
+		float(UIHelpers.CARD_HEIGHT),
+	)
+	drag_display.scale = UIHelpers.HAND_FOCUS_SCALE
+	drag_display.z_index = 100
+	drag_display.global_position = (
+		mouse_pos
+		- drag_display.size * UIHelpers.HAND_FOCUS_SCALE * 0.5
+	)
+	_any_dragging = true
+	drag_display._start_drag(mouse_pos)
 	_layout_cards.call_deferred()
-	await get_tree().process_frame
-	for child in get_children():
-		if child.card_data == drag_card:
-			child.scale = UIHelpers.HAND_FOCUS_SCALE
-			child.global_position = (
-				mouse_pos
-				- child.size * UIHelpers.HAND_FOCUS_SCALE * 0.5
-			)
-			_any_dragging = true
-			child._start_drag(mouse_pos)
-			break
 
 
 func remove_card(card: CardData) -> void:
