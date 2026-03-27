@@ -48,9 +48,15 @@ func hide_gallery() -> void:
 	_animating = true
 	closing.emit()
 	var vp_h: float = get_viewport().get_visible_rect().size.y
+	var past_middle: bool = _scroll_offset > _max_scroll * 0.5
+	var target_y: float
+	if past_middle:
+		target_y = -vp_h - _scroll_offset
+	else:
+		target_y = vp_h
 	var tween := create_tween()
 	tween.tween_property(
-		_container, "position:y", vp_h,
+		_container, "position:y", target_y,
 		ANIM_DURATION,
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	tween.tween_callback(func() -> void:
