@@ -192,9 +192,9 @@ func _update_hover(mouse_pos: Vector2) -> void:
 	hex_map.highlight_tiles(
 		_valid_targets, Color(0.3, 0.8, 1.0, 0.8)
 	)
-	var from_pos := _screen_to_ground(
-		_original_position + size * 0.5
-	)
+	var from_pos := Vector3.ZERO
+	if active_unit:
+		from_pos = active_unit.global_position
 	var hovered := _raycast_hex(mouse_pos)
 	if hovered != Vector2i(-999, -999) and _is_valid_target(hovered):
 		hex_map.highlight_tiles(
