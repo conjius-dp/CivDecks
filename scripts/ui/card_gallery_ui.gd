@@ -1,6 +1,7 @@
 class_name CardGalleryUI
 extends Control
 
+signal closing
 signal closed
 
 const COLS := 5
@@ -45,6 +46,7 @@ func show_gallery(cards: Array[CardData]) -> void:
 
 func hide_gallery() -> void:
 	_animating = true
+	closing.emit()
 	var vp_h: float = get_viewport().get_visible_rect().size.y
 	var tween := create_tween()
 	tween.tween_property(
