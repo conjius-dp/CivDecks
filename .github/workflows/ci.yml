@@ -211,7 +211,33 @@ jobs:
             git checkout --orphan gh-pages-tmp
             git rm -rf . 2>/dev/null || true
             cp screenshots/screenshot-*.png .
-            git add screenshot-*.png
-            git commit -m "Update screenshots"
+            cat > index.html << 'HTML'
+            <!DOCTYPE html>
+            <html>
+            <head>
+            <meta charset="utf-8">
+            <title>civ-deckbuilder</title>
+            <style>
+            body{background:#1a1a2e;color:#e0e0e0;font-family:system-ui;display:flex;flex-direction:column;align-items:center;padding:40px 20px;margin:0}
+            h1{margin-bottom:8px}
+            p{color:#888;margin-bottom:32px}
+            a{color:#6ea8fe}
+            .shots{display:flex;gap:16px;max-width:1200px;width:100%}
+            .shots img{width:50%;border-radius:8px;border:1px solid #333}
+            </style>
+            </head>
+            <body>
+            <h1>civ-deckbuilder</h1>
+            <p>Hex-based civilization strategy game with deckbuilding mechanics</p>
+            <div class="shots">
+            <a href="screenshot-main.png"><img src="screenshot-main.png" alt="Gameplay"></a>
+            <a href="screenshot-gallery.png"><img src="screenshot-gallery.png" alt="Gallery"></a>
+            </div>
+            <p style="margin-top:32px"><a href="https://github.com/conjius/civ-deckbuilder">GitHub</a> · <a href="https://github.com/conjius/civ-deckbuilder/releases/latest">Download</a></p>
+            </body>
+            </html>
+            HTML
+            git add screenshot-*.png index.html
+            git commit -m "Update screenshots and landing page"
             git push origin gh-pages-tmp:gh-pages --force
           fi
