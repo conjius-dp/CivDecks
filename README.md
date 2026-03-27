@@ -10,7 +10,7 @@ settle -all driven by a single visible deck of action and resource cards.
 
 ## Prerequisites
 
-- **Godot 4.6.1** -[download](https://godotengine.org/download)
+- [**Godot 4.6.1**](https://godotengine.org/download)
 - **macOS** (primary development platform)
 - **gdtoolkit** for linting -`pip install gdtoolkit`
 
