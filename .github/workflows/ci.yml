@@ -94,12 +94,12 @@ jobs:
       - name: version
         id: version
         run: |
-          PATCH=$(git rev-list --count HEAD)
+          PATCH=$(($(git rev-list --count HEAD) - 378))
           IS_STABLE=${{ contains(github.event.head_commit.message, '#stable-release') }}
           if [ "$IS_STABLE" = "true" ]; then
-            echo "tag=v0.2.${PATCH}" >> "$GITHUB_OUTPUT"
+            echo "tag=v0.3.${PATCH}" >> "$GITHUB_OUTPUT"
           else
-            echo "tag=v0.2.${PATCH}-nightly" >> "$GITHUB_OUTPUT"
+            echo "tag=v0.3.${PATCH}-nightly" >> "$GITHUB_OUTPUT"
           fi
       - name: upload
         uses: actions/upload-artifact@v7
@@ -122,12 +122,12 @@ jobs:
       - name: version
         id: version
         run: |
-          PATCH=$(git rev-list --count HEAD)
+          PATCH=$(($(git rev-list --count HEAD) - 378))
           IS_STABLE=${{ contains(github.event.head_commit.message, '#stable-release') }}
           if [ "$IS_STABLE" = "true" ]; then
-            TAG="v0.2.${PATCH}"
+            TAG="v0.3.${PATCH}"
           else
-            TAG="v0.2.${PATCH}-nightly"
+            TAG="v0.3.${PATCH}-nightly"
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "is_stable=$IS_STABLE" >> "$GITHUB_OUTPUT"
