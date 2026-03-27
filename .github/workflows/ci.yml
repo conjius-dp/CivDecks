@@ -106,25 +106,21 @@ jobs:
           name: civ-deckbuilder-macOS
           path: build/civ-deckbuilder.zip
 
-  release:
+  publish:
     needs: [build-test-lint, build-native]
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      is_stable: ${{ steps.version.outputs.is_stable }}
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: civ-deckbuilder-macOS
-          path: build
-
-      - name: Create release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Generate version and tag
+        id: version
         run: |
           PATCH=$(git rev-list --count HEAD)
           IS_STABLE=${{ contains(github.event.head_commit.message, '#stable-release') }}
@@ -133,16 +129,41 @@ jobs:
           else
             TAG="v0.1.${PATCH}-nightly"
           fi
-          mv build/civ-deckbuilder.zip "build/civ-deckbuilder-${TAG}-macOS.zip"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "is_stable=$IS_STABLE" >> "$GITHUB_OUTPUT"
           git tag "$TAG"
           git push origin "$TAG"
+          if [ "$IS_STABLE" = "true" ]; then
+            git tag -f stable
+            git push origin stable --force
+          fi
+
+  release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: civ-deckbuilder-macOS
+          path: build
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ needs.publish.outputs.tag }}"
+          IS_STABLE="${{ needs.publish.outputs.is_stable }}"
+          mv build/civ-deckbuilder.zip "build/civ-deckbuilder-${TAG}-macOS.zip"
           if [ "$IS_STABLE" = "true" ]; then
             gh release create "$TAG" "build/civ-deckbuilder-${TAG}-macOS.zip" \
               --title "$TAG" \
               --notes "Automated build from commit ${{ github.sha }}" \
               --latest
-            git tag -f stable
-            git push origin stable --force
           else
             gh release create "$TAG" "build/civ-deckbuilder-${TAG}-macOS.zip" \
               --title "$TAG" \
