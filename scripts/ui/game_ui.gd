@@ -17,6 +17,8 @@ var _hand_original_pos: Vector2 = Vector2.ZERO
 var _btn_original_x: float = -1.0
 var _unit_original_x: float = -1.0
 var _dim_overlay: ColorRect
+var _pending_drag_card: CardData = null
+var _pending_drag_pos: Vector2 = Vector2.ZERO
 var _font_bold: Font = preload(
 	"res://assets/fonts/Cinzel-Bold.ttf"
 )
@@ -41,6 +43,9 @@ func _ready() -> void:
 	card_gallery.visible = false
 	card_gallery.closing.connect(_on_gallery_closing)
 	card_gallery.closed.connect(_on_gallery_closed)
+	card_gallery.card_drag_requested.connect(
+		_on_gallery_card_drag
+	)
 	add_child(card_gallery)
 	end_turn_button.pressed.connect(
 		func() -> void: end_turn_pressed.emit()
@@ -173,8 +178,26 @@ func _slide_ui_in() -> void:
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
 
+func _on_gallery_card_drag(
+	card: CardData, mouse_pos: Vector2,
+) -> void:
+	_pending_drag_card = card
+	_pending_drag_pos = mouse_pos
+	card_gallery.hide_gallery()
+
+
 func _on_gallery_closed() -> void:
-	_slide_hand_in()
+	if _pending_drag_card:
+		var drag_card: CardData = _pending_drag_card
+		var drag_pos: Vector2 = _pending_drag_pos
+		_pending_drag_card = null
+		_slide_hand_in()
+		_slide_ui_in()
+		card_hand.show_cards_with_drag(
+			_current_cards, drag_card, drag_pos
+		)
+	else:
+		_slide_hand_in()
 
 
 func _animate_overlay(show: bool) -> void:

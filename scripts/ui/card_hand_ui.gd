@@ -31,6 +31,25 @@ func show_cards(cards: Array[CardData]) -> void:
 	_layout_cards.call_deferred()
 
 
+func show_cards_with_drag(
+	cards: Array[CardData], drag_card: CardData,
+	mouse_pos: Vector2,
+) -> void:
+	_focused_card = null
+	for child in get_children():
+		child.queue_free()
+	for card in cards:
+		_add_card_display(card)
+	_layout_cards.call_deferred()
+	await get_tree().process_frame
+	for child in get_children():
+		if child.card_data == drag_card:
+			child.scale = UIHelpers.HAND_FOCUS_SCALE
+			_any_dragging = true
+			child._start_drag(mouse_pos)
+			break
+
+
 func remove_card(card: CardData) -> void:
 	_removing = true
 	for child in get_children():

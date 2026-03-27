@@ -3,6 +3,7 @@ extends Control
 
 signal closing
 signal closed
+signal card_drag_requested(card: CardData, mouse_pos: Vector2)
 
 const COLS := 6
 const ROW_GAP := 20
@@ -96,10 +97,24 @@ func _rebuild() -> void:
 		outer.size = Vector2(
 			UIHelpers.CARD_WIDTH, UIHelpers.CARD_HEIGHT
 		)
-		outer.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		outer.mouse_filter = Control.MOUSE_FILTER_STOP
 		CardFaceBuilder.build_face(outer, card, sections)
 		outer.scale = Vector2(card_scale, card_scale)
 		outer.position = Vector2(x, y)
+		var card_ref: CardData = card
+		outer.gui_input.connect(
+			func(event: InputEvent) -> void:
+				if _animating:
+					return
+				if event is InputEventMouseButton:
+					if (event.button_index == MOUSE_BUTTON_LEFT
+						and event.pressed
+					):
+						card_drag_requested.emit(
+							card_ref, event.global_position
+						)
+						get_viewport().set_input_as_handled()
+		)
 		_container.add_child(outer)
 
 		col += 1

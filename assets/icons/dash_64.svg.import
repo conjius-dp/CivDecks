@@ -3,7 +3,7 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://dxoi0peb80x4t"
-path="res://.godot/imported/dash_64.svg-8085ad2f9e058a85f5e525242cb56c78.ctex"
+path="res://.godot/imported/dash_64.svg-d28c4c220d2d3b41d34924a1cdb1656f.ctex"
 metadata={
 "vram_texture": false
 }
@@ -11,7 +11,7 @@ metadata={
 [deps]
 
 source_file="res://assets/icons/dash_64.svg"
-dest_files=["res://.godot/imported/dash_64.svg-8085ad2f9e058a85f5e525242cb56c78.ctex"]
+dest_files=["res://.godot/imported/dash_64.svg-d28c4c220d2d3b41d34924a1cdb1656f.ctex"]
 
 [params]
 
