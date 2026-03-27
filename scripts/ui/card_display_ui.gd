@@ -79,7 +79,17 @@ func _input(event: InputEvent) -> void:
 		return
 	if event is InputEventMouseMotion:
 		global_position = event.global_position - _drag_offset
-		if card_data.card_type != CardData.CardType.RESOURCE:
+		var in_hand := _is_in_hand_area(event.global_position)
+		if in_hand:
+			if arrow_indicator:
+				arrow_indicator.hide_arrow()
+			if hex_map:
+				hex_map.clear_highlights()
+				hex_map.highlight_tiles(
+					_valid_targets,
+					Color(0.3, 0.8, 1.0, 0.8),
+				)
+		elif card_data.card_type != CardData.CardType.RESOURCE:
 			_update_hover(event.global_position)
 		return
 	if event is InputEventMouseButton:
@@ -246,6 +256,15 @@ func _stop_all_pulses() -> void:
 		)
 		if tile and tile.has_method("stop_pulse"):
 			tile.stop_pulse()
+
+
+func _is_in_hand_area(screen_pos: Vector2) -> bool:
+	var vp_h: float = get_viewport_rect().size.y
+	var focused_top: float = (
+		vp_h - float(UIHelpers.CARD_HEIGHT)
+		- float(UIHelpers.BOTTOM_BAR_HEIGHT) * 0.2
+	)
+	return screen_pos.y >= focused_top - 100.0
 
 
 func _screen_to_ground(screen_pos: Vector2) -> Vector3:
