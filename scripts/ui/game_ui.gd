@@ -9,13 +9,15 @@ var camera: Camera3D
 var card_effects: Node
 var active_unit: Node3D
 var arrow_indicator: Control
+var card_gallery: CardGalleryUI
 
 var _fps_label: Label
-
+var _current_cards: Array[CardData] = []
 var _font_bold: Font = preload(
 	"res://assets/fonts/Cinzel-Bold.ttf"
 )
 var _font_regular: Font = _font_bold
+
 @onready var full_screen: MarginContainer = $FullScreen
 @onready var bottom_bar: PanelContainer = $FullScreen/VBox/BottomBar
 @onready var card_hand: Control = %CardHand
@@ -26,6 +28,9 @@ var _font_regular: Font = _font_bold
 
 
 func _ready() -> void:
+	card_gallery = CardGalleryUI.new()
+	card_gallery.visible = false
+	add_child(card_gallery)
 	end_turn_button.pressed.connect(
 		func() -> void: end_turn_pressed.emit()
 	)
@@ -37,6 +42,7 @@ func _ready() -> void:
 		func(name: String) -> void:
 			action_pressed.emit(name)
 	)
+	card_hand.gallery_requested.connect(_toggle_gallery)
 	_setup_fps_label()
 	_apply_styles()
 	_apply_sizes()
@@ -105,6 +111,19 @@ func show_settlement_info(
 	unit_info.update_settlement(sname, color, coord, terrain)
 
 
+
+
+func _toggle_gallery() -> void:
+	if card_gallery.visible:
+		card_gallery.hide_gallery()
+		full_screen.visible = true
+	else:
+		full_screen.visible = false
+		card_gallery.show_gallery(_current_cards)
+
+
+func set_current_cards(cards: Array[CardData]) -> void:
+	_current_cards = cards
 
 
 func _apply_styles() -> void:

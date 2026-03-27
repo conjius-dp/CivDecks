@@ -94,6 +94,7 @@ func _ready() -> void:
 
 	# Start the game
 	turn_manager.start_game()
+	game_ui.set_current_cards(card_manager.deck_manager.cards)
 	game_ui.card_hand.show_cards(
 		card_manager.deck_manager.cards
 	)
@@ -153,6 +154,7 @@ func _on_end_turn() -> void:
 	turn_manager.end_turn()
 	card_manager.end_turn()
 	_highlight_active_unit()
+	game_ui.set_current_cards(card_manager.deck_manager.cards)
 	game_ui.card_hand.show_cards(
 		card_manager.deck_manager.cards
 	)
@@ -180,6 +182,7 @@ func _on_unit_moved() -> void:
 func _on_gathered(gained_cards: Array[CardData]) -> void:
 	for card: CardData in gained_cards:
 		card_manager.deck_manager.add_card(card)
+	game_ui.set_current_cards(card_manager.deck_manager.cards)
 	game_ui.card_hand.show_cards(
 		card_manager.deck_manager.cards
 	)

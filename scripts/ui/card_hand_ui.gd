@@ -1,6 +1,7 @@
 extends Control
 
 signal card_dropped(card: CardData, target: Vector2i)
+signal gallery_requested
 
 var hex_map: Node3D
 var camera: Camera3D
@@ -158,6 +159,13 @@ func _get_card_children() -> Array[Control]:
 func _input(event: InputEvent) -> void:
 	if _any_dragging:
 		return
+	if event is InputEventMouseButton:
+		if (event.button_index == MOUSE_BUTTON_RIGHT
+			and event.pressed
+		):
+			gallery_requested.emit()
+			get_viewport().set_input_as_handled()
+			return
 	if event is InputEventMouseMotion:
 		_update_focus(event.global_position)
 
