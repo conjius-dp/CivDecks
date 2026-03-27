@@ -6,6 +6,7 @@ on:
 
 env:
   GODOT_VERSION: "4.6.1"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-test-lint:
@@ -50,6 +51,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Cache Godot + templates
         uses: actions/cache@v4
@@ -100,10 +103,21 @@ jobs:
           /Applications/Godot.app/Contents/MacOS/Godot --headless --export-release "macOS" build/civ-deckbuilder.zip 2>&1
         timeout-minutes: 3
 
+      - name: Generate version
+        id: version
+        run: |
+          PATCH=$(git rev-list --count HEAD)
+          IS_STABLE=${{ contains(github.event.head_commit.message, '#stable-release') }}
+          if [ "$IS_STABLE" = "true" ]; then
+            echo "tag=v0.1.${PATCH}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=v0.1.${PATCH}-nightly" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: civ-deckbuilder-macOS
+          name: civ-deckbuilder-${{ steps.version.outputs.tag }}-macOS
           path: build/civ-deckbuilder.zip
 
   publish:
@@ -149,7 +163,7 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
-          name: civ-deckbuilder-macOS
+          name: civ-deckbuilder-${{ needs.publish.outputs.tag }}-macOS
           path: build
 
       - name: Create GitHub release
