@@ -6,7 +6,7 @@ on:
 
 env:
   GODOT_VERSION: "4.6.1"
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
 jobs:
   build-test-lint:
@@ -33,7 +33,7 @@ jobs:
       - name: lint
         run: pip install -q gdtoolkit && gdlint scripts/**/*.gd resources/**/*.gd
 
-  buildmacos:
+  exportmacos:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -131,7 +131,7 @@ jobs:
           fi
 
   release:
-    needs: [publish, buildmacos]
+    needs: [publish, exportmacos]
     runs-on: ubuntu-latest
     permissions:
       contents: write
