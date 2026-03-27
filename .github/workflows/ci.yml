@@ -206,12 +206,14 @@ jobs:
             gh release upload "$TAG" $FILES --clobber
           fi
           if ls screenshots/screenshot-*.png 1>/dev/null 2>&1; then
+            cp scripts/tools/gh-pages-index.html /tmp/index.html
+            cp screenshots/screenshot-*.png /tmp/
             git config user.name "github-actions"
             git config user.email "github-actions@github.com"
             git checkout --orphan gh-pages-tmp
             git rm -rf . 2>/dev/null || true
-            cp screenshots/screenshot-*.png .
-            cp $GITHUB_WORKSPACE/scripts/tools/gh-pages-index.html index.html
+            cp /tmp/screenshot-*.png .
+            cp /tmp/index.html .
             git add screenshot-*.png index.html
             git commit -m "Update screenshots and landing page"
             git push origin gh-pages-tmp:gh-pages --force
