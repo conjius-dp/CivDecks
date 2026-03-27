@@ -1,4 +1,5 @@
 name: CI
+run-name: "${{ github.event.head_commit.message }}"
 
 on:
   push:
@@ -130,14 +131,8 @@ jobs:
           fi
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "is_stable=$IS_STABLE" >> "$GITHUB_OUTPUT"
-      - name: rename-run
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          TAG="${{ steps.version.outputs.tag }}"
-          MSG=$(git log -1 --pretty=%s)
-          gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }} \
-            -X PATCH -f name="[$TAG] $MSG" 2>/dev/null || true
+      - name: announce
+        run: echo "::notice::Version ${{ steps.version.outputs.tag }}"
       - name: tag
         run: |
           TAG="${{ steps.version.outputs.tag }}"
