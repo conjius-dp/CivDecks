@@ -132,12 +132,11 @@ func _start_drag(mouse_pos: Vector2) -> void:
 
 func _start_resource_reject() -> void:
 	drag_started.emit(card_data)
+	await get_tree().create_timer(0.2).timeout
+	_dragging = false
+	z_index = 0
+	drag_ended.emit(card_data, Vector2i.ZERO, false)
 	var tween := create_tween()
-	tween.tween_interval(0.1)
-	tween.tween_callback(func() -> void:
-		_dragging = false
-		_returning = true
-	)
 	tween.tween_property(
 		self, "modulate", Color(1.0, 0.3, 0.3, 0.5), 0.1
 	).set_trans(Tween.TRANS_SINE)
@@ -145,14 +144,6 @@ func _start_resource_reject() -> void:
 	tween.tween_property(
 		self, "modulate", Color.WHITE, 0.1
 	).set_trans(Tween.TRANS_SINE)
-	tween.parallel().tween_property(
-		self, "global_position", _original_position, 0.3
-	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	tween.tween_callback(func() -> void:
-		_returning = false
-		z_index = 0
-		drag_ended.emit(card_data, Vector2i.ZERO, false)
-	)
 
 
 func _cancel_drag() -> void:
