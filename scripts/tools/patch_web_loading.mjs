@@ -23,8 +23,8 @@ img#status-splash {
   animation: logoFadeIn 16s linear both !important;
 }
 @keyframes logoFadeIn {
-  from { opacity: 0; transform: scale(0.21); }
-  to { opacity: 1; transform: scale(0.84); }
+  from { opacity: 0; transform: scale(0.42); }
+  to { opacity: 1; transform: scale(0.53); }
 }
 #status-progress {
   width: 300px !important; height: 12px !important;
@@ -123,7 +123,7 @@ const initScript = `<script>
 				if (logo) {
 					logo.style.animation = 'none';
 					logo.style.opacity = '1';
-					logo.style.transform = 'scale(0.84)';
+					logo.style.transform = 'scale(0.53)';
 				}
 				var status = document.getElementById('status');
 				var fillEl = document.querySelector('.progress-fill');
