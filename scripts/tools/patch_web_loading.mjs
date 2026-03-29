@@ -32,7 +32,7 @@ img#status-splash {
   border: none; background: #1a1a1a; border-radius: 6px;
   position: fixed !important;
   top: 50% !important; left: 50% !important;
-  transform: translate(-50%, 210px) !important;
+  transform: translate(-50%, 70px) !important;
   margin: 0 !important; padding: 0 !important;
   overflow: hidden;
 }
