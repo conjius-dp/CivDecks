@@ -3,7 +3,6 @@ import { readFileSync, writeFileSync } from "fs";
 const file = process.argv[2];
 let html = readFileSync(file, "utf8");
 
-// Replace Godot's loading screen with our custom one
 const css = `<style>
 body { background: #000 !important; margin: 0; overflow: hidden; }
 #status {
@@ -17,7 +16,6 @@ img#status-splash, img#status-splash.fullsize--true {
   max-width: 950px !important; max-height: none !important;
   object-fit: contain !important;
   image-rendering: auto !important; opacity: 0;
-  transition: opacity 0.2s;
   position: fixed !important;
   top: 50% !important; left: 50% !important;
   right: auto !important; bottom: auto !important;
@@ -28,24 +26,20 @@ img#status-splash, img#status-splash.fullsize--true {
   width: 300px !important; height: 12px !important;
   appearance: none; -webkit-appearance: none;
   border: none; background: #1a1a1a; border-radius: 6px;
-  transition: none;
   position: fixed !important;
   top: 50% !important; left: 50% !important;
   transform: translate(-50%, 210px) !important;
   margin: 0 !important; padding: 0 !important;
 }
 #status-progress::-webkit-progress-bar { background: #1a1a1a; border-radius: 6px; }
-#status-progress::-webkit-progress-value { background: #e8c055; border-radius: 6px; transition: width 0.3s; }
+#status-progress::-webkit-progress-value { background: #e8c055; border-radius: 6px; }
 #status-progress::-moz-progress-bar { background: #e8c055; border-radius: 6px; }
-#status-notice {
-  color: #555; font-family: sans-serif; font-size: 12px;
-  margin-top: 16px; letter-spacing: 1px;
-}
+#status-notice { display: none !important; }
 canvas { background: #000 !important; }
 </style>`;
 html = html.replace("<head>", `<head><script src="coi-serviceworker.min.js"></script>${css}`);
 
-// Download = 0-60%, initialization = 60-95%, first frame = 95-100%
+// Disable the default progress handler — our script handles everything
 const oldProgress = `'onProgress': function (current, total) {
 				if (current > 0 && total > 0) {
 					statusProgress.value = current;
@@ -57,53 +51,63 @@ const oldProgress = `'onProgress': function (current, total) {
 			},`;
 
 const newProgress = `'onProgress': function (current, total) {
-				if (current > 0 && total > 0) {
-					statusProgress.max = 1000;
-					var v = Math.floor((current / total) * 600);
-					statusProgress.value = v;
-					var logo = document.getElementById('status-splash');
-					if (logo) logo.style.opacity = v / 1000;
+				if (window.__civdecksProgress && current > 0 && total > 0) {
+					window.__civdecksProgress.target = current / total;
 				}
 			},`;
 
 html = html.replace(oldProgress, newProgress);
 
-// Inject a script that animates 60-95% during init and fades on first frame
 const initScript = `<script>
 (function() {
-	var initStarted = false;
-	var initInterval = null;
-	var origStartGame = null;
+	var state = {
+		target: 0,
+		displayed: 0,
+		done: false
+	};
+	window.__civdecksProgress = state;
 
-	// Watch for download complete -> start fake progress 60-95%
-	var observer = new MutationObserver(function() {
-		var bar = document.getElementById('status-progress');
-		if (bar && bar.value >= 600 && !initStarted) {
-			initStarted = true;
-			var fakeProgress = 600;
-			var logo = document.getElementById('status-splash');
-			initInterval = setInterval(function() {
-				fakeProgress = Math.min(fakeProgress + 3, 950);
-				bar.value = fakeProgress;
-				if (logo) logo.style.opacity = fakeProgress / 1000;
-			}, 50);
+	var bar = null;
+	var logo = null;
+
+	function tick() {
+		if (state.done) return;
+
+		if (!bar) bar = document.getElementById('status-progress');
+		if (!logo) logo = document.getElementById('status-splash');
+
+		// Smooth lerp toward target (download goes to ~0.6, init ~0.95)
+		var gap = state.target - state.displayed;
+		// Move slowly: 2% of remaining gap per frame, minimum 0.001
+		state.displayed += Math.max(gap * 0.02, 0.001);
+		// During init (after download), creep toward 0.95
+		if (state.target >= 0.99 && state.displayed < 0.95) {
+			state.displayed += 0.002;
 		}
-	});
-	observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+		state.displayed = Math.min(state.displayed, 0.99);
 
-	// Detect first canvas frame -> complete bar and fade out
+		if (bar) {
+			bar.max = 1000;
+			bar.value = Math.floor(state.displayed * 1000);
+		}
+		if (logo) {
+			logo.style.opacity = state.displayed;
+		}
+
+		requestAnimationFrame(tick);
+	}
+	requestAnimationFrame(tick);
+
+	// Detect canvas ready -> snap to 100% and fade out
 	var checkCanvas = setInterval(function() {
 		var canvas = document.querySelector('canvas');
 		if (canvas && canvas.width > 0 && canvas.height > 0) {
 			try {
-				var ctx = canvas.getContext('2d') || canvas.getContext('webgl') || canvas.getContext('webgl2');
+				var ctx = canvas.getContext('webgl2') || canvas.getContext('webgl') || canvas.getContext('2d');
 				if (ctx) {
 					clearInterval(checkCanvas);
-					if (initInterval) clearInterval(initInterval);
-					observer.disconnect();
-					var bar = document.getElementById('status-progress');
+					state.done = true;
 					if (bar) { bar.max = 1000; bar.value = 1000; }
-					var logo = document.getElementById('status-splash');
 					if (logo) logo.style.opacity = 1;
 					setTimeout(function() {
 						var status = document.getElementById('status');
@@ -111,7 +115,7 @@ const initScript = `<script>
 							status.style.opacity = '0';
 							setTimeout(function() { status.style.display = 'none'; }, 600);
 						}
-					}, 300);
+					}, 400);
 				}
 			} catch(e) {}
 		}
@@ -121,6 +125,5 @@ const initScript = `<script>
 
 html = html.replace("</head>", `${initScript}</head>`);
 
-// Remove the onPrint-based fade (replaced by canvas detection above)
 writeFileSync(file, html);
 console.log("Patched loading screen:", file);
