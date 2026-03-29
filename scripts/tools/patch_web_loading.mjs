@@ -90,11 +90,7 @@ const initScript = `<script>
 		}
 	}, 10);
 
-	// Add CSS-animated progress bar
-	var fill = document.createElement('div');
-	fill.className = 'progress-fill';
-	fill.innerHTML = '<div class="progress-fill-inner"></div>';
-	document.body.appendChild(fill);
+	// progress-fill div is injected into body below
 
 	// Detect game ready -> snap to 100% and fade out
 	var canvasFrames = 0;
@@ -136,6 +132,9 @@ const initScript = `<script>
 </script>`;
 
 html = html.replace("</head>", `${initScript}</head>`);
+
+// Inject progress bar div directly into body
+html = html.replace("<body>", `<body><div class="progress-fill"><div class="progress-fill-inner"></div></div>`);
 
 writeFileSync(file, html);
 console.log("Patched loading screen:", file);
