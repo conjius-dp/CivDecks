@@ -17,6 +17,7 @@ img#status-splash, img#status-splash.fullsize--true {
   object-fit: contain !important;
   image-rendering: auto !important;
   animation: logoFadeIn 16s linear forwards !important;
+  will-change: transform, opacity;
   position: fixed !important;
   top: 50% !important; left: 50% !important;
   right: auto !important; bottom: auto !important;
@@ -24,8 +25,8 @@ img#status-splash, img#status-splash.fullsize--true {
   transform: translate(-50%, -60%) !important;
 }
 @keyframes logoFadeIn {
-  0% { opacity: 0; }
-  100% { opacity: 1; }
+  0% { opacity: 0; transform: translate(-50%, -60%) scale(0.005); }
+  100% { opacity: 1; transform: translate(-50%, -60%) scale(1); }
 }
 #status-progress {
   width: 300px !important; height: 12px !important;
@@ -124,6 +125,7 @@ const initScript = `<script>
 				if (logo) {
 					logo.style.animation = 'none';
 					logo.style.opacity = '1';
+					logo.style.transform = 'translate(-50%, -60%) scale(1)';
 				}
 				var status = document.getElementById('status');
 				var fillEl = document.querySelector('.progress-fill');
