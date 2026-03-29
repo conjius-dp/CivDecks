@@ -16,7 +16,7 @@ img#status-splash, img#status-splash.fullsize--true {
   max-width: 950px !important; max-height: none !important;
   object-fit: contain !important;
   image-rendering: auto !important;
-  animation: logoFadeIn 10s ease-out forwards !important;
+  animation: logoFadeIn 30s linear forwards !important;
   position: fixed !important;
   top: 50% !important; left: 50% !important;
   right: auto !important; bottom: auto !important;
@@ -55,7 +55,7 @@ canvas { background: #000 !important; }
   background: #e8c055; border-radius: 6px;
   transform-origin: left center;
   transform: scaleX(0);
-  animation: fillBar 12s linear forwards;
+  animation: fillBar 30s linear forwards;
   will-change: transform;
 }
 @keyframes fillBar {
