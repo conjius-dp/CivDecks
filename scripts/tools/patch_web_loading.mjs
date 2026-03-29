@@ -16,18 +16,16 @@ img#status-splash, img#status-splash.fullsize--true {
   max-width: 950px !important; max-height: none !important;
   object-fit: contain !important;
   image-rendering: auto !important;
-  animation: logoFadeIn 16s linear forwards !important;
-  will-change: scale, opacity;
   position: fixed !important;
-  top: 50% !important; left: 50% !important;
-  right: auto !important; bottom: auto !important;
-  margin: 0 !important; padding: 0 !important;
-  transform: translate(-50%, -60%) !important;
-  scale: 0.005;
+  top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+  margin: auto !important; padding: 0 !important;
+  opacity: 0;
+  animation: logoFadeIn 16s linear forwards !important;
+  will-change: transform, opacity;
 }
 @keyframes logoFadeIn {
-  0% { opacity: 0; scale: 0.005; }
-  100% { opacity: 1; scale: 1; }
+  0% { opacity: 0; transform: scale(0.005); }
+  100% { opacity: 1; transform: scale(1); }
 }
 #status-progress {
   width: 300px !important; height: 12px !important;
@@ -126,7 +124,7 @@ const initScript = `<script>
 				if (logo) {
 					logo.style.animation = 'none';
 					logo.style.opacity = '1';
-					logo.style.scale = '1';
+					logo.style.transform = 'scale(1)';
 				}
 				var status = document.getElementById('status');
 				var fillEl = document.querySelector('.progress-fill');
