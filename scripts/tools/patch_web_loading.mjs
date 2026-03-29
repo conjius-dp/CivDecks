@@ -15,7 +15,7 @@ body { background: #000 !important; margin: 0; overflow: hidden; }
 #status-splash { max-width: none; }
 #status-splash img {
   width: auto; height: auto; max-width: 80vw; max-height: 40vh;
-  image-rendering: auto;
+  image-rendering: auto; opacity: 0; transition: opacity 0.2s;
 }
 #status-progress {
   width: 300px; height: 4px; margin-top: 40px;
@@ -48,7 +48,10 @@ const oldProgress = `'onProgress': function (current, total) {
 const newProgress = `'onProgress': function (current, total) {
 				if (current > 0 && total > 0) {
 					statusProgress.max = 1000;
-					statusProgress.value = Math.floor((current / total) * 600);
+					var v = Math.floor((current / total) * 600);
+					statusProgress.value = v;
+					var logo = document.querySelector('#status-splash img');
+					if (logo) logo.style.opacity = v / 1000;
 				}
 			},`;
 
@@ -67,9 +70,11 @@ const initScript = `<script>
 		if (bar && bar.value >= 600 && !initStarted) {
 			initStarted = true;
 			var fakeProgress = 600;
+			var logo = document.querySelector('#status-splash img');
 			initInterval = setInterval(function() {
 				fakeProgress = Math.min(fakeProgress + 3, 950);
 				bar.value = fakeProgress;
+				if (logo) logo.style.opacity = fakeProgress / 1000;
 			}, 50);
 		}
 	});
@@ -87,6 +92,8 @@ const initScript = `<script>
 					observer.disconnect();
 					var bar = document.getElementById('status-progress');
 					if (bar) { bar.max = 1000; bar.value = 1000; }
+					var logo = document.querySelector('#status-splash img');
+					if (logo) logo.style.opacity = 1;
 					setTimeout(function() {
 						var status = document.getElementById('status');
 						if (status) {
