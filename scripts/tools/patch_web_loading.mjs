@@ -27,31 +27,31 @@ img#status-splash {
   to { opacity: 1; transform: scale(0.53); }
 }
 #status-progress {
-  width: 300px !important; height: 12px !important;
+  width: 300px !important; height: 6px !important;
   appearance: none; -webkit-appearance: none;
-  border: none; background: #1a1a1a; border-radius: 6px;
+  border: none; background: #1a1a1a; border-radius: 3px;
   position: fixed !important;
   top: 50% !important; left: 50% !important;
   transform: translate(-50%, 100px) !important;
   margin: 0 !important; padding: 0 !important;
   overflow: hidden;
 }
-#status-progress::-webkit-progress-bar { background: #1a1a1a; border-radius: 6px; }
-#status-progress::-webkit-progress-value { background: #e8c055; border-radius: 6px; }
-#status-progress::-moz-progress-bar { background: #e8c055; border-radius: 6px; }
+#status-progress::-webkit-progress-bar { background: #1a1a1a; border-radius: 3px; }
+#status-progress::-webkit-progress-value { background: #e8c055; border-radius: 3px; }
+#status-progress::-moz-progress-bar { background: #e8c055; border-radius: 3px; }
 #status-notice { display: none !important; }
 canvas { background: #000 !important; }
 .progress-fill {
   position: fixed; top: 50%; left: 50%;
   transform: translate(-50%, 100px);
-  width: 300px; height: 12px;
+  width: 300px; height: 6px;
   background: #1a1a1a;
-  border-radius: 6px; overflow: hidden;
+  border-radius: 3px; overflow: hidden;
   z-index: 999; pointer-events: none;
 }
 .progress-fill-inner {
   width: 100%; height: 100%;
-  background: #e8c055; border-radius: 6px;
+  background: #e8c055; border-radius: 3px;
   transform-origin: left center;
   transform: scaleX(0);
   animation: fillBar 16s linear forwards;
