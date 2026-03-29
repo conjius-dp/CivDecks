@@ -46,8 +46,9 @@ canvas { background: #000 !important; }
   position: fixed; top: 50%; left: 50%;
   transform: translate(-50%, 210px);
   width: 300px; height: 12px;
+  background: #1a1a1a;
   border-radius: 6px; overflow: hidden;
-  z-index: 11; pointer-events: none;
+  z-index: 999; pointer-events: none;
 }
 .progress-fill-inner {
   width: 0%; height: 100%;
