@@ -51,13 +51,16 @@ canvas { background: #000 !important; }
   z-index: 999; pointer-events: none;
 }
 .progress-fill-inner {
-  width: 0%; height: 100%;
+  width: 100%; height: 100%;
   background: #e8c055; border-radius: 6px;
-  animation: fillBar 10s ease-out forwards;
+  transform-origin: left center;
+  transform: scaleX(0);
+  animation: fillBar 12s linear forwards;
+  will-change: transform;
 }
 @keyframes fillBar {
-  0% { width: 0%; }
-  100% { width: 98%; }
+  0% { transform: scaleX(0); }
+  100% { transform: scaleX(0.98); }
 }
 </style>`;
 html = html.replace("<head>", `<head><script src="coi-serviceworker.min.js"></script>${css}`);
@@ -103,7 +106,7 @@ const initScript = `<script>
 				var inner = document.querySelector('.progress-fill-inner');
 				if (inner) {
 					inner.style.animation = 'none';
-					inner.style.width = '100%';
+					inner.style.transform = 'scaleX(1)';
 				}
 				var logo = document.getElementById('status-splash');
 				if (logo) {
