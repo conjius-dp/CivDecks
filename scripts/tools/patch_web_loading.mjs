@@ -101,7 +101,7 @@ const initScript = `<script>
 		var canvas = document.querySelector('canvas');
 		if (canvas && canvas.width > 100 && canvas.height > 100) {
 			canvasFrames++;
-			if (canvasFrames >= 5) {
+			if (canvasFrames >= 15) {
 				clearInterval(checkCanvas);
 				var inner = document.querySelector('.progress-fill-inner');
 				if (inner) {
@@ -113,19 +113,18 @@ const initScript = `<script>
 					logo.style.animation = 'none';
 					logo.style.opacity = '1';
 				}
-				setTimeout(function() {
-					var status = document.getElementById('status');
-					var fillEl = document.querySelector('.progress-fill');
-					if (status) {
-						status.style.opacity = '0';
-						setTimeout(function() { status.style.display = 'none'; }, 600);
-					}
-					if (fillEl) {
-						fillEl.style.opacity = '0';
-						fillEl.style.transition = 'opacity 0.5s';
-						setTimeout(function() { fillEl.style.display = 'none'; }, 600);
-					}
-				}, 400);
+				var status = document.getElementById('status');
+				var fillEl = document.querySelector('.progress-fill');
+				if (status) {
+					status.style.transition = 'opacity 0.3s';
+					status.style.opacity = '0';
+					setTimeout(function() { status.style.display = 'none'; }, 400);
+				}
+				if (fillEl) {
+					fillEl.style.transition = 'opacity 0.3s';
+					fillEl.style.opacity = '0';
+					setTimeout(function() { fillEl.style.display = 'none'; }, 400);
+				}
 			}
 		} else {
 			canvasFrames = 0;
