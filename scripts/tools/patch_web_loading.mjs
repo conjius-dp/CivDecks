@@ -35,8 +35,8 @@ img#status-splash, img#status-splash.fullsize--true {
   margin: 0 !important; padding: 0 !important;
 }
 #status-progress::-webkit-progress-bar { background: #1a1a1a; border-radius: 6px; }
-#status-progress::-webkit-progress-value { background: #d9a633; border-radius: 6px; transition: width 0.3s; }
-#status-progress::-moz-progress-bar { background: #d9a633; border-radius: 6px; }
+#status-progress::-webkit-progress-value { background: #e8c055; border-radius: 6px; transition: width 0.3s; }
+#status-progress::-moz-progress-bar { background: #e8c055; border-radius: 6px; }
 #status-notice {
   color: #555; font-family: sans-serif; font-size: 12px;
   margin-top: 16px; letter-spacing: 1px;
