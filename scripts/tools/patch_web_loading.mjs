@@ -113,7 +113,7 @@ const initScript = `<script>
 				if (pixel[0] === 0 && pixel[1] === 0 && pixel[2] === 0) { return; }
 			} catch(e) { return; }
 			canvasFrames++;
-			if (canvasFrames >= 3) {
+			if (canvasFrames >= 1) {
 				clearInterval(checkCanvas);
 				var inner = document.querySelector('.progress-fill-inner');
 				if (inner) {
@@ -128,14 +128,14 @@ const initScript = `<script>
 				var status = document.getElementById('status');
 				var fillEl = document.querySelector('.progress-fill');
 				if (status) {
-					status.style.transition = 'opacity 0.15s';
+					status.style.transition = 'none';
 					status.style.opacity = '0';
-					setTimeout(function() { status.style.display = 'none'; }, 200);
+					status.style.display = 'none';
 				}
 				if (fillEl) {
-					fillEl.style.transition = 'opacity 0.15s';
+					fillEl.style.transition = 'none';
 					fillEl.style.opacity = '0';
-					setTimeout(function() { fillEl.style.display = 'none'; }, 200);
+					fillEl.style.display = 'none';
 				}
 			}
 		} else {
