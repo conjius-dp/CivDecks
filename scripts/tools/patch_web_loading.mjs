@@ -12,19 +12,17 @@ body { background: #000 !important; margin: 0; overflow: hidden; }
   justify-content: center; background: #000; z-index: 10;
   transition: opacity 0.5s;
 }
-#status-splash { max-width: none; }
-img#status-splash {
+img#status-splash, img#status-splash.fullsize--true {
   width: 477px !important; height: 143px !important;
   max-width: 477px !important; max-height: 143px !important;
   object-fit: contain !important;
   image-rendering: auto !important; opacity: 0;
   transition: opacity 0.2s;
-  position: absolute !important;
+  position: fixed !important;
   top: 50% !important; left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-}
-img#status-splash.fullsize--true {
-  width: 477px !important; height: 143px !important;
+  right: auto !important; bottom: auto !important;
+  margin: 0 !important; padding: 0 !important;
+  transform: translate(-50%, -60%) !important;
 }
 #status-progress {
   width: 210px; height: 36px; margin-top: 40px;
