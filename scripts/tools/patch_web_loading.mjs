@@ -158,7 +158,7 @@ window.addEventListener('keydown', function(e) {
 </script>`);
 
 // Remove fullsize class so Godot doesn't force 100% width/height
-html = html.replace('fullsize--true', 'fullsize--false');
+html = html.replaceAll('fullsize--true', 'fullsize--false');
 
 writeFileSync(file, html);
 console.log("Patched loading screen:", file);
