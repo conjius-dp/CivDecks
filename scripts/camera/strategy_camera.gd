@@ -30,18 +30,18 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	var input_dir := Vector2.ZERO
 	if not input_enabled:
-		_apply_smooth(delta)
-		return
-	if Input.is_action_pressed("pan_up"):
-		input_dir.y -= 1.0
-	if Input.is_action_pressed("pan_down"):
-		input_dir.y += 1.0
-	if Input.is_action_pressed("pan_left"):
-		input_dir.x -= 1.0
-	if Input.is_action_pressed("pan_right"):
-		input_dir.x += 1.0
+		_dragging = false
+	var input_dir := Vector2.ZERO
+	if input_enabled:
+		if Input.is_action_pressed("pan_up"):
+			input_dir.y -= 1.0
+		if Input.is_action_pressed("pan_down"):
+			input_dir.y += 1.0
+		if Input.is_action_pressed("pan_left"):
+			input_dir.x -= 1.0
+		if Input.is_action_pressed("pan_right"):
+			input_dir.x += 1.0
 
 	if input_dir != Vector2.ZERO:
 		var forward := -global_transform.basis.z

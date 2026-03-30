@@ -78,9 +78,11 @@ func show_gallery(
 	_hand_btn.visible = true
 	_update_hand_visual()
 	# Fly hand button in from below
-	var vp_h: float = get_viewport().get_visible_rect().size.y
 	var final_y: float = _hand_btn.position.y
-	_hand_btn.position.y = vp_h + _hand_btn.size.y
+	_hand_btn.position.y = (
+		get_viewport().get_visible_rect().size.y
+		+ _hand_btn.size.y
+	)
 	var hand_tw := _hand_btn.create_tween()
 	hand_tw.tween_property(
 		_hand_btn, "position:y", final_y, ANIM_DURATION,
