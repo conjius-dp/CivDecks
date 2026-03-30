@@ -17,16 +17,41 @@ func _setup_multimesh() -> void:
 	_multimesh = MultiMesh.new()
 	_multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	_multimesh.use_custom_data = true
-	var mat := StandardMaterial3D.new()
-	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.albedo_color = Color(0.6, 0.6, 0.65, 0.5)
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	mat.cull_mode = BaseMaterial3D.CULL_BACK
+	var shader := Shader.new()
+	shader.code = (
+		"shader_type spatial;\n"
+		+ "render_mode blend_mix, depth_draw_alpha_prepass,"
+		+ " cull_back, unshaded;\n"
+		+ "uniform vec4 cloud_color : source_color"
+		+ " = vec4(0.6, 0.6, 0.65, 0.5);\n"
+		+ "float hash(vec2 p) {\n"
+		+ "  return fract(sin(dot(p, vec2(127.1, 311.7)))"
+		+ " * 43758.5453);\n"
+		+ "}\n"
+		+ "void vertex() {\n"
+		+ "  vec3 o = MODEL_MATRIX[3].xyz;\n"
+		+ "  float ph = hash(o.xz) * 6.2832;\n"
+		+ "  float ds = 0.03 + hash(o.xz+vec2(1.0)) * 0.05;\n"
+		+ "  float bs = 0.3 + hash(o.xz+vec2(2.0)) * 0.5;\n"
+		+ "  float ba = 0.1 + hash(o.xz+vec2(3.0)) * 0.2;\n"
+		+ "  VERTEX *= 1.0 + ba * sin(TIME * bs + ph);\n"
+		+ "  VERTEX.x += sin(TIME * ds + ph) * 0.5;\n"
+		+ "  VERTEX.z += cos(TIME * ds * 0.7 + ph * 1.3)"
+		+ " * 0.5;\n"
+		+ "}\n"
+		+ "void fragment() {\n"
+		+ "  ALBEDO = cloud_color.rgb;\n"
+		+ "  ALPHA = cloud_color.a;\n"
+		+ "}\n"
+	)
+	var mat := ShaderMaterial.new()
+	mat.shader = shader
+	mat.render_priority = 1
 	var sphere := SphereMesh.new()
 	sphere.radius = 1.0
 	sphere.height = 1.0
-	sphere.radial_segments = 6
-	sphere.rings = 3
+	sphere.radial_segments = 12
+	sphere.rings = 6
 	sphere.material = mat
 	_multimesh.mesh = sphere
 	_multimesh.instance_count = 0
