@@ -18,6 +18,7 @@ var _original_pos: Vector2 = Vector2.ZERO
 var _toggled_on: bool = false
 var _hovered: bool = false
 var _in_gallery: bool = false
+var _title_label: Label
 var _glow_mat: ShaderMaterial
 var _sv: SubViewport
 var _draw_ctrl: Control
@@ -111,6 +112,7 @@ func setup(face_down: bool) -> void:
 	var label_cy: float = (
 		_count_label.position.y + _count_label.size.y * 0.5
 	)
+	var hole_px: float = 44.0 * UIHelpers.UI_SCALE / UIHelpers.UI_SCALE
 	_glow_mat.set_shader_parameter(
 		"hole_center", Vector2(
 			label_cx / float(total_w),
@@ -118,9 +120,31 @@ func setup(face_down: bool) -> void:
 		)
 	)
 	_glow_mat.set_shader_parameter(
-		"hole_radius", 22.0 / float(total_w)
+		"hole_radius", hole_px / float(total_w)
+	)
+	_glow_mat.set_shader_parameter(
+		"aspect", float(total_w) / float(total_h)
 	)
 	_draw_ctrl.queue_redraw()
+
+
+func set_title(text: String) -> void:
+	_title_label = Label.new()
+	_title_label.text = text
+	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_title_label.add_theme_font_override("font", _font_bold)
+	_title_label.add_theme_font_size_override(
+		"font_size", UIHelpers.s(8)
+	)
+	_title_label.add_theme_color_override(
+		"font_color", Color(0.85, 0.78, 0.65)
+	)
+	_title_label.position = Vector2(
+		0, size.y + 4.0
+	)
+	_title_label.size = Vector2(size.x, UIHelpers.s(12))
+	_title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_title_label)
 
 
 func update_count(count: int, hide_on_zero: bool = true) -> void:
@@ -420,6 +444,7 @@ static func _create_glow_shader() -> ShaderMaterial:
 		+ "uniform vec3 glow_color = vec3(0.9, 0.8, 0.6);\n"
 		+ "uniform vec2 hole_center = vec2(0.5, 0.5);\n"
 		+ "uniform float hole_radius = 0.0;\n"
+		+ "uniform float aspect = 1.0;\n"
 		+ "void fragment() {\n"
 		+ "  vec4 tex = texture(TEXTURE, UV);\n"
 		+ "  float acc = 0.0;\n"
@@ -434,14 +459,25 @@ static func _create_glow_shader() -> ShaderMaterial:
 		+ "      total += w;\n"
 		+ "    }\n"
 		+ "  }\n"
-		+ "  float d = distance(UV, hole_center);\n"
+		+ "  vec2 diff = UV - hole_center;\n"
+		+ "  diff.x *= aspect;\n"
+		+ "  float d = length(diff);\n"
 		+ "  float hole = smoothstep("
-		+ "hole_radius - 0.02, hole_radius, d);\n"
+		+ "hole_radius - 0.015, hole_radius, d);\n"
 		+ "  float card_a = tex.a * hole;\n"
+		+ "  float border_w = 0.006;\n"
+		+ "  float ring = (1.0 - smoothstep("
+		+ "hole_radius - border_w, hole_radius, d))\n"
+		+ "    * smoothstep("
+		+ "hole_radius - border_w * 2.0,"
+		+ " hole_radius - border_w, d);\n"
+		+ "  vec3 border_col = vec3(0.65, 0.5, 0.2);\n"
 		+ "  float glow = (acc / total)"
-		+ " * (1.0 - card_a) * glow_strength * 0.35;\n"
+		+ " * (1.0 - card_a) * glow_strength * 0.2;\n"
 		+ "  vec3 col = mix(glow_color, tex.rgb, card_a);\n"
+		+ "  col = mix(col, border_col, ring);\n"
 		+ "  float fa = max(card_a, glow);\n"
+		+ "  fa = max(fa, ring * tex.a);\n"
 		+ "  COLOR = vec4(col, fa);\n"
 		+ "}\n"
 	)

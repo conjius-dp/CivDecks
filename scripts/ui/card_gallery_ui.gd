@@ -72,9 +72,9 @@ func show_gallery(
 	_show_hand = initial_hand
 	_show_discard = initial_discard
 	_scroll_offset = 0.0
-	_build_all_cards()
-	_layout_visible_cards()
 	visible = true
+	_build_all_cards.call_deferred()
+	_layout_visible_cards.call_deferred()
 	_hand_btn.visible = true
 	_update_hand_visual()
 	# Fly hand button in from below

@@ -75,9 +75,11 @@ func _ready() -> void:
 func _setup_piles() -> void:
 	_draw_pile_ui = CardPileUI.new()
 	_draw_pile_ui.setup(true)
+	_draw_pile_ui.set_title("Draw")
 	add_child(_draw_pile_ui)
 	_discard_pile_ui = CardPileUI.new()
 	_discard_pile_ui.setup(false)
+	_discard_pile_ui.set_title("Discard")
 	add_child(_discard_pile_ui)
 	_layout_piles()
 	get_viewport().size_changed.connect(_layout_piles)
