@@ -33,9 +33,9 @@ func add_fog(
 	var indices: Array[int] = []
 	for b in BLOBS_PER_TILE:
 		var angle: float = rng.randf() * TAU
-		var dist: float = rng.randf_range(0.0, 0.35)
+		var dist: float = rng.randf_range(0.2, 0.6)
 		var sx: float = rng.randf_range(0.375, 0.75)
-		var sz: float = rng.randf_range(0.225, 0.525)
+		var sz: float = rng.randf_range(0.15, 0.35)
 		var rot: float = rng.randf() * TAU
 		var offset := Vector3(
 			cos(angle) * dist, 0.0, sin(angle) * dist
@@ -90,7 +90,7 @@ func rebuild() -> void:
 
 
 func _process(_delta: float) -> void:
-	var t: float = Time.get_ticks_msec() * 0.0005
+	var t: float = Time.get_ticks_msec() * 0.001
 	for i in _blob_nodes.size():
 		if _blob_nodes[i] == null:
 			continue
@@ -122,7 +122,7 @@ func _build_blob_mesh(
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var segs := 24
-	var cloud_col := Color(0.62, 0.62, 0.67, 0.45)
+	var cloud_col := Color(0.62, 0.62, 0.67, 0.22)
 	var edge_col := Color(0.65, 0.65, 0.7, 0.0)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash(seed_coord)
@@ -138,11 +138,12 @@ func _build_blob_mesh(
 			(rz * cos(a)) * (rz * cos(a))
 			+ (rx * sin(a)) * (rx * sin(a))
 		)
-		# Tilde/snake wobble
+		# Tilde/snake wobble — more curvy and snaky
 		var wobble: float = (
-			sin(a * 3.0 + rng.randf() * TAU) * 0.12
-			+ sin(a * 5.0 + rng.randf() * TAU) * 0.06
-			+ sin(a * 2.0 + rng.randf() * TAU) * 0.08
+			sin(a * 2.0 + rng.randf() * TAU) * 0.18
+			+ sin(a * 4.0 + rng.randf() * TAU) * 0.12
+			+ sin(a * 7.0 + rng.randf() * TAU) * 0.06
+			+ sin(a * 1.5 + rng.randf() * TAU) * 0.15
 		) * base_r
 		var r: float = base_r + wobble
 		# Apply rotation
