@@ -183,11 +183,9 @@ func _unhandled_input(event: InputEvent) -> void:
 				hex_map.map_data.get_visibility(coord)
 			)
 			if vis == MapData.Visibility.UNEXPLORED:
-				print("[VIS] UNEXPLORED at ", coord)
 				var empty: Array[String] = []
 				game_ui.update_tile_info("Unexplored", empty)
 			elif vis == MapData.Visibility.FOGGED:
-				print("[VIS] FOGGED at ", coord)
 				var empty: Array[String] = []
 				game_ui.update_tile_info("Fogged", empty)
 			else:

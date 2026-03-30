@@ -14,7 +14,7 @@ func _ready() -> void:
 	_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_title_label.add_theme_font_override("font", _font_bold)
 	_title_label.add_theme_font_size_override(
-		"font_size", UIHelpers.s(11)
+		"font_size", UIHelpers.s(8)
 	)
 	_title_label.add_theme_color_override(
 		"font_color", Color(0.95, 0.88, 0.7)
@@ -69,16 +69,9 @@ func update_info(
 		for child in _yield_container.get_children():
 			child.queue_free()
 		return
-	print("[TILE] setting text to: '", terrain_name, "' yields: ", yields.size())
 	_title_label.text = terrain_name
-	if yields.is_empty():
-		_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		_title_label.position.y = 0.0
-		_title_label.size.y = float(card_h)
-	else:
-		_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		_title_label.position.y = 8.0
-		_title_label.size.y = UIHelpers.sf(16.0)
+	_title_label.position.y = 8.0
+	_title_label.size.y = UIHelpers.sf(12.0)
 	for child in _yield_container.get_children():
 		child.queue_free()
 	for y_text in yields:
@@ -87,7 +80,7 @@ func update_info(
 		lbl.fit_content = true
 		lbl.add_theme_font_override("normal_font", _font_bold)
 		lbl.add_theme_font_size_override(
-			"normal_font_size", UIHelpers.s(9)
+			"normal_font_size", UIHelpers.s(6)
 		)
 		lbl.add_theme_color_override(
 			"default_color", Color(0.95, 0.88, 0.7)
