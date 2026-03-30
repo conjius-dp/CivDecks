@@ -43,12 +43,15 @@ func add_fog(
 		var blob_seed := Vector2i(
 			coord.x * 100 + b, coord.y * 100 + b
 		)
-		var mesh := _build_blob_mesh(blob_seed, sx, sz, rot)
+		var brightness: float = rng.randf_range(0.8, 1.0)
+		var mesh := _build_blob_mesh(
+			blob_seed, sx, sz, rot, brightness
+		)
 		var mi := MeshInstance3D.new()
 		mi.mesh = mesh
 		mi.material_override = _cloud_mat
 		mi.position = world_pos + offset
-		mi.position.y = CLOUD_Y + rng.randf_range(-0.03, 0.08)
+		mi.position.y = CLOUD_Y + rng.randf_range(-0.08, 0.15)
 		mi.cast_shadow = (
 			GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		)
@@ -118,12 +121,16 @@ func _process(_delta: float) -> void:
 func _build_blob_mesh(
 	seed_coord: Vector2i, scale_x: float,
 	scale_z: float, rotation: float,
+	brightness: float = 1.0,
 ) -> ArrayMesh:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var segs := 36
-	var cloud_col := Color(0.5, 0.5, 0.55, 0.24)
-	var edge_col := Color(0.55, 0.55, 0.6, 0.0)
+	var base_v: float = 0.5 * brightness
+	var cloud_col := Color(base_v, base_v, base_v + 0.05, 0.24)
+	var edge_col := Color(
+		base_v + 0.05, base_v + 0.05, base_v + 0.1, 0.0
+	)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash(seed_coord)
 	# Generate wobbly perimeter points
