@@ -250,8 +250,10 @@ func _toggle_gallery(
 	if card_gallery.visible:
 		card_gallery.hide_gallery()
 		var rig := camera.get_parent().get_parent()
-		if rig.has_method("set") and "input_enabled" in rig:
+		if "input_enabled" in rig:
 			rig.input_enabled = true
+		if hex_map and hex_map.has_method("restore_highlights"):
+			hex_map.restore_highlights()
 	else:
 		if not _active_picker:
 			_animate_overlay(true)
@@ -271,8 +273,10 @@ func _toggle_gallery(
 				false, true, false,
 			)
 		var rig := camera.get_parent().get_parent()
-		if rig.has_method("set") and "input_enabled" in rig:
+		if "input_enabled" in rig:
 			rig.input_enabled = false
+		if hex_map:
+			hex_map.clear_highlights()
 		_draw_pile_ui.set_gallery_mode(true)
 		_discard_pile_ui.set_gallery_mode(true)
 		_draw_pile_ui.set_toggled(show_draw)

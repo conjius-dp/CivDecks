@@ -357,20 +357,35 @@ func _draw_rotated_card(
 		var bgg: float = lerpf(bb.g, bg, _gray_strength) * brightness
 		var bbl: float = lerpf(bb.b, bg, _gray_strength) * brightness
 		var midpt := (border_pts[j] + border_pts[k]) * 0.5
-		var num_cx := size.x * 0.5
-		var num_cy := (
+		var n_cx := size.x * 0.5
+		var n_cy := (
 			float(GLOW_PAD)
 			+ float(_pile_height) * 0.9
 			- float(_pile_height) * 0.5
 		)
-		var dist_to_label := midpt.distance_to(
-			Vector2(num_cx, num_cy)
-		)
-		if dist_to_label > 30.0:
+		if midpt.distance_to(Vector2(n_cx, n_cy)) > 30.0:
 			ctrl.draw_line(
 				border_pts[j], border_pts[k],
 				Color(br, bgg, bbl), 6.0,
 			)
+	# Punch transparent hole for the number
+	var hole_cx := size.x * 0.5
+	var hole_cy := (
+		float(GLOW_PAD)
+		+ float(_pile_height) * 0.9
+		- float(_pile_height) * 0.5
+	)
+	var hole_r := 30.0
+	var hole_pts := PackedVector2Array()
+	for hi in 24:
+		var ha := TAU * float(hi) / 24.0
+		hole_pts.append(Vector2(
+			hole_cx + cos(ha) * hole_r,
+			hole_cy + sin(ha) * hole_r,
+		))
+	var hole_colors := PackedColorArray()
+	hole_colors.append(Color(0, 0, 0, 0))
+	ctrl.draw_polygon(hole_pts, hole_colors)
 
 
 func _has_point(point: Vector2) -> bool:
