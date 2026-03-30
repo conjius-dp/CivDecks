@@ -49,6 +49,7 @@ func _ready() -> void:
 	card_gallery.visible = false
 	card_gallery.closing.connect(_on_gallery_closing)
 	card_gallery.closed.connect(_on_gallery_closed)
+	card_gallery.filter_changed.connect(_sync_pile_toggles)
 	card_gallery.card_drag_requested.connect(
 		_on_gallery_card_drag
 	)
@@ -292,10 +293,16 @@ func _toggle_gallery(
 			_active_picker.enter_gallery_mode()
 
 
+func _sync_pile_toggles() -> void:
+	_draw_pile_ui.set_toggled(card_gallery._show_draw)
+	_discard_pile_ui.set_toggled(card_gallery._show_discard)
+	card_gallery.update_hand_toggle()
+
+
 func _on_draw_pile_clicked() -> void:
 	if card_gallery.visible:
 		card_gallery.toggle_filter("draw")
-		_draw_pile_ui.set_toggled(card_gallery._show_draw)
+		_sync_pile_toggles()
 	else:
 		_toggle_gallery(true, false, false)
 
@@ -303,7 +310,7 @@ func _on_draw_pile_clicked() -> void:
 func _on_discard_pile_clicked() -> void:
 	if card_gallery.visible:
 		card_gallery.toggle_filter("discard")
-		_discard_pile_ui.set_toggled(card_gallery._show_discard)
+		_sync_pile_toggles()
 	else:
 		_toggle_gallery(false, false, true)
 

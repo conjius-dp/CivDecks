@@ -4,6 +4,7 @@ extends Control
 signal closing
 signal closed
 signal card_drag_requested(card: CardData, mouse_pos: Vector2)
+signal filter_changed
 
 const COLS := 5
 const ROW_GAP := 20
@@ -141,17 +142,29 @@ func hide_gallery() -> void:
 
 
 func toggle_filter(pile: String) -> void:
+	var was_on: bool = false
 	match pile:
-		"draw":
-			_show_draw = not _show_draw
-		"hand":
-			_show_hand = not _show_hand
-		"discard":
-			_show_discard = not _show_discard
+		"draw": was_on = _show_draw
+		"hand": was_on = _show_hand
+		"discard": was_on = _show_discard
+	_show_draw = false
+	_show_hand = false
+	_show_discard = false
+	if not was_on:
+		match pile:
+			"draw": _show_draw = true
+			"hand": _show_hand = true
+			"discard": _show_discard = true
 	_scroll_offset = 0.0
 	_layout_visible_cards()
 	_apply_scroll()
 	_update_hand_visual()
+	filter_changed.emit()
+
+
+func update_hand_toggle() -> void:
+	if _hand_btn:
+		_hand_btn.set_toggled(_show_hand)
 
 
 func update_hand_count(count: int) -> void:

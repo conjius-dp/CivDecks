@@ -112,7 +112,7 @@ func setup(face_down: bool) -> void:
 	var label_cy: float = (
 		_count_label.position.y + _count_label.size.y * 0.5
 	)
-	var hole_px: float = 31.0
+	var hole_px: float = 22.0
 	_glow_mat.set_shader_parameter(
 		"hole_center", Vector2(
 			label_cx / float(total_w),
@@ -140,7 +140,7 @@ func set_title(text: String) -> void:
 		"font_color", Color(0.85, 0.78, 0.65)
 	)
 	_title_label.position = Vector2(
-		0, size.y + 1.0
+		0, size.y - float(GLOW_PAD) + 2.0
 	)
 	_title_label.size = Vector2(size.x, UIHelpers.s(14))
 	_title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -192,6 +192,9 @@ func set_gallery_mode(active: bool) -> void:
 					_card_angles[i] = lerpf(from, 0.0, t)
 				_brightness = lerpf(exit_b, 1.0, t)
 				_gray_strength = lerpf(exit_g, 0.0, t)
+				_glow_mat.set_shader_parameter(
+					"dim_strength", _gray_strength
+				)
 				_update_label_color()
 				_draw_ctrl.queue_redraw(),
 			0.0, 1.0, 0.25,
@@ -286,6 +289,7 @@ func _set_anim_progress(t: float) -> void:
 		_card_angles[i] = lerpf(from, to, t)
 	_brightness = lerpf(_start_brightness, _target_brightness, t)
 	_gray_strength = lerpf(_start_gray, _target_gray, t)
+	_glow_mat.set_shader_parameter("dim_strength", _gray_strength)
 	_update_label_color()
 	_draw_ctrl.queue_redraw()
 
@@ -445,6 +449,7 @@ static func _create_glow_shader() -> ShaderMaterial:
 		+ "uniform vec2 hole_center = vec2(0.5, 0.5);\n"
 		+ "uniform float hole_radius = 0.0;\n"
 		+ "uniform float aspect = 1.0;\n"
+		+ "uniform float dim_strength = 0.0;\n"
 		+ "void fragment() {\n"
 		+ "  vec4 tex = texture(TEXTURE, UV);\n"
 		+ "  float acc = 0.0;\n"
@@ -471,7 +476,11 @@ static func _create_glow_shader() -> ShaderMaterial:
 		+ "    * smoothstep("
 		+ "hole_radius - border_w * 2.0,"
 		+ " hole_radius - border_w, d);\n"
-		+ "  vec3 border_col = vec3(0.65, 0.5, 0.2);\n"
+		+ "  vec3 base_border = vec3(0.65, 0.5, 0.2);\n"
+		+ "  float bg = dot(base_border, vec3(0.3, 0.59, 0.11))"
+		+ " * 0.6;\n"
+		+ "  vec3 border_col = mix(base_border,"
+		+ " vec3(bg), dim_strength);\n"
 		+ "  float glow = (acc / total)"
 		+ " * (1.0 - card_a) * glow_strength * 0.2;\n"
 		+ "  vec3 col = mix(glow_color, tex.rgb, card_a);\n"
