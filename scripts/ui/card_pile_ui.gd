@@ -46,7 +46,7 @@ func setup(face_down: bool) -> void:
 	var total_h: int = _pile_height + GLOW_PAD * 2
 	custom_minimum_size = Vector2(total_w, total_h)
 	size = Vector2(total_w, total_h)
-	mouse_filter = Control.MOUSE_FILTER_STOP
+	mouse_filter = Control.MOUSE_FILTER_PASS
 	position -= Vector2(GLOW_PAD, GLOW_PAD)
 
 	var svc := SubViewportContainer.new()
@@ -371,6 +371,17 @@ func _draw_rotated_card(
 				border_pts[j], border_pts[k],
 				Color(br, bgg, bbl), 6.0,
 			)
+
+
+func _has_point(point: Vector2) -> bool:
+	var card_rect := Rect2(
+		Vector2(
+			float(GLOW_PAD) + (float(size.x) - float(GLOW_PAD) * 2 - float(_pile_width)) * 0.5,
+			float(GLOW_PAD),
+		),
+		Vector2(float(_pile_width) + 50, float(_pile_height)),
+	)
+	return card_rect.has_point(point)
 
 
 func _gui_input(event: InputEvent) -> void:
