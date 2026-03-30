@@ -3,7 +3,7 @@ extends Control
 
 signal clicked
 
-const GLOW_PAD := 50
+const GLOW_PAD := 80
 const FAN_CARDS := 4
 const FAN_SPREAD := 60.0
 const CARD_SCALE := 0.5
