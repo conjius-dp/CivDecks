@@ -2,7 +2,7 @@ class_name FogCloudManager
 extends Node3D
 
 const BLOBS_PER_TILE := 5
-const CLOUD_Y := 0.6
+const CLOUD_Y := 1.1
 const BAND_RATIO := 0.35
 
 var _tile_blobs: Dictionary = {}
