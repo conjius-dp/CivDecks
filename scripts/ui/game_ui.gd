@@ -315,7 +315,7 @@ func _on_gallery_closing() -> void:
 	_animate_piles_back()
 
 
-func _get_gallery_pile_positions() -> Array[Vector2]:
+func _animate_piles_to_gallery() -> void:
 	var vp := get_viewport().get_visible_rect().size
 	var spacing := 60.0
 	var pw := _draw_pile_ui.size.x
@@ -323,17 +323,17 @@ func _get_gallery_pile_positions() -> Array[Vector2]:
 	var total_w := pw * 3.0 + spacing * 2.0
 	var start_x := (vp.x - total_w) * 0.5
 	var target_y := vp.y - ph - 20.0
-	return [
-		Vector2(start_x + pw * 0.5, target_y + ph * 0.5),
-		Vector2(start_x + pw + spacing + pw * 0.5, target_y + ph * 0.5),
-		Vector2(start_x + pw * 2.0 + spacing * 2.0 + pw * 0.5, target_y + ph * 0.5),
-	] as Array[Vector2]
-
-
-func _animate_piles_to_gallery() -> void:
-	var pos := _get_gallery_pile_positions()
-	_draw_pile_ui.animate_to(pos[0], 0.3)
-	_discard_pile_ui.animate_to(pos[2], 0.3)
+	var gp := float(CardPileUI.GLOW_PAD)
+	# animate_to subtracts GLOW_PAD, so add it back
+	_draw_pile_ui.animate_to(
+		Vector2(start_x + gp, target_y + gp), 0.3,
+	)
+	_discard_pile_ui.animate_to(
+		Vector2(
+			start_x + pw * 2.0 + spacing * 2.0 + gp,
+			target_y + gp,
+		), 0.3,
+	)
 
 
 func _animate_piles_back() -> void:
