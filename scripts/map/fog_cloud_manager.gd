@@ -34,8 +34,8 @@ func add_fog(
 	for b in BLOBS_PER_TILE:
 		var angle: float = rng.randf() * TAU
 		var dist: float = rng.randf_range(0.2, 0.6)
-		var sx: float = rng.randf_range(1.0, 2.0)
-		var sz: float = rng.randf_range(0.7, 1.5)
+		var sx: float = rng.randf_range(0.71, 1.43)
+		var sz: float = rng.randf_range(0.5, 1.07)
 		var rot: float = rng.randf() * TAU
 		var offset := Vector3(
 			cos(angle) * dist, 0.0, sin(angle) * dist
@@ -122,8 +122,8 @@ func _build_blob_mesh(
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var segs := 36
-	var cloud_col := Color(0.62, 0.62, 0.67, 0.22)
-	var edge_col := Color(0.65, 0.65, 0.7, 0.0)
+	var cloud_col := Color(0.5, 0.5, 0.55, 0.18)
+	var edge_col := Color(0.55, 0.55, 0.6, 0.0)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash(seed_coord)
 	# Generate wobbly perimeter points
