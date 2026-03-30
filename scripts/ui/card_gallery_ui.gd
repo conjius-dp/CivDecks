@@ -23,11 +23,9 @@ var _max_scroll: float = 0.0
 var _clip_wrapper: Control
 var _container: Control
 var _animating: bool = false
-var _hand_btn: Control
+var _hand_btn: CardPileUI
 var _hand_btn_height: float = 0.0
 var _bottom_reserve: float = 0.0
-var _hand_glow_mat: ShaderMaterial
-var _hand_hovered: bool = false
 
 
 func _ready() -> void:
@@ -43,9 +41,15 @@ func _ready() -> void:
 	_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_clip_wrapper.add_child(_container)
 
-	_hand_btn = _build_hand_toggle()
+	_hand_btn = CardPileUI.new()
+	_hand_btn.setup(false)
+	_hand_btn.set_toggled(true)
 	_hand_btn.visible = false
 	_hand_btn.z_index = 100
+	_hand_btn.clicked.connect(func() -> void:
+		if not _animating:
+			toggle_filter("hand")
+	)
 	add_child(_hand_btn)
 
 
@@ -121,21 +125,8 @@ func toggle_filter(pile: String) -> void:
 
 
 func _update_hand_visual() -> void:
-	var target := 1.0 if (_show_hand or _hand_hovered) else 0.0
-	if _hand_glow_mat:
-		var current: float = (
-			_hand_glow_mat.get_shader_parameter(
-				"glow_strength"
-			) as float
-		)
-		if _hand_btn:
-			_hand_btn.create_tween().tween_method(
-				func(v: float) -> void:
-					_hand_glow_mat.set_shader_parameter(
-						"glow_strength", v
-					),
-				current, target, 0.15,
-			)
+	if _hand_btn:
+		_hand_btn.set_toggled(_show_hand)
 
 
 func _get_filtered_cards() -> Array[CardData]:
@@ -234,123 +225,6 @@ func _position_hand_btn(vp_size: Vector2) -> void:
 	)
 
 
-func _build_hand_toggle() -> Control:
-	var cw := float(UIHelpers.CARD_WIDTH)
-	var ch := float(UIHelpers.CARD_HEIGHT)
-	var half_scale := 0.5
-	var hw := cw * half_scale
-	var hh := ch * half_scale
-	var spread_angle := 80.0
-	var num_cards := 4
-	var gpad := 40.0
-	var inner_w := hw * 2.5
-	var inner_h := hh * 1.3
-	var total_w := inner_w + gpad * 2
-	var total_h := inner_h + gpad * 2
-	var container := Control.new()
-	container.custom_minimum_size = Vector2(total_w, total_h)
-	container.size = Vector2(total_w, total_h)
-	container.mouse_filter = Control.MOUSE_FILTER_STOP
-	container.clip_contents = false
-
-	var svc := SubViewportContainer.new()
-	svc.size = Vector2(total_w, total_h)
-	svc.stretch = true
-	svc.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_hand_glow_mat = CardPileUI._create_glow_shader()
-	_hand_glow_mat.set_shader_parameter("glow_strength", 0.0)
-	svc.material = _hand_glow_mat
-	container.add_child(svc)
-	var sv := SubViewport.new()
-	sv.size = Vector2i(int(total_w), int(total_h))
-	sv.transparent_bg = true
-	svc.add_child(sv)
-
-	container.mouse_entered.connect(func() -> void:
-		_hand_hovered = true
-		_update_hand_visual()
-	)
-	container.mouse_exited.connect(func() -> void:
-		_hand_hovered = false
-		_update_hand_visual()
-	)
-
-	var cx := gpad + inner_w * 0.5
-	var cy := gpad + inner_h * 0.85
-	var start_angle := -spread_angle * 0.5
-	var step: float = spread_angle / float(num_cards - 1)
-
-	var ptex: Texture2D = load(
-		UIHelpers.PARCHMENT_PATH
-	) as Texture2D
-	var card_r := float(UIHelpers.CARD_CORNER_RADIUS) * 0.5
-	var draw_ctrl := Control.new()
-	draw_ctrl.size = Vector2(total_w, total_h)
-	draw_ctrl.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	sv.add_child(draw_ctrl)
-	draw_ctrl.draw.connect(func() -> void:
-		for i in range(num_cards):
-			var angle := deg_to_rad(
-				start_angle + float(i) * step
-			)
-			var sw := hw
-			var sh := hh
-			var raw := UIHelpers._rounded_rect_points(
-				-sw * 0.5, -sh, sw, sh, card_r, 6,
-			)
-			var pts := PackedVector2Array()
-			var uvs := PackedVector2Array()
-			var zoom := 1.5
-			for p_idx in range(raw.size()):
-				var c: Vector2 = raw[p_idx]
-				var rx := c.x * cos(angle) - c.y * sin(angle)
-				var ry := c.x * sin(angle) + c.y * cos(angle)
-				pts.append(Vector2(cx + rx, cy + ry))
-				uvs.append(Vector2(
-					(0.5 - 0.5 / zoom)
-						+ ((c.x + sw * 0.5) / sw) / zoom,
-					(0.5 - 0.5 / zoom)
-						+ ((c.y + sh) / sh) / zoom,
-				))
-			var tint := Color(0.85, 0.75, 0.6, 1.0)
-			if ptex:
-				var colors := PackedColorArray()
-				colors.append(tint)
-				draw_ctrl.draw_polygon(
-					pts, colors, uvs, ptex,
-				)
-			else:
-				draw_ctrl.draw_colored_polygon(pts, tint)
-			# Gold border
-			var border_pts := PackedVector2Array()
-			var border_raw := UIHelpers._rounded_rect_points(
-				-sw * 0.5, -sh, sw, sh, card_r, 6,
-			)
-			for b_idx in range(border_raw.size()):
-				var c: Vector2 = border_raw[b_idx]
-				var rx := c.x * cos(angle) - c.y * sin(angle)
-				var ry := c.x * sin(angle) + c.y * cos(angle)
-				border_pts.append(Vector2(cx + rx, cy + ry))
-			for j in range(border_pts.size()):
-				var k: int = (j + 1) % border_pts.size()
-				draw_ctrl.draw_line(
-					border_pts[j], border_pts[k],
-					Color(0.65, 0.5, 0.2), 5.0,
-				)
-	)
-	container.queue_redraw()
-
-	container.gui_input.connect(
-		func(event: InputEvent) -> void:
-			if _animating:
-				return
-			var mb := event as InputEventMouseButton
-			if mb and mb.button_index == MOUSE_BUTTON_LEFT:
-				if mb.pressed:
-					toggle_filter("hand")
-					get_viewport().set_input_as_handled()
-	)
-	return container
 
 
 func _apply_scroll() -> void:
