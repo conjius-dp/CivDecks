@@ -6,7 +6,7 @@ signal closed
 signal card_drag_requested(card: CardData, mouse_pos: Vector2, pile: String)
 signal filter_changed
 
-const COLS := 5
+const COLS := 2
 const ROW_GAP := 20
 const COL_GAP := 16
 const PADDING := 30
@@ -241,18 +241,21 @@ func _build_all_cards() -> void:
 
 func _layout_visible_cards() -> void:
 	var vp_size: Vector2 = get_viewport().get_visible_rect().size
-	var side_margin: float = 40.0
-	var area_w: float = vp_size.x - side_margin * 2.0
 	_position_hand_btn(vp_size)
-	var cw: float = (
-		(area_w - PADDING * 2 - COL_GAP * (COLS - 1))
-		/ float(COLS)
-	)
+	# Card size: use full CARD_WIDTH scaled to fit nicely
+	var max_cw: float = float(UIHelpers.CARD_WIDTH) * 0.8
+	var cw: float = max_cw
 	var ch: float = cw * (
 		float(UIHelpers.CARD_HEIGHT)
 		/ float(UIHelpers.CARD_WIDTH)
 	)
 	var card_scale: float = cw / float(UIHelpers.CARD_WIDTH)
+	# Grid width for exactly COLS columns
+	var grid_w: float = (
+		cw * float(COLS) + COL_GAP * float(COLS - 1)
+		+ PADDING * 2
+	)
+	var grid_left: float = (vp_size.x - grid_w) * 0.5
 
 	var row := 0
 	var col := 0
@@ -267,7 +270,7 @@ func _layout_visible_cards() -> void:
 		node.visible = show
 		if show:
 			var x: float = (
-				side_margin + PADDING + col * (cw + COL_GAP)
+				grid_left + PADDING + col * (cw + COL_GAP)
 			)
 			var y: float = PADDING + row * (ch + ROW_GAP)
 			node.scale = Vector2(card_scale, card_scale)

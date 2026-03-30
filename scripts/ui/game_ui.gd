@@ -96,9 +96,12 @@ func _setup_piles() -> void:
 		"res://scripts/ui/tile_info_card_ui.gd"
 	) as GDScript
 	_tile_info_card = tile_info_cls.new()
+	_tile_info_card.z_index = -1
 	add_child(_tile_info_card)
 	_unit_card = UnitCardUI.new()
+	_unit_card.z_index = -1
 	add_child(_unit_card)
+	end_turn_button.z_index = -1
 	_layout_piles()
 	get_viewport().size_changed.connect(_layout_piles)
 	_draw_pile_ui.clicked.connect(_on_draw_pile_clicked)
