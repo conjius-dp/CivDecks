@@ -40,6 +40,7 @@ func _ready() -> void:
 
 func show_unit(unit: Node3D) -> void:
 	if unit == _current_unit and _showing:
+		_populate(unit)
 		return
 	if _showing:
 		_slide_out_then_in(unit)
@@ -78,6 +79,27 @@ func store_original_pos() -> void:
 	_original_y = position.y
 
 
+func show_settlement(
+	sname: String, color: Color,
+	hp: int, atk: int, def: int,
+) -> void:
+	if _showing:
+		var tw := create_tween()
+		tw.tween_property(
+			self, "position:y", -size.y - 20.0, 0.2,
+		).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+		tw.tween_callback(func() -> void:
+			_current_unit = null
+			_populate_settlement(sname, color, hp, atk, def)
+		)
+		tw.tween_property(
+			self, "position:y", _original_y, 0.25,
+		).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	else:
+		_populate_settlement(sname, color, hp, atk, def)
+		_slide_in()
+
+
 func _populate(unit: Node3D) -> void:
 	for child in _lines_container.get_children():
 		child.queue_free()
@@ -86,18 +108,27 @@ func _populate(unit: Node3D) -> void:
 	if "avatar_color" in unit:
 		var c: Color = unit.avatar_color
 		_unit_icon.modulate = Color(c.r, c.g, c.b, 0.9)
-	_add_line(UIHelpers.icon_value(
-		"HP", "%d/%d" % [unit.health, unit.max_health]
-	))
-	_add_line(UIHelpers.icon_value(
-		"Attack", str(unit.attack)
-	))
-	var eff_def: int = unit.defense
-	if unit.state:
-		eff_def += unit.state.defense_modifier
-	_add_line(UIHelpers.icon_value(
-		"Defense", str(eff_def)
-	))
+	var hp: int = unit.health if "health" in unit else 0
+	var max_hp: int = unit.max_health if "max_health" in unit else 0
+	var atk: int = unit.attack if "attack" in unit else 0
+	var def: int = unit.defense if "defense" in unit else 0
+	if "state" in unit and unit.state:
+		def += unit.state.defense_modifier
+	_add_line(UIHelpers.icon_value("HP", "%d/%d" % [hp, max_hp]))
+	_add_line(UIHelpers.icon_value("Attack", str(atk)))
+	_add_line(UIHelpers.icon_value("Defense", str(def)))
+
+
+func _populate_settlement(
+	_sname: String, color: Color,
+	hp: int, atk: int, def: int,
+) -> void:
+	for child in _lines_container.get_children():
+		child.queue_free()
+	_unit_icon.modulate = Color(color.r, color.g, color.b, 0.9)
+	_add_line(UIHelpers.icon_value("HP", str(hp)))
+	_add_line(UIHelpers.icon_value("Attack", str(atk)))
+	_add_line(UIHelpers.icon_value("Defense", str(def)))
 
 
 func _add_line(bbcode: String) -> void:

@@ -298,11 +298,11 @@ func show_unit_info(unit: Node3D) -> void:
 
 func show_settlement_info(
 	sname: String, color: Color,
-	coord: Vector2i, terrain: TerrainType,
+	_coord: Vector2i, _terrain: TerrainType,
+	hp: int = 5, atk: int = 1, def: int = 1,
 ) -> void:
-	if _unit_panel_hidden:
-		return
-	unit_info.update_settlement(sname, color, coord, terrain)
+	if _unit_card:
+		_unit_card.show_settlement(sname, color, hp, atk, def)
 
 
 
