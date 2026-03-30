@@ -1,5 +1,5 @@
 shader_type spatial;
-render_mode blend_mix, depth_draw_opaque, cull_back, diffuse_lambert, unshaded;
+render_mode blend_mix, depth_draw_alpha_prepass, cull_back, unshaded;
 
 uniform vec4 cloud_color : source_color = vec4(0.6, 0.6, 0.65, 0.5);
 uniform float hex_radius : hint_range(0.5, 2.0) = 1.15;
