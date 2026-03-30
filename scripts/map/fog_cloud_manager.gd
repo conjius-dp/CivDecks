@@ -14,15 +14,14 @@ func _ready() -> void:
 
 
 func _setup_multimesh() -> void:
-	_cloud_shader = load(
-		"res://assets/shaders/fog_cloud.gdshader"
-	) as Shader
 	_multimesh = MultiMesh.new()
 	_multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	_multimesh.use_custom_data = true
-	var mat := ShaderMaterial.new()
-	mat.shader = _cloud_shader
-	mat.render_priority = 1
+	var mat := StandardMaterial3D.new()
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.albedo_color = Color(0.6, 0.6, 0.65, 0.5)
+	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	mat.cull_mode = BaseMaterial3D.CULL_BACK
 	var sphere := SphereMesh.new()
 	sphere.radius = 1.0
 	sphere.height = 1.0
