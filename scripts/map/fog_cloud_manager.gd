@@ -90,7 +90,7 @@ func rebuild() -> void:
 
 
 func _process(_delta: float) -> void:
-	var t: float = Time.get_ticks_msec() * 0.001
+	var t: float = Time.get_ticks_msec() * 0.002
 	for i in _blob_nodes.size():
 		if _blob_nodes[i] == null:
 			continue
@@ -104,14 +104,14 @@ func _process(_delta: float) -> void:
 		var breathe: float = 1.0 + ba * sin(t * bs + phase)
 		mi.scale = Vector3(breathe, 1.0, breathe)
 		mi.position.x = (
-			base_pos.x + sin(t * ds + phase) * 0.12
+			base_pos.x + sin(t * ds + phase) * 0.3
 		)
 		mi.position.z = (
 			base_pos.z
-			+ cos(t * ds * 0.7 + phase * 1.3) * 0.12
+			+ cos(t * ds * 0.7 + phase * 1.3) * 0.3
 		)
 		mi.position.y = (
-			base_pos.y + sin(t * ds * 0.5 + phase) * 0.02
+			base_pos.y + sin(t * ds * 0.5 + phase) * 0.04
 		)
 
 
