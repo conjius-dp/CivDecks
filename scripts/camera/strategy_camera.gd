@@ -84,6 +84,13 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		var shift: bool = event.shift_pressed
 		var cmd: bool = event.meta_pressed
+		if _dragging and (
+			event.button_index == MOUSE_BUTTON_WHEEL_UP
+			or event.button_index == MOUSE_BUTTON_WHEEL_DOWN
+			or event.button_index == MOUSE_BUTTON_WHEEL_LEFT
+			or event.button_index == MOUSE_BUTTON_WHEEL_RIGHT
+		):
+			return
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP:
 			if shift:
 				rotate_y(deg_to_rad(orbit_speed))
