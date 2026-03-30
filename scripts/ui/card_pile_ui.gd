@@ -314,7 +314,7 @@ func _update_label_color() -> void:
 func _update_title_position() -> void:
 	if _title_label == null:
 		return
-	var gap := 17.0 if (_in_gallery and _toggled_on) else 8.0
+	var gap := 17.0 if (_in_gallery and _toggled_on) else 3.0
 	_title_label.position.y = size.y - float(GLOW_PAD) + gap
 
 

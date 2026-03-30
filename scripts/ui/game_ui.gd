@@ -19,6 +19,7 @@ var _btn_original_x: float = -1.0
 var _unit_original_x: float = -1.0
 var _unit_panel_hidden: bool = false
 var _dim_overlay: ColorRect
+var _tile_info_card: Control
 var _pending_drag_card: CardData = null
 var _pending_drag_pos: Vector2 = Vector2.ZERO
 var _draw_pile_ui: CardPileUI
@@ -82,6 +83,12 @@ func _setup_piles() -> void:
 	_discard_pile_ui.setup(false)
 	_discard_pile_ui.set_title("Discard")
 	add_child(_discard_pile_ui)
+	var tile_info_script: GDScript = load(
+		"res://scripts/ui/tile_info_card_ui.gd"
+	) as GDScript
+	_tile_info_card = Control.new()
+	_tile_info_card.set_script(tile_info_script)
+	add_child(_tile_info_card)
 	_layout_piles()
 	get_viewport().size_changed.connect(_layout_piles)
 	_draw_pile_ui.clicked.connect(_on_draw_pile_clicked)
@@ -103,15 +110,27 @@ func _layout_piles() -> void:
 	)
 	_draw_pile_ui.store_original_pos()
 	_discard_pile_ui.store_original_pos()
-	# Align end turn button X with discard pile center
+	# Align end turn and tile info X with pile centers
+	var gp := float(CardPileUI.GLOW_PAD)
 	var discard_cx: float = (
-		_discard_pile_ui.position.x
-		+ _discard_pile_ui.size.x * 0.5
+		_discard_pile_ui.position.x + gp
+		+ float(_discard_pile_ui._pile_width) * 0.5
 	)
 	end_turn_button.position.x = (
 		discard_cx - end_turn_button.size.x * 0.5
 	)
 	end_turn_button.position.y = 20.0
+	# Align tile info card with draw pile
+	if _tile_info_card:
+		var draw_cx: float = (
+			_draw_pile_ui.position.x + gp
+			+ float(_draw_pile_ui._pile_width) * 0.5
+		)
+		_tile_info_card.position.x = (
+			draw_cx - _tile_info_card.size.x * 0.5
+		)
+		_tile_info_card.position.y = 0.0
+		_tile_info_card.store_original_pos()
 	_btn_original_x = end_turn_button.position.x
 	card_hand.draw_pile_pos = get_draw_pile_center()
 	card_hand.discard_pile_pos = get_discard_pile_center()
@@ -230,6 +249,13 @@ func update_info(text: String) -> void:
 		return
 	info_label.visible = true
 	UIHelpers.set_bbcode(info_label, "[center]" + text + "[/center]")
+
+
+func update_tile_info(
+	terrain_name: String, yields: Array[String],
+) -> void:
+	if _tile_info_card and _tile_info_card.has_method("update_info"):
+		_tile_info_card.update_info(terrain_name, yields)
 
 
 func set_end_turn_enabled(enabled: bool) -> void:
@@ -379,6 +405,8 @@ func _slide_ui_out() -> void:
 		_unit_original_x - unit_info.size.x - 50,
 		0.35,
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	if _tile_info_card:
+		_tile_info_card.slide_out_left()
 
 
 func _slide_ui_in() -> void:
@@ -388,6 +416,8 @@ func _slide_ui_in() -> void:
 		_btn_original_x,
 		0.35,
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	if _tile_info_card:
+		_tile_info_card.slide_in_from_left()
 	var tw_unit := unit_info.create_tween()
 	tw_unit.tween_property(
 		unit_info, "position:x",

@@ -75,14 +75,16 @@ func _ready() -> void:
 	var icon_sz: float = float(_card_w) * 0.5
 	_icon = TextureRect.new()
 	_icon.texture = _tex
-	_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	_icon.stretch_mode = TextureRect.STRETCH_SCALE
 	_icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	_icon.size = Vector2(icon_sz, icon_sz)
+	var icon_w: float = icon_sz * 1.1
+	var icon_h: float = icon_sz * 0.9
+	_icon.size = Vector2(icon_w, icon_h)
 	_icon.position = Vector2(
-		label_cx - icon_sz * 0.5,
-		label_cy - icon_sz * 0.5,
+		label_cx - icon_w * 0.5,
+		label_cy - icon_h * 0.5,
 	)
-	_icon.pivot_offset = Vector2(icon_sz * 0.5, icon_sz * 0.5)
+	_icon.pivot_offset = Vector2(icon_w * 0.5, icon_h * 0.5)
 	_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_icon.modulate = Color(0.95, 0.88, 0.7)
 	_icon.material = UIHelpers.create_icon_shadow_shader()
