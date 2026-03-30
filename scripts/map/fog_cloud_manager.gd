@@ -1,7 +1,7 @@
 class_name FogCloudManager
 extends Node3D
 
-const BLOBS_PER_TILE := 5
+const BLOBS_PER_TILE := 10
 const CLOUD_Y := 1.1
 const BAND_RATIO := 0.35
 
@@ -34,8 +34,8 @@ func add_fog(
 	for b in BLOBS_PER_TILE:
 		var angle: float = rng.randf() * TAU
 		var dist: float = rng.randf_range(0.0, 0.35)
-		var sx: float = rng.randf_range(0.25, 0.5)
-		var sz: float = rng.randf_range(0.15, 0.35)
+		var sx: float = rng.randf_range(0.375, 0.75)
+		var sz: float = rng.randf_range(0.225, 0.525)
 		var rot: float = rng.randf() * TAU
 		var offset := Vector3(
 			cos(angle) * dist, 0.0, sin(angle) * dist
