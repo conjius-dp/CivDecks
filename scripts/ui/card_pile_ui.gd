@@ -128,7 +128,7 @@ func setup(face_down: bool, size_mult: float = 1.0) -> void:
 	)
 	_draw_ctrl.queue_redraw()
 	# Shift text down slightly from hole center
-	_count_label.position.y += 5
+	_count_label.position.y += 3
 
 
 func set_title(text: String) -> void:
