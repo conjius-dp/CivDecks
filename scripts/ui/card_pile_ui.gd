@@ -10,6 +10,8 @@ const ICON_CARD_SCALE := 0.6
 
 static var glow_pad: int = int(27.0 * UIHelpers.UI_SCALE)
 
+var _size_mult: float = 1.0
+
 var _count_label: Label
 var _font_bold: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
 var _is_face_down: bool = false
@@ -38,6 +40,7 @@ var _target_gray: float = 0.0
 
 func setup(face_down: bool, size_mult: float = 1.0) -> void:
 	_is_face_down = face_down
+	_size_mult = size_mult
 	_pile_width = int(
 		float(UIHelpers.CARD_WIDTH) * ICON_CARD_SCALE * size_mult
 	)
@@ -80,7 +83,7 @@ func setup(face_down: bool, size_mult: float = 1.0) -> void:
 	_count_label.size = Vector2(_pile_width, _pile_height)
 	_count_label.add_theme_font_override("font", _font_bold)
 	_count_label.add_theme_font_size_override(
-		"font_size", int(36 * UIHelpers.UI_SCALE)
+		"font_size", int(36 * UIHelpers.UI_SCALE * _size_mult)
 	)
 	_count_label.add_theme_color_override(
 		"font_color", Color(0.95, 0.88, 0.7)
@@ -335,11 +338,11 @@ func _draw_cards() -> void:
 	var ptex: Texture2D = load(
 		UIHelpers.PARCHMENT_PATH
 	) as Texture2D
-	var cw := float(UIHelpers.CARD_WIDTH) * ICON_CARD_SCALE
-	var ch := float(UIHelpers.CARD_HEIGHT) * ICON_CARD_SCALE
+	var cw := float(UIHelpers.CARD_WIDTH) * ICON_CARD_SCALE * _size_mult
+	var ch := float(UIHelpers.CARD_HEIGHT) * ICON_CARD_SCALE * _size_mult
 	var card_r := float(
 		UIHelpers.CARD_CORNER_RADIUS
-	) * ICON_CARD_SCALE
+	) * ICON_CARD_SCALE * _size_mult
 	# Pivot = bottom center of icon area
 	var pivot_x := size.x * 0.5
 	var pivot_y := float(glow_pad) + float(_pile_height) * 0.9
