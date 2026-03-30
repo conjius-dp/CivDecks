@@ -34,8 +34,8 @@ func add_fog(
 	for b in BLOBS_PER_TILE:
 		var angle: float = rng.randf() * TAU
 		var dist: float = rng.randf_range(0.2, 0.6)
-		var sx: float = rng.randf_range(0.375, 0.75)
-		var sz: float = rng.randf_range(0.15, 0.35)
+		var sx: float = rng.randf_range(1.0, 2.0)
+		var sz: float = rng.randf_range(0.7, 1.5)
 		var rot: float = rng.randf() * TAU
 		var offset := Vector3(
 			cos(angle) * dist, 0.0, sin(angle) * dist
@@ -121,7 +121,7 @@ func _build_blob_mesh(
 ) -> ArrayMesh:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var segs := 24
+	var segs := 36
 	var cloud_col := Color(0.62, 0.62, 0.67, 0.22)
 	var edge_col := Color(0.65, 0.65, 0.7, 0.0)
 	var rng := RandomNumberGenerator.new()
@@ -138,12 +138,14 @@ func _build_blob_mesh(
 			(rz * cos(a)) * (rz * cos(a))
 			+ (rx * sin(a)) * (rx * sin(a))
 		)
-		# Tilde/snake wobble — more curvy and snaky
+		# Noisy irregular edge
 		var wobble: float = (
-			sin(a * 2.0 + rng.randf() * TAU) * 0.18
-			+ sin(a * 4.0 + rng.randf() * TAU) * 0.12
-			+ sin(a * 7.0 + rng.randf() * TAU) * 0.06
-			+ sin(a * 1.5 + rng.randf() * TAU) * 0.15
+			sin(a * 2.0 + rng.randf() * TAU) * 0.2
+			+ sin(a * 5.0 + rng.randf() * TAU) * 0.15
+			+ sin(a * 9.0 + rng.randf() * TAU) * 0.1
+			+ sin(a * 13.0 + rng.randf() * TAU) * 0.08
+			+ sin(a * 1.5 + rng.randf() * TAU) * 0.18
+			+ rng.randf_range(-0.12, 0.12)
 		) * base_r
 		var r: float = base_r + wobble
 		# Apply rotation
