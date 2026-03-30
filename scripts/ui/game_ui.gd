@@ -45,6 +45,11 @@ func _ready() -> void:
 	if info_label:
 		info_label.visible = false
 	unit_info.visible = false
+	# Reparent end turn button out of layout container
+	var et_parent := end_turn_button.get_parent()
+	if et_parent:
+		et_parent.remove_child(end_turn_button)
+	add_child(end_turn_button)
 	_dim_overlay = ColorRect.new()
 	_dim_overlay.color = Color(0.0, 0.0, 0.0, 0.0)
 	_dim_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
