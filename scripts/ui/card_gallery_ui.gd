@@ -46,7 +46,7 @@ func _ready() -> void:
 	_clip_wrapper.add_child(_container)
 
 	_hand_btn = CardPileUI.new()
-	_hand_btn.setup(false, 1.3)
+	_hand_btn.setup(false, 1.2)
 	_hand_btn.set_title("Hand")
 	_hand_btn.set_toggled(true)
 	_hand_btn.visible = false
@@ -309,7 +309,7 @@ func _position_hand_btn(vp_size: Vector2) -> void:
 	var btn_w: float = _hand_btn.size.x * s
 	var reserve: float = btn_h + 170.0
 	var target_y: float = (
-		vp_size.y - reserve + (reserve - btn_h) * 0.5 + 50.0
+		vp_size.y - reserve + (reserve - btn_h) * 0.5 + 20.0
 	)
 	_bottom_reserve = reserve
 	_gallery_bottom_y = target_y
