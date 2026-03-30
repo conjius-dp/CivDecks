@@ -46,6 +46,7 @@ func _ready() -> void:
 
 	_hand_btn = CardPileUI.new()
 	_hand_btn.setup(false)
+	_hand_btn.scale = Vector2(1.5, 1.5)
 	_hand_btn.set_title("Hand")
 	_hand_btn.set_toggled(true)
 	_hand_btn.visible = false
@@ -303,12 +304,16 @@ func _layout_visible_cards() -> void:
 
 
 func _position_hand_btn(vp_size: Vector2) -> void:
-	var btn_h := _hand_btn.size.y
-	var reserve := btn_h + 70.0
-	var target_y := vp_size.y - reserve + (reserve - btn_h) * 0.5
+	var s: float = _hand_btn.scale.y
+	var btn_h: float = _hand_btn.size.y * s
+	var btn_w: float = _hand_btn.size.x * s
+	var reserve: float = btn_h + 170.0
+	var target_y: float = (
+		vp_size.y - reserve + (reserve - btn_h) * 0.5
+	)
 	_bottom_reserve = reserve
 	_hand_btn.position = Vector2(
-		(vp_size.x - _hand_btn.size.x) * 0.5,
+		(vp_size.x - btn_w) * 0.5,
 		target_y,
 	)
 	_clip_wrapper.position = Vector2.ZERO
