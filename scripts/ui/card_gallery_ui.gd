@@ -297,8 +297,9 @@ func _layout_visible_cards() -> void:
 
 func _position_hand_btn(vp_size: Vector2) -> void:
 	var btn_h := _hand_btn.size.y
-	var target_y := vp_size.y - btn_h - 20.0
-	_bottom_reserve = vp_size.y - target_y
+	var reserve := btn_h + 70.0
+	var target_y := vp_size.y - reserve + (reserve - btn_h) * 0.5
+	_bottom_reserve = reserve
 	_hand_btn.position = Vector2(
 		(vp_size.x - _hand_btn.size.x) * 0.5,
 		target_y,

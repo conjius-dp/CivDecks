@@ -112,7 +112,7 @@ func setup(face_down: bool) -> void:
 	var label_cy: float = (
 		_count_label.position.y + _count_label.size.y * 0.5
 	)
-	var hole_px: float = 22.0
+	var hole_px: float = 55.0
 	_glow_mat.set_shader_parameter(
 		"hole_center", Vector2(
 			label_cx / float(total_w),
@@ -140,7 +140,7 @@ func set_title(text: String) -> void:
 		"font_color", Color(0.85, 0.78, 0.65)
 	)
 	_title_label.position = Vector2(
-		0, size.y - float(GLOW_PAD) + 2.0
+		0, size.y - float(GLOW_PAD) + 17.0
 	)
 	_title_label.size = Vector2(size.x, UIHelpers.s(14))
 	_title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
