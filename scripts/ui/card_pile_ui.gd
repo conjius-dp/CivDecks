@@ -3,7 +3,7 @@ extends Control
 
 signal clicked
 
-const GLOW_PAD := 80
+const GLOW_PAD := 50
 const FAN_CARDS := 4
 const FAN_SPREAD := 60.0
 const CARD_SCALE := 0.5
@@ -378,16 +378,16 @@ static func _create_glow_shader() -> ShaderMaterial:
 	var shader := Shader.new()
 	shader.code = (
 		"shader_type canvas_item;\n"
-		+ "uniform float glow_size = 0.2;\n"
+		+ "uniform float glow_size = 0.08;\n"
 		+ "uniform float glow_strength = 0.0;\n"
 		+ "uniform vec3 glow_color = vec3(0.9, 0.8, 0.6);\n"
 		+ "void fragment() {\n"
 		+ "  vec4 tex = texture(TEXTURE, UV);\n"
 		+ "  float acc = 0.0;\n"
 		+ "  float total = 0.0;\n"
-		+ "  for (int r = 1; r <= 8; r++) {\n"
-		+ "    float rd = glow_size * float(r) / 8.0;\n"
-		+ "    float w = 1.0 - float(r) / 9.0;\n"
+		+ "  for (int r = 1; r <= 12; r++) {\n"
+		+ "    float rd = glow_size * float(r) / 12.0;\n"
+		+ "    float w = exp(-3.0 * float(r) / 12.0);\n"
 		+ "    for (int i = 0; i < 16; i++) {\n"
 		+ "      float a = float(i) / 16.0 * 6.2832;\n"
 		+ "      vec2 off = vec2(cos(a), sin(a)) * rd;\n"
@@ -396,7 +396,7 @@ static func _create_glow_shader() -> ShaderMaterial:
 		+ "    }\n"
 		+ "  }\n"
 		+ "  float glow = (acc / total)"
-		+ " * (1.0 - tex.a) * glow_strength * 0.5;\n"
+		+ " * (1.0 - tex.a) * glow_strength * 0.35;\n"
 		+ "  vec3 col = mix(glow_color, tex.rgb, tex.a);\n"
 		+ "  float fa = max(tex.a, glow);\n"
 		+ "  COLOR = vec4(col, fa);\n"
