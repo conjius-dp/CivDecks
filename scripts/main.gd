@@ -177,33 +177,36 @@ func _unhandled_input(event: InputEvent) -> void:
 		if coord == _last_hover_coord:
 			return
 		_last_hover_coord = coord
-		# Hover highlight on revealed tiles
 		if coord != Vector2i(-999, -999):
+			hex_map.set_hover_highlight(coord)
 			var vis: MapData.Visibility = (
 				hex_map.map_data.get_visibility(coord)
 			)
-			if vis != MapData.Visibility.UNEXPLORED:
-				hex_map.set_hover_highlight(coord)
+			if vis == MapData.Visibility.UNEXPLORED:
+				game_ui.update_tile_info("Unexplored", [])
+			elif vis == MapData.Visibility.FOGGED:
+				game_ui.update_tile_info("Fogged", [])
 			else:
-				hex_map.clear_hover_highlight()
+				var terrain: TerrainType = (
+					hex_map.get_terrain(coord)
+				)
+				if terrain:
+					var yields: Array[String] = []
+					if terrain.materials_yield > 0:
+						yields.append(UIHelpers.icon_value(
+							"Materials",
+							str(terrain.materials_yield),
+						))
+					if terrain.food_yield > 0:
+						yields.append(UIHelpers.icon_value(
+							"Food",
+							str(terrain.food_yield),
+						))
+					game_ui.update_tile_info(
+						terrain.terrain_name, yields
+					)
 		else:
 			hex_map.clear_hover_highlight()
-		if coord != Vector2i(-999, -999):
-			var terrain: TerrainType = hex_map.get_terrain(coord)
-			if terrain:
-				var yields: Array[String] = []
-				if terrain.materials_yield > 0:
-					yields.append(UIHelpers.icon_value(
-						"Materials", str(terrain.materials_yield)
-					))
-				if terrain.food_yield > 0:
-					yields.append(UIHelpers.icon_value(
-						"Food", str(terrain.food_yield)
-					))
-				game_ui.update_tile_info(
-					terrain.terrain_name, yields
-				)
-		else:
 			game_ui.update_tile_info("", [])
 
 

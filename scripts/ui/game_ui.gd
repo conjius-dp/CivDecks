@@ -116,10 +116,11 @@ func _layout_piles() -> void:
 		_discard_pile_ui.position.x + gp
 		+ float(_discard_pile_ui._pile_width) * 0.5
 	)
+	var card_top_y: float = -gp
 	end_turn_button.position.x = (
 		discard_cx - end_turn_button.size.x * 0.5
 	)
-	end_turn_button.position.y = 20.0
+	end_turn_button.position.y = card_top_y
 	# Align tile info card with draw pile
 	if _tile_info_card:
 		var draw_cx: float = (
@@ -129,7 +130,7 @@ func _layout_piles() -> void:
 		_tile_info_card.position.x = (
 			draw_cx - _tile_info_card.size.x * 0.5
 		)
-		_tile_info_card.position.y = 0.0
+		_tile_info_card.position.y = card_top_y
 		_tile_info_card.store_original_pos()
 	_btn_original_x = end_turn_button.position.x
 	card_hand.draw_pile_pos = get_draw_pile_center()
