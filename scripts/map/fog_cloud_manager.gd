@@ -33,7 +33,7 @@ func add_fog(
 	var indices: Array[int] = []
 	for b in BLOBS_PER_TILE:
 		var angle: float = rng.randf() * TAU
-		var dist: float = rng.randf_range(0.2, 0.6)
+		var dist: float = rng.randf_range(0.15, 0.5)
 		var sx: float = rng.randf_range(0.55, 1.1)
 		var sz: float = rng.randf_range(0.4, 0.85)
 		var rot: float = rng.randf() * TAU
@@ -122,7 +122,7 @@ func _build_blob_mesh(
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var segs := 36
-	var cloud_col := Color(0.5, 0.5, 0.55, 0.18)
+	var cloud_col := Color(0.5, 0.5, 0.55, 0.24)
 	var edge_col := Color(0.55, 0.55, 0.6, 0.0)
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash(seed_coord)
