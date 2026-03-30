@@ -1,11 +1,9 @@
 class_name FogCloudManager
 extends Node3D
 
-const BLOBS_PER_TILE := 4
-const BLOB_SCALE_MIN := 0.3
-const BLOB_SCALE_MAX := 0.5
+const BLOBS_PER_TILE := 5
 const CLOUD_Y := 0.6
-const BAND_WIDTH := 0.15
+const BAND_RATIO := 0.35
 
 var _tile_blobs: Dictionary = {}
 var _blob_anim: Array = []
@@ -16,7 +14,7 @@ var _cloud_mat: StandardMaterial3D
 func _ready() -> void:
 	_cloud_mat = StandardMaterial3D.new()
 	_cloud_mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	_cloud_mat.albedo_color = Color(0.65, 0.65, 0.7, 0.45)
+	_cloud_mat.albedo_color = Color(1, 1, 1, 1)
 	_cloud_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_cloud_mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 	_cloud_mat.vertex_color_use_as_albedo = true
@@ -33,24 +31,24 @@ func add_fog(
 	var rng := RandomNumberGenerator.new()
 	rng.seed = hash(coord)
 	var indices: Array[int] = []
-	for _b in BLOBS_PER_TILE:
+	for b in BLOBS_PER_TILE:
 		var angle: float = rng.randf() * TAU
-		var dist: float = rng.randf_range(0.0, 0.45)
-		var scale: float = rng.randf_range(
-			BLOB_SCALE_MIN, BLOB_SCALE_MAX
-		)
+		var dist: float = rng.randf_range(0.0, 0.35)
+		var sx: float = rng.randf_range(0.25, 0.5)
+		var sz: float = rng.randf_range(0.15, 0.35)
+		var rot: float = rng.randf() * TAU
 		var offset := Vector3(
 			cos(angle) * dist, 0.0, sin(angle) * dist
 		)
-		var blob_coord := Vector2i(
-			coord.x * 100 + _b, coord.y * 100 + _b
+		var blob_seed := Vector2i(
+			coord.x * 100 + b, coord.y * 100 + b
 		)
-		var mesh := _build_blob_mesh(blob_coord, scale)
+		var mesh := _build_blob_mesh(blob_seed, sx, sz, rot)
 		var mi := MeshInstance3D.new()
 		mi.mesh = mesh
 		mi.material_override = _cloud_mat
 		mi.position = world_pos + offset
-		mi.position.y = CLOUD_Y + rng.randf_range(-0.05, 0.1)
+		mi.position.y = CLOUD_Y + rng.randf_range(-0.03, 0.08)
 		mi.cast_shadow = (
 			GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		)
@@ -61,9 +59,8 @@ func add_fog(
 		_blob_anim.append({
 			"phase": rng.randf() * TAU,
 			"breathe_spd": rng.randf_range(0.3, 0.8),
-			"breathe_amp": rng.randf_range(0.05, 0.15),
+			"breathe_amp": rng.randf_range(0.03, 0.1),
 			"drift_spd": rng.randf_range(0.02, 0.05),
-			"base_y": mi.position.y,
 			"base_pos": mi.position,
 		})
 	_tile_blobs[coord] = indices
@@ -105,82 +102,116 @@ func _process(_delta: float) -> void:
 		var ds: float = d["drift_spd"] as float
 		var base_pos: Vector3 = d["base_pos"] as Vector3
 		var breathe: float = 1.0 + ba * sin(t * bs + phase)
-		mi.scale = Vector3(breathe, breathe, breathe)
-		mi.position.x = base_pos.x + sin(t * ds + phase) * 0.15
-		mi.position.z = base_pos.z + cos(
-			t * ds * 0.7 + phase * 1.3
-		) * 0.15
+		mi.scale = Vector3(breathe, 1.0, breathe)
+		mi.position.x = (
+			base_pos.x + sin(t * ds + phase) * 0.12
+		)
+		mi.position.z = (
+			base_pos.z
+			+ cos(t * ds * 0.7 + phase * 1.3) * 0.12
+		)
 		mi.position.y = (
-			base_pos.y + sin(t * ds * 0.5 + phase) * 0.03
+			base_pos.y + sin(t * ds * 0.5 + phase) * 0.02
 		)
 
 
 func _build_blob_mesh(
-	coord: Vector2i, scale: float,
+	seed_coord: Vector2i, scale_x: float,
+	scale_z: float, rotation: float,
 ) -> ArrayMesh:
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
-	var corners: Array[Vector3] = []
-	for i in 6:
-		var angle: float = TAU * float(i) / 6.0 + PI / 6.0
-		corners.append(Vector3(
-			cos(angle) * HexUtil.HEX_SIZE * scale,
-			0.0,
-			sin(angle) * HexUtil.HEX_SIZE * scale,
-		))
-	var all_edge_pts: Array[Array] = []
-	for i in 6:
-		var c0: Vector3 = corners[i]
-		var c1: Vector3 = corners[(i + 1) % 6]
-		var pts: Array[Vector3] = (
-			HexMeshGenerator.get_wavy_edge_points(
-				c0, c1, coord, i, 8, 0.3 * scale
-			)
+	var segs := 24
+	var cloud_col := Color(0.62, 0.62, 0.67, 0.45)
+	var edge_col := Color(0.65, 0.65, 0.7, 0.0)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = hash(seed_coord)
+	# Generate wobbly perimeter points
+	var outer_pts: Array[Vector2] = []
+	var inner_pts: Array[Vector2] = []
+	for i in segs:
+		var a: float = TAU * float(i) / float(segs)
+		# Elliptical base radius
+		var rx: float = HexUtil.HEX_SIZE * scale_x
+		var rz: float = HexUtil.HEX_SIZE * scale_z
+		var base_r: float = (rx * rz) / sqrt(
+			(rz * cos(a)) * (rz * cos(a))
+			+ (rx * sin(a)) * (rx * sin(a))
 		)
-		all_edge_pts.append(pts)
-	var center := Vector3.ZERO
-	var dome_h: float = 0.2 * scale
-	var band: float = BAND_WIDTH * scale
-	# Inner triangles (center to inner ring) — full alpha
-	# Outer band (inner ring to edge) — alpha gradient 1→0
-	for i in 6:
-		var pts: Array = all_edge_pts[i]
-		for j in range(pts.size() - 1):
-			var p0: Vector3 = pts[j]
-			var p1: Vector3 = pts[j + 1]
-			var edge_mid := (p0 + p1) * 0.5
-			var dir_to_center := (center - edge_mid).normalized()
-			var inner0 := p0 + dir_to_center * band
-			var inner1 := p1 + dir_to_center * band
-			var inner_y: float = dome_h * 0.8
-			# Inner tri: center → inner0 → inner1
-			st.set_normal(Vector3.UP)
-			st.set_color(Color(1, 1, 1, 1))
-			st.add_vertex(Vector3(center.x, dome_h, center.z))
-			st.add_vertex(Vector3(
-				inner0.x, inner_y, inner0.z
-			))
-			st.add_vertex(Vector3(
-				inner1.x, inner_y, inner1.z
-			))
-			# Outer band: inner → edge (alpha 1 → 0)
-			st.set_normal(Vector3.UP)
-			st.set_color(Color(1, 1, 1, 1))
-			st.add_vertex(Vector3(
-				inner0.x, inner_y, inner0.z
-			))
-			st.set_color(Color(1, 1, 1, 0))
-			st.add_vertex(Vector3(p0.x, 0.0, p0.z))
-			st.set_color(Color(1, 1, 1, 0))
-			st.add_vertex(Vector3(p1.x, 0.0, p1.z))
-			st.set_color(Color(1, 1, 1, 0))
-			st.add_vertex(Vector3(p1.x, 0.0, p1.z))
-			st.set_color(Color(1, 1, 1, 1))
-			st.add_vertex(Vector3(
-				inner1.x, inner_y, inner1.z
-			))
-			st.set_color(Color(1, 1, 1, 1))
-			st.add_vertex(Vector3(
-				inner0.x, inner_y, inner0.z
-			))
+		# Tilde/snake wobble
+		var wobble: float = (
+			sin(a * 3.0 + rng.randf() * TAU) * 0.12
+			+ sin(a * 5.0 + rng.randf() * TAU) * 0.06
+			+ sin(a * 2.0 + rng.randf() * TAU) * 0.08
+		) * base_r
+		var r: float = base_r + wobble
+		# Apply rotation
+		var px: float = cos(a + rotation) * r
+		var pz: float = sin(a + rotation) * r
+		outer_pts.append(Vector2(px, pz))
+		var inner_r: float = r * (1.0 - BAND_RATIO)
+		inner_pts.append(Vector2(
+			cos(a + rotation) * inner_r,
+			sin(a + rotation) * inner_r,
+		))
+	# Smooth the points
+	for _pass in 2:
+		var smoothed_o: Array[Vector2] = []
+		var smoothed_i: Array[Vector2] = []
+		for i in segs:
+			var prev: int = (i - 1 + segs) % segs
+			var next: int = (i + 1) % segs
+			smoothed_o.append(
+				outer_pts[prev] * 0.25
+				+ outer_pts[i] * 0.5
+				+ outer_pts[next] * 0.25
+			)
+			smoothed_i.append(
+				inner_pts[prev] * 0.25
+				+ inner_pts[i] * 0.5
+				+ inner_pts[next] * 0.25
+			)
+		outer_pts = smoothed_o
+		inner_pts = smoothed_i
+	var y: float = 0.01
+	# Inner fill — full alpha
+	for i in segs:
+		var i2: int = (i + 1) % segs
+		st.set_normal(Vector3.UP)
+		st.set_color(cloud_col)
+		st.add_vertex(Vector3(0, y, 0))
+		st.add_vertex(Vector3(inner_pts[i].x, y, inner_pts[i].y))
+		st.add_vertex(Vector3(
+			inner_pts[i2].x, y, inner_pts[i2].y
+		))
+	# Outer band — alpha gradient
+	for i in segs:
+		var i2: int = (i + 1) % segs
+		st.set_normal(Vector3.UP)
+		# Tri 1: inner_i, outer_i, outer_i2
+		st.set_color(cloud_col)
+		st.add_vertex(Vector3(
+			inner_pts[i].x, y, inner_pts[i].y
+		))
+		st.set_color(edge_col)
+		st.add_vertex(Vector3(
+			outer_pts[i].x, y, outer_pts[i].y
+		))
+		st.set_color(edge_col)
+		st.add_vertex(Vector3(
+			outer_pts[i2].x, y, outer_pts[i2].y
+		))
+		# Tri 2: outer_i2, inner_i2, inner_i
+		st.set_color(edge_col)
+		st.add_vertex(Vector3(
+			outer_pts[i2].x, y, outer_pts[i2].y
+		))
+		st.set_color(cloud_col)
+		st.add_vertex(Vector3(
+			inner_pts[i2].x, y, inner_pts[i2].y
+		))
+		st.set_color(cloud_col)
+		st.add_vertex(Vector3(
+			inner_pts[i].x, y, inner_pts[i].y
+		))
 	return st.commit()
