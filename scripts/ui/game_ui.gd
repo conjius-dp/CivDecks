@@ -142,6 +142,14 @@ func _layout_piles() -> void:
 	var vcl: float = end_turn_button.visual_card_left_in_ctrl()
 	var vct: float = end_turn_button.visual_card_top_in_ctrl()
 	var card_y: float = 8.0 - vct
+	print("[POS] draw_screen_left=", draw_screen_left,
+		" discard_screen_left=", discard_screen_left,
+		" vcl=", vcl, " vct=", vct, " card_y=", card_y)
+	print("[POS] draw_pile pos=", _draw_pile_ui.position,
+		" size=", _draw_pile_ui.size,
+		" pw=", _draw_pile_ui._pile_width)
+	print("[POS] end_turn size=", end_turn_button.size,
+		" vcl=", end_turn_button.visual_card_left_in_ctrl())
 	end_turn_button.position = Vector2(
 		discard_screen_left - vcl, card_y
 	)
@@ -152,11 +160,14 @@ func _layout_piles() -> void:
 			card_y,
 		)
 		_tile_info_card.store_original_pos()
+		print("[POS] tile_info pos=", _tile_info_card.position)
 	if _unit_card:
 		_unit_card.position = Vector2(
 			(vp.x - _unit_card.size.x) * 0.5, card_y
 		)
 		_unit_card.store_original_pos()
+		print("[POS] unit_card pos=", _unit_card.position)
+	print("[POS] end_turn pos=", end_turn_button.position)
 	_btn_original_x = end_turn_button.position.x
 	card_hand.draw_pile_pos = get_draw_pile_center()
 	card_hand.discard_pile_pos = get_discard_pile_center()
