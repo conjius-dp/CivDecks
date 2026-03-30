@@ -80,14 +80,9 @@ func setup(face_down: bool) -> void:
 	_count_label.add_theme_font_size_override(
 		"font_size", int(36 * UIHelpers.UI_SCALE)
 	)
-	if face_down:
-		_count_label.add_theme_color_override(
-			"font_color", Color(0.95, 0.88, 0.7)
-		)
-	else:
-		_count_label.add_theme_color_override(
-			"font_color", Color(0.3, 0.2, 0.1)
-		)
+	_count_label.add_theme_color_override(
+		"font_color", Color(0.95, 0.88, 0.7)
+	)
 	_count_label.add_theme_constant_override("outline_size", 0)
 	_count_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_count_label)
@@ -109,6 +104,22 @@ func setup(face_down: bool) -> void:
 		_card_angles = [0.0] as Array[float]
 	_draw_ctrl.draw.connect(_draw_cards)
 	_update_label_color()
+	# Hole punch for number — in UV space
+	var label_cx: float = (
+		_count_label.position.x + _count_label.size.x * 0.5
+	)
+	var label_cy: float = (
+		_count_label.position.y + _count_label.size.y * 0.5
+	)
+	_glow_mat.set_shader_parameter(
+		"hole_center", Vector2(
+			label_cx / float(total_w),
+			label_cy / float(total_h),
+		)
+	)
+	_glow_mat.set_shader_parameter(
+		"hole_radius", 22.0 / float(total_w)
+	)
 	_draw_ctrl.queue_redraw()
 
 
@@ -258,11 +269,7 @@ func _set_anim_progress(t: float) -> void:
 func _update_label_color() -> void:
 	if _count_label == null:
 		return
-	var base_col: Color
-	if _is_face_down:
-		base_col = Color(0.95, 0.88, 0.7)
-	else:
-		base_col = Color(0.3, 0.2, 0.1)
+	var base_col := Color(0.95, 0.88, 0.7)
 	var gray_val: float = (
 		base_col.r * 0.3 + base_col.g * 0.59 + base_col.b * 0.11
 	) * 0.6
@@ -350,45 +357,19 @@ func _draw_rotated_card(
 		var rx := c.x * cos(angle) - c.y * sin(angle)
 		var ry := c.x * sin(angle) + c.y * cos(angle)
 		border_pts.append(Vector2(pivot_x + rx, pivot_y + ry))
+	var bb := Color(0.65, 0.5, 0.2)
+	var bg_val: float = (
+		bb.r * 0.3 + bb.g * 0.59 + bb.b * 0.11
+	) * 0.6
+	var br: float = lerpf(bb.r, bg_val, _gray_strength) * brightness
+	var bgg: float = lerpf(bb.g, bg_val, _gray_strength) * brightness
+	var bbl: float = lerpf(bb.b, bg_val, _gray_strength) * brightness
 	for j in range(border_pts.size()):
 		var k: int = (j + 1) % border_pts.size()
-		var bb := Color(0.65, 0.5, 0.2)
-		var bg: float = (
-			bb.r * 0.3 + bb.g * 0.59 + bb.b * 0.11
-		) * 0.6
-		var br: float = lerpf(bb.r, bg, _gray_strength) * brightness
-		var bgg: float = lerpf(bb.g, bg, _gray_strength) * brightness
-		var bbl: float = lerpf(bb.b, bg, _gray_strength) * brightness
-		var midpt := (border_pts[j] + border_pts[k]) * 0.5
-		var n_cx := size.x * 0.5
-		var n_cy := (
-			float(GLOW_PAD)
-			+ float(_pile_height) * 0.9
-			- float(_pile_height) * 0.5
+		ctrl.draw_line(
+			border_pts[j], border_pts[k],
+			Color(br, bgg, bbl), 6.0,
 		)
-		if midpt.distance_to(Vector2(n_cx, n_cy)) > 30.0:
-			ctrl.draw_line(
-				border_pts[j], border_pts[k],
-				Color(br, bgg, bbl), 6.0,
-			)
-	# Punch transparent hole for the number
-	var hole_cx := size.x * 0.5
-	var hole_cy := (
-		float(GLOW_PAD)
-		+ float(_pile_height) * 0.9
-		- float(_pile_height) * 0.5
-	)
-	var hole_r := 30.0
-	var hole_pts := PackedVector2Array()
-	for hi in 24:
-		var ha := TAU * float(hi) / 24.0
-		hole_pts.append(Vector2(
-			hole_cx + cos(ha) * hole_r,
-			hole_cy + sin(ha) * hole_r,
-		))
-	var hole_colors := PackedColorArray()
-	hole_colors.append(Color(0, 0, 0, 0))
-	ctrl.draw_polygon(hole_pts, hole_colors)
 
 
 func _has_point(point: Vector2) -> bool:
@@ -437,6 +418,8 @@ static func _create_glow_shader() -> ShaderMaterial:
 		+ "uniform float glow_size = 0.08;\n"
 		+ "uniform float glow_strength = 0.0;\n"
 		+ "uniform vec3 glow_color = vec3(0.9, 0.8, 0.6);\n"
+		+ "uniform vec2 hole_center = vec2(0.5, 0.5);\n"
+		+ "uniform float hole_radius = 0.0;\n"
 		+ "void fragment() {\n"
 		+ "  vec4 tex = texture(TEXTURE, UV);\n"
 		+ "  float acc = 0.0;\n"
@@ -451,10 +434,14 @@ static func _create_glow_shader() -> ShaderMaterial:
 		+ "      total += w;\n"
 		+ "    }\n"
 		+ "  }\n"
+		+ "  float d = distance(UV, hole_center);\n"
+		+ "  float hole = smoothstep("
+		+ "hole_radius - 0.02, hole_radius, d);\n"
+		+ "  float card_a = tex.a * hole;\n"
 		+ "  float glow = (acc / total)"
-		+ " * (1.0 - tex.a) * glow_strength * 0.35;\n"
-		+ "  vec3 col = mix(glow_color, tex.rgb, tex.a);\n"
-		+ "  float fa = max(tex.a, glow);\n"
+		+ " * (1.0 - card_a) * glow_strength * 0.35;\n"
+		+ "  vec3 col = mix(glow_color, tex.rgb, card_a);\n"
+		+ "  float fa = max(card_a, glow);\n"
 		+ "  COLOR = vec4(col, fa);\n"
 		+ "}\n"
 	)
