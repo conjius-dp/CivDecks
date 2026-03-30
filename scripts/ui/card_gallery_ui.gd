@@ -261,12 +261,12 @@ func _layout_visible_cards() -> void:
 
 
 func _position_hand_btn(vp_size: Vector2) -> void:
-	var pile_h: float = float(UIHelpers.CARD_HEIGHT) * 0.5
-	_hand_btn_height = pile_h + HAND_BTN_GAP * 2 + 130
-	_bottom_reserve = _hand_btn_height
+	var btn_h := _hand_btn.size.y
+	var target_y := vp_size.y - btn_h - 20.0
+	_bottom_reserve = vp_size.y - target_y
 	_hand_btn.position = Vector2(
 		(vp_size.x - _hand_btn.size.x) * 0.5,
-		vp_size.y - _hand_btn_height,
+		target_y,
 	)
 	_clip_wrapper.position = Vector2.ZERO
 	_clip_wrapper.size = Vector2(
