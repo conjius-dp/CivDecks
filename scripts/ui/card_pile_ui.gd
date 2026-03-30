@@ -19,13 +19,13 @@ var _hovered: bool = false
 var _glow_mat: ShaderMaterial
 var _sv: SubViewport
 var _draw_ctrl: Control
-var _grayscale_mat: ShaderMaterial
 var _card_angles: Array[float] = [0.0]
 var _target_angles: Array[float] = [0.0]
 var _anim_tween: Tween
 var _anim_progress: float = 1.0
 var _start_angles: Array[float] = [0.0]
 var _brightness: float = 0.7
+var _gray_strength: float = 1.0
 
 
 func setup(face_down: bool) -> void:
@@ -57,8 +57,6 @@ func setup(face_down: bool) -> void:
 	_draw_ctrl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_sv.add_child(_draw_ctrl)
 
-	_grayscale_mat = _create_grayscale_shader()
-
 	_count_label = Label.new()
 	_count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_count_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -88,12 +86,8 @@ func setup(face_down: bool) -> void:
 	mouse_entered.connect(_on_hover_enter)
 	mouse_exited.connect(_on_hover_exit)
 
-	# Initial state: snap, no animation
-	_draw_ctrl.material = _grayscale_mat
-	_grayscale_mat.set_shader_parameter(
-		"strength", 0.0 if _toggled_on else 1.0
-	)
 	_brightness = 1.0 if _toggled_on else 0.7
+	_gray_strength = 0.0 if _toggled_on else 1.0
 	if _toggled_on:
 		_card_angles.clear()
 		var start_a := -FAN_SPREAD * 0.5
@@ -199,9 +193,7 @@ func _set_anim_progress(t: float) -> void:
 	_brightness = lerpf(start_bright, target_bright, t)
 	var target_gray := 0.0 if _toggled_on else 1.0
 	var start_gray := 1.0 if _toggled_on else 0.0
-	_grayscale_mat.set_shader_parameter(
-		"strength", lerpf(start_gray, target_gray, t)
-	)
+	_gray_strength = lerpf(start_gray, target_gray, t)
 	_draw_ctrl.queue_redraw()
 
 
@@ -258,17 +250,18 @@ func _draw_rotated_card(
 			(0.5 - 0.5 / zoom)
 				+ ((c.y + ch) / ch) / zoom,
 		))
-	var tint: Color
+	var base: Color
 	if _is_face_down:
-		tint = Color(
-			0.35 * brightness, 0.25 * brightness,
-			0.15 * brightness, 1.0,
-		)
+		base = Color(0.35, 0.25, 0.15, 1.0)
 	else:
-		tint = Color(
-			0.85 * brightness, 0.75 * brightness,
-			0.6 * brightness, 1.0,
-		)
+		base = Color(0.85, 0.75, 0.6, 1.0)
+	var gray: float = (
+		base.r * 0.3 + base.g * 0.59 + base.b * 0.11
+	) * 0.6
+	var r: float = lerpf(base.r, gray, _gray_strength) * brightness
+	var g: float = lerpf(base.g, gray, _gray_strength) * brightness
+	var b: float = lerpf(base.b, gray, _gray_strength) * brightness
+	var tint := Color(r, g, b, 1.0)
 	if ptex:
 		var colors := PackedColorArray()
 		colors.append(tint)
@@ -283,12 +276,16 @@ func _draw_rotated_card(
 		border_pts.append(Vector2(pivot_x + rx, pivot_y + ry))
 	for j in range(border_pts.size()):
 		var k: int = (j + 1) % border_pts.size()
+		var bb := Color(0.65, 0.5, 0.2)
+		var bg: float = (
+			bb.r * 0.3 + bb.g * 0.59 + bb.b * 0.11
+		) * 0.6
+		var br: float = lerpf(bb.r, bg, _gray_strength) * brightness
+		var bgg: float = lerpf(bb.g, bg, _gray_strength) * brightness
+		var bbl: float = lerpf(bb.b, bg, _gray_strength) * brightness
 		ctrl.draw_line(
 			border_pts[j], border_pts[k],
-			Color(
-				0.65 * brightness, 0.5 * brightness,
-				0.2 * brightness,
-			), 4.0,
+			Color(br, bgg, bbl), 4.0,
 		)
 
 
