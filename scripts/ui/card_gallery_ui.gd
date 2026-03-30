@@ -46,7 +46,7 @@ func _ready() -> void:
 
 	_hand_btn = CardPileUI.new()
 	_hand_btn.setup(false)
-	_hand_btn.scale = Vector2(1.5, 1.5)
+	# No scale — renders at native resolution for sharp text/borders
 	_hand_btn.set_title("Hand")
 	_hand_btn.set_toggled(true)
 	_hand_btn.visible = false

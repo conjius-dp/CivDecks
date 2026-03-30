@@ -76,7 +76,7 @@ func setup(face_down: bool) -> void:
 	var card_top: int = pivot_y - _pile_height
 	@warning_ignore("integer_division")
 	var label_x: int = (total_w - _pile_width) / 2
-	_count_label.position = Vector2(label_x, card_top + 7)
+	_count_label.position = Vector2(label_x, card_top + 10)
 	_count_label.size = Vector2(_pile_width, _pile_height)
 	_count_label.add_theme_font_override("font", _font_bold)
 	_count_label.add_theme_font_size_override(
@@ -411,6 +411,7 @@ func _draw_rotated_card(
 		ctrl.draw_line(
 			border_pts[j], border_pts[k],
 			Color(br, bgg, bbl), DarkCardUI.border_w,
+			true,
 		)
 
 
@@ -484,7 +485,7 @@ static func _create_glow_shader() -> ShaderMaterial:
 		+ "  float hole = smoothstep("
 		+ "hole_radius - 0.015, hole_radius, d);\n"
 		+ "  float card_a = tex.a * hole;\n"
-		+ "  float border_w = 0.012;\n"
+		+ "  float border_w = 0.018;\n"
 		+ "  float ring = (1.0 - smoothstep("
 		+ "hole_radius - border_w, hole_radius, d))\n"
 		+ "    * smoothstep("
