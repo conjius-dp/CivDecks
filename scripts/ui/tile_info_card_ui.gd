@@ -59,6 +59,8 @@ func _ready() -> void:
 func update_info(
 	terrain_name: String, yields: Array[String],
 ) -> void:
+	print("[TILE] update_info called: '", terrain_name,
+		"' current: '", _current_terrain_name, "'")
 	if terrain_name == _current_terrain_name:
 		return
 	_current_terrain_name = terrain_name
