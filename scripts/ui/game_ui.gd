@@ -128,28 +128,35 @@ func _layout_piles() -> void:
 		_discard_pile_ui.position.x + pile_gp
 		+ float(_discard_pile_ui._pile_width) * 0.5
 	)
-	# Top cards: position so the visual card top edge is at screen y=8
-	# Visual card top in these controls is at local y = GLOW_PAD - card_h*0.1
-	var et_gp := float(end_turn_button.GLOW_PAD)
-	var et_card_h := float(end_turn_button._card_h)
-	var visual_top_offset := et_gp - et_card_h * 0.1
-	var screen_top := 8.0
-	var card_y := screen_top - visual_top_offset
+	# All top cards share GLOW_PAD=50, same card dims
+	# Visual card top in control = GLOW_PAD + card_h*0.9 - card_h = GLOW_PAD - card_h*0.1
+	var top_pad := 50.0
+	var icon_card_h := float(UIHelpers.CARD_HEIGHT) * CardPileUI.ICON_CARD_SCALE
+	var visual_top_in_ctrl := top_pad - icon_card_h * 0.1
+	var card_y := 8.0 - visual_top_in_ctrl
+	# Top card visual card center = control.position.x + control.size.x * 0.5
+	# So to align visual center with pile visual center:
+	# control.position.x = pile_visual_cx - control.size.x * 0.5
+	# But the card is drawn at size.x/2 inside the control, so this centers it.
+	# For left alignment: pile visual left = _draw_pile_ui.position.x + pile_gp
+	# control visual left = control.position.x + top_pad + (extra_w / 2)
+	# where extra_w = 100 (the +100 in total_w)
+	var extra_w := 100.0
+	var half_extra := extra_w * 0.5
+	var draw_visual_left := _draw_pile_ui.position.x + pile_gp
+	var discard_visual_left := _discard_pile_ui.position.x + pile_gp
 	end_turn_button.position = Vector2(
-		discard_visual_cx - end_turn_button.size.x * 0.5,
-		card_y,
+		discard_visual_left - top_pad - half_extra, card_y
 	)
 	_btn_original_x = end_turn_button.position.x
 	if _tile_info_card:
 		_tile_info_card.position = Vector2(
-			draw_visual_cx - _tile_info_card.size.x * 0.5,
-			card_y,
+			draw_visual_left - top_pad - half_extra, card_y
 		)
 		_tile_info_card.store_original_pos()
 	if _unit_card:
 		_unit_card.position = Vector2(
-			(vp.x - _unit_card.size.x) * 0.5,
-			card_y,
+			(vp.x - _unit_card.size.x) * 0.5, card_y
 		)
 		_unit_card.store_original_pos()
 	_btn_original_x = end_turn_button.position.x
