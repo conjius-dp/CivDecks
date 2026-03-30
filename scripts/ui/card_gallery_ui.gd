@@ -45,6 +45,7 @@ func _ready() -> void:
 
 	_hand_btn = CardPileUI.new()
 	_hand_btn.setup(false)
+	_hand_btn.set_title("Hand")
 	_hand_btn.set_toggled(true)
 	_hand_btn.visible = false
 	_hand_btn.z_index = 100
@@ -73,22 +74,22 @@ func show_gallery(
 	_show_discard = initial_discard
 	_scroll_offset = 0.0
 	visible = true
+	var vp_size := get_viewport().get_visible_rect().size
+	_position_hand_btn(vp_size)
 	_build_all_cards.call_deferred()
 	_layout_visible_cards.call_deferred()
 	_hand_btn.visible = true
+	_hand_btn.set_gallery_mode(true)
 	_update_hand_visual()
 	# Fly hand button in from below
 	var final_y: float = _hand_btn.position.y
-	_hand_btn.position.y = (
-		get_viewport().get_visible_rect().size.y
-		+ _hand_btn.size.y
-	)
+	_hand_btn.position.y = vp_size.y + _hand_btn.size.y
 	var hand_tw := _hand_btn.create_tween()
 	hand_tw.tween_property(
 		_hand_btn, "position:y", final_y, ANIM_DURATION,
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	_animating = true
-	var vp_h: float = get_viewport().get_visible_rect().size.y
+	var vp_h: float = vp_size.y
 	_container.position.y = vp_h
 	var tween := create_tween()
 	tween.tween_property(

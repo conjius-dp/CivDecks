@@ -112,7 +112,7 @@ func setup(face_down: bool) -> void:
 	var label_cy: float = (
 		_count_label.position.y + _count_label.size.y * 0.5
 	)
-	var hole_px: float = 44.0 * UIHelpers.UI_SCALE / UIHelpers.UI_SCALE
+	var hole_px: float = 31.0
 	_glow_mat.set_shader_parameter(
 		"hole_center", Vector2(
 			label_cx / float(total_w),
@@ -134,15 +134,15 @@ func set_title(text: String) -> void:
 	_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_title_label.add_theme_font_override("font", _font_bold)
 	_title_label.add_theme_font_size_override(
-		"font_size", UIHelpers.s(8)
+		"font_size", UIHelpers.s(10)
 	)
 	_title_label.add_theme_color_override(
 		"font_color", Color(0.85, 0.78, 0.65)
 	)
 	_title_label.position = Vector2(
-		0, size.y + 4.0
+		0, size.y + 1.0
 	)
-	_title_label.size = Vector2(size.x, UIHelpers.s(12))
+	_title_label.size = Vector2(size.x, UIHelpers.s(14))
 	_title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_title_label)
 
@@ -465,7 +465,7 @@ static func _create_glow_shader() -> ShaderMaterial:
 		+ "  float hole = smoothstep("
 		+ "hole_radius - 0.015, hole_radius, d);\n"
 		+ "  float card_a = tex.a * hole;\n"
-		+ "  float border_w = 0.006;\n"
+		+ "  float border_w = 0.012;\n"
 		+ "  float ring = (1.0 - smoothstep("
 		+ "hole_radius - border_w, hole_radius, d))\n"
 		+ "    * smoothstep("
