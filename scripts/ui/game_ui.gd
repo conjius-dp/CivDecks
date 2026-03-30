@@ -133,9 +133,9 @@ func _layout_piles() -> void:
 	var discard_left := _discard_pile_ui.position.x + pile_gp
 	# visual_card_left_in_ctrl() gives the offset from control origin
 	# to the visual card's left edge
-	var vcl := end_turn_button.visual_card_left_in_ctrl()
-	var vct := end_turn_button.visual_card_top_in_ctrl()
-	var card_y := 8.0 - vct
+	var vcl: float = end_turn_button.visual_card_left_in_ctrl()
+	var vct: float = end_turn_button.visual_card_top_in_ctrl()
+	var card_y: float = 8.0 - vct
 	end_turn_button.position = Vector2(
 		discard_left - vcl, card_y
 	)
