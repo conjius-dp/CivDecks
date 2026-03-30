@@ -318,7 +318,7 @@ func _update_title_position() -> void:
 	var target_y := size.y - float(GLOW_PAD) + gap
 	var tw := _title_label.create_tween()
 	tw.tween_property(
-		_title_label, "position:y", target_y, 0.2,
+		_title_label, "position:y", target_y, 0.3,
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
 
