@@ -23,6 +23,8 @@ var _max_scroll: float = 0.0
 var _clip_wrapper: Control
 var _container: Control
 var _animating: bool = false
+var _card_nodes: Array = []
+var _cards_built: bool = false
 var _hand_btn: CardPileUI
 var _hand_btn_height: float = 0.0
 var _bottom_reserve: float = 0.0
@@ -70,7 +72,8 @@ func show_gallery(
 	_show_hand = initial_hand
 	_show_discard = initial_discard
 	_scroll_offset = 0.0
-	_rebuild()
+	_build_all_cards()
+	_layout_visible_cards()
 	visible = true
 	_hand_btn.visible = true
 	_update_hand_visual()
@@ -109,6 +112,8 @@ func hide_gallery() -> void:
 		_animating = false
 		for child in _container.get_children():
 			child.queue_free()
+		_card_nodes.clear()
+		_cards_built = false
 		closed.emit()
 	)
 
@@ -122,7 +127,7 @@ func toggle_filter(pile: String) -> void:
 		"discard":
 			_show_discard = not _show_discard
 	_scroll_offset = 0.0
-	_rebuild()
+	_layout_visible_cards()
 	_apply_scroll()
 	_update_hand_visual()
 
@@ -148,11 +153,55 @@ func _get_filtered_cards() -> Array[CardData]:
 	return result
 
 
-func _rebuild() -> void:
+func _build_all_cards() -> void:
+	# Clear old cards
 	for child in _container.get_children():
 		child.queue_free()
+	_card_nodes.clear()
 
-	var cards := _get_filtered_cards()
+	var all_cards: Array[Array] = []
+	for card in _draw_cards:
+		all_cards.append([card, "draw"])
+	for card in _hand_cards:
+		all_cards.append([card, "hand"])
+	for card in _discard_cards:
+		all_cards.append([card, "discard"])
+
+	for entry in all_cards:
+		var card: CardData = entry[0] as CardData
+		var pile: String = entry[1] as String
+		var sections: Array[PanelContainer] = []
+		var outer := Control.new()
+		outer.custom_minimum_size = Vector2(
+			UIHelpers.CARD_WIDTH, UIHelpers.CARD_HEIGHT
+		)
+		outer.size = Vector2(
+			UIHelpers.CARD_WIDTH, UIHelpers.CARD_HEIGHT
+		)
+		outer.mouse_filter = Control.MOUSE_FILTER_STOP
+		CardFaceBuilder.build_face(outer, card, sections)
+		var card_ref: CardData = card
+		outer.gui_input.connect(
+			func(event: InputEvent) -> void:
+				if _animating:
+					return
+				if event is InputEventMouseButton:
+					if (event.button_index == MOUSE_BUTTON_LEFT
+						and event.pressed
+					):
+						card_drag_requested.emit(
+							card_ref, event.global_position
+						)
+						get_viewport().set_input_as_handled()
+		)
+		_container.add_child(outer)
+		_card_nodes.append({
+			"node": outer, "card": card, "pile": pile,
+		})
+	_cards_built = true
+
+
+func _layout_visible_cards() -> void:
 	var vp_size: Vector2 = get_viewport().get_visible_rect().size
 	var pile_inset: float = (
 		float(UIHelpers.CARD_WIDTH) * 0.5 + 200.0
@@ -171,46 +220,40 @@ func _rebuild() -> void:
 
 	var row := 0
 	var col := 0
-	for card in cards:
-		var x: float = (
-			pile_inset + PADDING + col * (cw + COL_GAP)
-		)
-		var y: float = PADDING + row * (ch + ROW_GAP)
-		var sections: Array[PanelContainer] = []
-		var outer := Control.new()
-		outer.custom_minimum_size = Vector2(
-			UIHelpers.CARD_WIDTH, UIHelpers.CARD_HEIGHT
-		)
-		outer.size = Vector2(
-			UIHelpers.CARD_WIDTH, UIHelpers.CARD_HEIGHT
-		)
-		outer.mouse_filter = Control.MOUSE_FILTER_STOP
-		CardFaceBuilder.build_face(outer, card, sections)
-		outer.scale = Vector2(card_scale, card_scale)
-		outer.position = Vector2(x, y)
-		var card_ref: CardData = card
-		outer.gui_input.connect(
-			func(event: InputEvent) -> void:
-				if _animating:
-					return
-				if event is InputEventMouseButton:
-					if (event.button_index == MOUSE_BUTTON_LEFT
-						and event.pressed
-					):
-						card_drag_requested.emit(
-							card_ref, event.global_position
-						)
-						get_viewport().set_input_as_handled()
-		)
-		_container.add_child(outer)
-
-		col += 1
-		if col >= COLS:
-			col = 0
-			row += 1
+	for entry in _card_nodes:
+		var node: Control = entry["node"] as Control
+		var pile: String = entry["pile"] as String
+		var show := false
+		match pile:
+			"draw": show = _show_draw
+			"hand": show = _show_hand
+			"discard": show = _show_discard
+		node.visible = show
+		if show:
+			var x: float = (
+				pile_inset + PADDING + col * (cw + COL_GAP)
+			)
+			var y: float = PADDING + row * (ch + ROW_GAP)
+			node.scale = Vector2(card_scale, card_scale)
+			node.position = Vector2(x, y)
+			col += 1
+			if col >= COLS:
+				col = 0
+				row += 1
 
 	@warning_ignore("integer_division")
-	var total_rows: int = (cards.size() + COLS - 1) / COLS
+	var visible_count := 0
+	for entry in _card_nodes:
+		var pile: String = entry["pile"] as String
+		match pile:
+			"draw":
+				if _show_draw: visible_count += 1
+			"hand":
+				if _show_hand: visible_count += 1
+			"discard":
+				if _show_discard: visible_count += 1
+	@warning_ignore("integer_division")
+	var total_rows: int = (visible_count + COLS - 1) / COLS
 	var total_h: float = (
 		PADDING * 2 + total_rows * (ch + ROW_GAP)
 		- ROW_GAP
