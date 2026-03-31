@@ -3,6 +3,8 @@ extends Control
 signal card_dropped(card: CardData, target: Vector2i)
 signal gallery_requested
 
+const DISCARD_DUR := 0.7
+
 var hex_map: Node3D
 var camera: Camera3D
 var card_effects: Node
@@ -49,6 +51,9 @@ func discard_all(on_done: Callable = Callable()) -> void:
 		return
 	_discarding_all = true
 	var last_delay := float(cards.size() - 1) * 0.05
+	var dur := DISCARD_DUR
+	var flip_time := dur * 0.35
+	var flip_dur := 0.15
 	for i in range(cards.size()):
 		var card: Control = cards[i]
 		var gpos: Vector2 = card.global_position
@@ -63,7 +68,6 @@ func discard_all(on_done: Callable = Callable()) -> void:
 		card.global_position = gpos
 		var delay := float(i) * 0.05
 		var tw := card.create_tween()
-		tw.tween_interval(delay)
 		tw.set_parallel(true)
 		var half_pile := Vector2(
 			float(UIHelpers.CARD_WIDTH) * 0.25,
@@ -71,19 +75,47 @@ func discard_all(on_done: Callable = Callable()) -> void:
 		)
 		var disc_target := discard_pile_pos - half_pile
 		tw.tween_property(
-			card, "global_position", disc_target, 0.2,
+			card, "global_position", disc_target, dur,
 		).set_trans(Tween.TRANS_CUBIC).set_ease(
 			Tween.EASE_IN
 		).set_delay(delay)
 		tw.tween_property(
-			card, "scale", Vector2(0.5, 0.5), 0.2,
+			card, "scale:y", 0.5, dur,
 		).set_trans(Tween.TRANS_CUBIC).set_ease(
 			Tween.EASE_IN
 		).set_delay(delay)
+		tw.tween_property(
+			card, "rotation", 0.0, dur,
+		).set_trans(Tween.TRANS_CUBIC).set_ease(
+			Tween.EASE_IN
+		).set_delay(delay)
+		# Flip: face-up → squash x → face-down → stretch
+		var start_sx: float = card.scale.x
+		var mid_sx: float = lerpf(start_sx, 0.5, 0.35)
+		var flip_tw := card.create_tween()
+		flip_tw.tween_interval(delay)
+		flip_tw.tween_property(
+			card, "scale:x", mid_sx, flip_time,
+		).set_trans(Tween.TRANS_CUBIC).set_ease(
+			Tween.EASE_OUT
+		)
+		flip_tw.tween_property(
+			card, "scale:x", 0.0, flip_dur,
+		).set_trans(Tween.TRANS_SINE).set_ease(
+			Tween.EASE_IN
+		)
+		flip_tw.tween_callback(func() -> void:
+			card.set_face_up(false)
+		)
+		flip_tw.tween_property(
+			card, "scale:x", 0.5, flip_dur,
+		).set_trans(Tween.TRANS_SINE).set_ease(
+			Tween.EASE_OUT
+		)
 		tw.finished.connect(func() -> void:
 			card.queue_free()
 		)
-	var total_time := last_delay + 0.25
+	var total_time := last_delay + dur + 0.05
 	get_tree().create_timer(total_time).timeout.connect(
 		func() -> void:
 			_discarding_all = false
@@ -259,14 +291,36 @@ func _animate_to_discard_pile(card: Control) -> void:
 	)
 	var target := discard_pile_pos - half_pile
 	card.z_index = 50
+	var dur := DISCARD_DUR
 	var tw := card.create_tween()
 	tw.set_parallel(true)
 	tw.tween_property(
-		card, "global_position", target, 0.25,
+		card, "global_position", target, dur,
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	tw.tween_property(
-		card, "scale", Vector2(0.5, 0.5), 0.25,
+		card, "scale:y", 0.5, dur,
 	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tw.tween_property(
+		card, "rotation", 0.0, dur,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	# Flip animation: face-up → squash x → face-down → stretch
+	var flip_time := dur * 0.35
+	var flip_dur := 0.15
+	var start_sx: float = card.scale.x
+	var mid_sx: float = lerpf(start_sx, 0.5, 0.35)
+	var flip_tw := card.create_tween()
+	flip_tw.tween_property(
+		card, "scale:x", mid_sx, flip_time,
+	).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	flip_tw.tween_property(
+		card, "scale:x", 0.0, flip_dur,
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	flip_tw.tween_callback(func() -> void:
+		card.set_face_up(false)
+	)
+	flip_tw.tween_property(
+		card, "scale:x", 0.5, flip_dur,
+	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	tw.finished.connect(func() -> void:
 		card.queue_free()
 	)

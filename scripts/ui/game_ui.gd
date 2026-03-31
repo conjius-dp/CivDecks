@@ -89,7 +89,7 @@ func _setup_piles() -> void:
 	_draw_pile_ui.set_title("Draw")
 	add_child(_draw_pile_ui)
 	_discard_pile_ui = CardPileUI.new()
-	_discard_pile_ui.setup(false)
+	_discard_pile_ui.setup(true)
 	_discard_pile_ui.set_title("Discard")
 	add_child(_discard_pile_ui)
 	var tile_info_cls: GDScript = load(
