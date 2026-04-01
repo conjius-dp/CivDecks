@@ -209,16 +209,23 @@ func animate_deal(
 	)
 	set_current_cards(cards)
 	card_hand.show_cards(cards, true)
-	# Decrement draw counter per card as they deal out
+	# Draw pulls cards out → decrement at START of each card anim
+	# Hand receives cards → increment at END of each card anim
 	var remaining_draw := draw_count + cards.size()
 	var hand_count := 0
+	var dur := 0.7
 	for i in cards.size():
 		await get_tree().create_timer(0.18).timeout
 		remaining_draw -= 1
+		_draw_pile_ui.update_count(remaining_draw)
+	for i in cards.size():
+		if i == 0:
+			await get_tree().create_timer(dur).timeout
+		else:
+			await get_tree().create_timer(0.18).timeout
 		hand_count += 1
-		update_piles(remaining_draw, discard_count, hand_count)
-	# Wait for the last card's animation to finish
-	await get_tree().create_timer(0.62).timeout
+		card_gallery.update_hand_count(hand_count)
+	update_piles(draw_count, discard_count, cards.size())
 	var tw_back := _draw_pile_ui.animate_back(0.2)
 	await tw_back.finished
 	card_hand.draw_pile_pos = get_draw_pile_center()
