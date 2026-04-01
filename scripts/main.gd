@@ -239,10 +239,21 @@ func _on_card_dropped(card: CardData, target: Vector2i) -> void:
 func _on_end_turn() -> void:
 	hex_map.clear_highlights()
 	game_ui.set_end_turn_enabled(false)
-	# Animate discard, then continue turn
+	var dm: DeckManager = card_manager.deck_manager
+	var hand_size := dm.hand.size()
+	var draw_count := dm.draw_pile_count()
+	var discard_base := dm.discard_pile_count()
 	card_manager.discard_hand()
-	game_ui.card_hand.discard_all(func() -> void:
-		_finish_end_turn()
+	# Override counters to animate per-card during discard
+	game_ui.update_piles(draw_count, discard_base, hand_size)
+	game_ui.card_hand.discard_all(
+		func() -> void:
+			_finish_end_turn(),
+		func(i: int) -> void:
+			game_ui.update_piles(
+				draw_count, discard_base + i + 1,
+				hand_size - i - 1,
+			)
 	)
 
 

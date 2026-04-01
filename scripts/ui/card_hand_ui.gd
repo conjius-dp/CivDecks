@@ -42,7 +42,10 @@ func show_cards(cards: Array[CardData], animate_draw: bool = true) -> void:
 		_layout_cards.call_deferred()
 
 
-func discard_all(on_done: Callable = Callable()) -> void:
+func discard_all(
+	on_done: Callable = Callable(),
+	on_each: Callable = Callable(),
+) -> void:
 	_focused_card = null
 	var cards := _get_card_children()
 	if cards.is_empty():
@@ -68,6 +71,11 @@ func discard_all(on_done: Callable = Callable()) -> void:
 			get_tree().root.add_child(card)
 		card.global_position = gpos
 		var delay := float(i) * 0.05
+		if on_each.is_valid():
+			var card_idx := i
+			get_tree().create_timer(delay).timeout.connect(
+				func() -> void: on_each.call(card_idx)
+			)
 		var tw := card.create_tween()
 		tw.set_parallel(true)
 		var half_pile := Vector2(

@@ -66,16 +66,10 @@ func show_gallery(
 	initial_hand: bool = true,
 	initial_discard: bool = false,
 ) -> void:
-	var cards_changed := (
-		draw != _draw_cards
-		or hand != _hand_cards
-		or discard != _discard_cards
-	)
-	if cards_changed:
-		_cards_built = false
-	_draw_cards = draw
-	_hand_cards = hand
-	_discard_cards = discard
+	_cards_built = false
+	_draw_cards = draw.duplicate()
+	_hand_cards = hand.duplicate()
+	_discard_cards = discard.duplicate()
 	_hand_btn.update_count(hand.size(), false)
 	_hand_btn.set_gallery_mode(true)
 	_show_draw = initial_draw
