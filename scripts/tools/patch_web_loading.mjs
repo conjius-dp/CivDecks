@@ -159,5 +159,12 @@ window.addEventListener('keydown', function(e) {
 // Remove fullsize class so Godot doesn't force 100% width/height
 html = html.replaceAll('fullsize--true', 'fullsize--false');
 
+// Disable cross-origin isolation check — not needed for single-threaded export
+// Prevents Godot from trying to install a service worker that breaks iOS WebKit
+html = html.replace(
+	'"ensureCrossOriginIsolationHeaders":true',
+	'"ensureCrossOriginIsolationHeaders":false'
+);
+
 writeFileSync(file, html);
 console.log("Patched loading screen:", file);
