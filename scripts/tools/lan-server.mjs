@@ -33,6 +33,44 @@ const DEV_SCRIPTS = `<script>
   }
   if (document.readyState === "complete") connect();
   else window.addEventListener("load", connect);
+
+  // Cache compiled WASM in IndexedDB
+  var DB = "wasm-cache", ST = "m";
+  function idb(mode) {
+    return new Promise(function(ok, fail) {
+      var r = indexedDB.open(DB, 1);
+      r.onupgradeneeded = function() { r.result.createObjectStore(ST); };
+      r.onsuccess = function() { ok(r.result.transaction(ST, mode).objectStore(ST)); };
+      r.onerror = fail;
+    });
+  }
+  var orig = WebAssembly.instantiateStreaming;
+  WebAssembly.instantiateStreaming = function(source, imports) {
+    return Promise.resolve(source).then(function(resp) {
+      var key = resp.url;
+      return idb("readonly").then(function(store) {
+        return new Promise(function(ok) {
+          var g = store.get(key);
+          g.onsuccess = function() { ok(g.result || null); };
+          g.onerror = function() { ok(null); };
+        });
+      }).then(function(cached) {
+        if (cached) {
+          return WebAssembly.instantiate(cached, imports).then(function(inst) {
+            return { module: cached, instance: inst };
+          });
+        }
+        return orig(resp.clone(), imports).then(function(result) {
+          idb("readwrite").then(function(store) {
+            try { store.put(result.module, key); } catch(e) {}
+          });
+          return result;
+        });
+      });
+    }).catch(function() {
+      return orig(source, imports);
+    });
+  };
 })();
 </script>`;
 
