@@ -107,7 +107,9 @@ const initScript = `<script>
 			}
 			var logo = document.getElementById('status-splash');
 			if (logo) {
-				logo.style.animationDuration = '2.8s';
+				logo.style.animation = 'none';
+				logo.style.opacity = '1';
+				logo.style.transform = 'scale(0.68)';
 			}
 		}
 	}, 200);
