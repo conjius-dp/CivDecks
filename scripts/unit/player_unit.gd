@@ -36,6 +36,7 @@ var _is_selected: bool = false
 var _is_targeting_move: bool = false
 var _is_dragging_card: bool = false
 var _camera: Camera3D
+var _ground_y := 0.6
 
 func _ready() -> void:
 	var old_mesh: Node = get_node_or_null("MeshInstance3D")
@@ -79,11 +80,11 @@ func offset_for_packing(
 	if not _model:
 		return
 	if has_building:
-		_model.position = Vector3(0.4, 0, 0.3)
+		_model.position = Vector3(0.4, _ground_y, 0.3)
 	elif has_yields:
-		_model.position = Vector3(0.15, 0, 0.55)
+		_model.position = Vector3(0.15, _ground_y, 0.55)
 	else:
-		_model.position = Vector3.ZERO
+		_model.position = Vector3(0, _ground_y, 0)
 
 
 func move_to(coord: Vector2i, terrain_height: float = 0.0) -> void:
@@ -215,7 +216,7 @@ func _screen_to_ground(screen_pos: Vector2) -> Vector3:
 
 func _build_character_model() -> Node3D:
 	var node := AssetPack.get_model("Guy", 0.003)
-	node.position = Vector3(0, 0.6, 0)
+	node.position = Vector3(0, _ground_y, 0)
 	return node
 
 
