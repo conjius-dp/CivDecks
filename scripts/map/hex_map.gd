@@ -362,13 +362,17 @@ func _build_terrain_multimeshes() -> void:
 
 func _setup_mountain_assets() -> void:
 	var node := AssetPack.get_model("Rocks", 1.0)
-	if not node is MeshInstance3D:
+	var mi: MeshInstance3D = null
+	for child in node.get_children():
+		if child is MeshInstance3D:
+			mi = child as MeshInstance3D
+			break
+	if mi == null or mi.mesh == null:
 		return
-	var mi := node as MeshInstance3D
 	var src_mesh: Mesh = mi.mesh
 	var aabb := src_mesh.get_aabb()
 	var center := aabb.get_center()
-	var scale_val := 0.015
+	var scale_val := 0.0195
 	var scaled := ArrayMesh.new()
 	for s in src_mesh.get_surface_count():
 		var arrays: Array = src_mesh.surface_get_arrays(s)

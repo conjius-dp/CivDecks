@@ -21,10 +21,12 @@ var _pending: Array[Array] = []
 func load_trees() -> void:
 	for tree_name in TREE_NAMES:
 		var node := AssetPack.get_model(tree_name, 1.0)
-		if not node is MeshInstance3D:
-			continue
-		var mi := node as MeshInstance3D
-		if mi.mesh == null:
+		var mi: MeshInstance3D = null
+		for child in node.get_children():
+			if child is MeshInstance3D:
+				mi = child as MeshInstance3D
+				break
+		if mi == null or mi.mesh == null:
 			continue
 		var aabb: AABB = mi.mesh.get_aabb()
 		var center: Vector3 = aabb.get_center()
