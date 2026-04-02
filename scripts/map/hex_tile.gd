@@ -1,5 +1,6 @@
 extends Node3D
 
+static var _village_scene: PackedScene
 static var _materials_icon: Texture2D
 static var _food_icon: Texture2D
 static var _parchment_tex: Texture2D
@@ -15,6 +16,8 @@ var _pulse_tween: Tween
 var _font_bold: Font = preload("res://assets/fonts/Cinzel-Bold.ttf")
 var _yield_sprites: Array[Sprite3D] = []
 var _has_settlement: bool = false
+var _settlement_node: Node3D
+var _settlement_color: Color
 
 
 func setup(
@@ -268,9 +271,11 @@ func place_settlement(
 	_map_data: MapData = null,
 ) -> void:
 	_has_settlement = true
+	_settlement_color = player_color
 	var tent := _build_procedural_tent(player_color)
 	tent.position = Vector3(0, 0.1, 0)
 	add_child(tent)
+	_settlement_node = tent
 	_reposition_yields()
 
 	var label_y := 1.2
@@ -287,6 +292,45 @@ func place_settlement(
 	label.outline_modulate = Color(0, 0, 0, 0.7)
 	label.outline_size = int(UIHelpers.SETTLEMENT_OUTLINE * 1.5)
 	add_child(label)
+
+
+func upgrade_settlement() -> void:
+	if _settlement_node:
+		_settlement_node.queue_free()
+	var village := _load_village_model(_settlement_color)
+	village.position = Vector3(0, 0.1, 0)
+	add_child(village)
+	_settlement_node = village
+	# Update label text
+	for child in get_children():
+		if child is Label3D:
+			child.text = "Village"
+			break
+
+
+func _load_village_model(color: Color) -> Node3D:
+	if _village_scene == null:
+		_village_scene = load(
+			"res://assets/models/buildings/village/village.fbx"
+		) as PackedScene
+	var instance := _village_scene.instantiate() as Node3D
+	instance.scale = Vector3(0.15, 0.15, 0.15)
+	_tint_meshes(instance, color)
+	return instance
+
+
+func _tint_meshes(node: Node3D, color: Color) -> void:
+	for child in node.get_children():
+		if child is MeshInstance3D:
+			var mi := child as MeshInstance3D
+			for i in mi.get_surface_override_material_count():
+				var base_mat: Material = mi.mesh.surface_get_material(i)
+				if base_mat is StandardMaterial3D:
+					var mat := (base_mat as StandardMaterial3D).duplicate() as StandardMaterial3D
+					mat.albedo_color = mat.albedo_color * color
+					mi.set_surface_override_material(i, mat)
+		if child is Node3D:
+			_tint_meshes(child as Node3D, color)
 
 
 func _build_procedural_tent(
