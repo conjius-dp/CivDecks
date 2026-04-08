@@ -172,7 +172,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           SLUG="${{ steps.slug.outputs.slug }}"
-          URL="https://conjius.github.io/CivDecks/preview/$SLUG/"
+          URL="https://conjius-dp.github.io/civ-deckbuilder/preview/$SLUG/"
           DEPLOY_ID=$(echo '{"ref":"${{ github.head_ref }}","environment":"preview","description":"Preview for ${{ github.head_ref }}","auto_merge":false,"required_contexts":[]}' \
             | gh api "repos/${{ github.repository }}/deployments" \
             -X POST --input - --jq '.id')
