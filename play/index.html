@@ -37,7 +37,15 @@ img#status-splash {
 #status-progress::-webkit-progress-bar { background: #1a1a1a; border-radius: 2px; }
 #status-progress::-webkit-progress-value { background: #e8c055; border-radius: 2px; }
 #status-progress::-moz-progress-bar { background: #e8c055; border-radius: 2px; }
-#status-notice { display: none !important; }
+#status-notice {
+  display: none;
+  color: #e8c055 !important; background: rgba(0,0,0,0.9) !important;
+  font-size: 14px !important; max-width: 80vw !important;
+  position: fixed !important; bottom: 10% !important; left: 50% !important;
+  transform: translateX(-50%) !important; z-index: 100 !important;
+  padding: 1em !important; border-radius: 8px !important;
+  text-align: center !important;
+}
 canvas { background: #000 !important; }
 .progress-fill {
   position: fixed; left: 50%;
@@ -182,52 +190,23 @@ body {
 		}
 	}, 200);
 
-	// Detect game ready -> snap to 100% and fade out
-	var canvasFrames = 0;
-	var checkCanvas = setInterval(function() {
-		var canvas = document.querySelector('canvas');
-		if (canvas && canvas.width > 100 && canvas.height > 100) {
-			// Check if canvas has actual rendered content (not just blank)
-			try {
-				var gl = canvas.getContext('webgl2') || canvas.getContext('webgl');
-				if (!gl) { return; }
-				var pixel = new Uint8Array(4);
-				gl.readPixels(
-					Math.floor(canvas.width / 2), Math.floor(canvas.height / 2),
-					1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixel
-				);
-				// Skip if pixel is black/empty (game not rendering yet)
-				if (pixel[0] === 0 && pixel[1] === 0 && pixel[2] === 0) { return; }
-			} catch(e) { return; }
-			canvasFrames++;
-			if (canvasFrames >= 1) {
-				clearInterval(checkCanvas);
-				var inner = document.querySelector('.progress-fill-inner');
-				if (inner) {
-					inner.style.animation = 'none';
-					inner.style.transform = 'scaleX(1)';
-				}
-				var logo = document.getElementById('status-splash');
-				if (logo) {
-					logo.style.animation = 'none';
-					logo.style.opacity = '1';
-					logo.style.transform = 'scale(0.85)';
-				}
-				var status = document.getElementById('status');
-				var fillEl = document.querySelector('.progress-fill');
-				if (status) {
-					status.style.transition = 'none';
-					status.style.opacity = '0';
-					status.style.display = 'none';
-				}
-				if (fillEl) {
-					fillEl.style.transition = 'none';
-					fillEl.style.opacity = '0';
-					fillEl.style.display = 'none';
-				}
-			}
-		} else {
-			canvasFrames = 0;
+	// Detect game ready -> snap bar to 100% and fade out overlay.
+	// Godot calls statusOverlay.remove() when the engine starts,
+	// so we detect that the #status element is gone from the DOM.
+	var checkReady = setInterval(function() {
+		var status = document.getElementById('status');
+		if (status) { return; }
+		clearInterval(checkReady);
+		var inner = document.querySelector('.progress-fill-inner');
+		if (inner) {
+			inner.style.animation = 'none';
+			inner.style.transform = 'scaleX(1)';
+		}
+		var fillEl = document.querySelector('.progress-fill');
+		if (fillEl) {
+			fillEl.style.transition = 'none';
+			fillEl.style.opacity = '0';
+			fillEl.style.display = 'none';
 		}
 	}, 100);
 })();
@@ -250,7 +229,7 @@ window.addEventListener('keydown', function(e) {
 		<div id="status">
 			<img id="status-splash" class="show-image--true fullsize--false use-filter--true" src="index.png" alt="">
 			<progress id="status-progress"></progress>
-			<div class="progress-fill"><div class="progress-fill-inner"></div></div><div id="status-notice"></div>
+			<div id="status-notice"></div>
 		</div>
 
 		<script src="index.js"></script>
@@ -351,6 +330,6 @@ const engine = new Engine(GODOT_CONFIG);
 	}
 }());
 		</script>
-	</body>
+	<div class="progress-fill"><div class="progress-fill-inner"></div></div></body>
 </html>
 
