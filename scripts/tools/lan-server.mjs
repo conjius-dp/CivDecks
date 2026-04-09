@@ -1,10 +1,26 @@
-import { createServer } from "http";
+import { createServer } from "https";
+import { createServer as createHttpServer } from "http";
 import { readFile, stat } from "fs/promises";
+import { readFileSync } from "fs";
 import { join, extname } from "path";
 
 const PORT = 8060;
+const HTTP_PORT = 8061;
 const DIR = join(import.meta.dirname, "../../build/web");
 const RELOAD_FILE = join(import.meta.dirname, "../../build/.reload");
+const CERTS_DIR = join(import.meta.dirname, "certs");
+
+let tlsOptions;
+try {
+  tlsOptions = {
+    key: readFileSync(join(CERTS_DIR, "key.pem")),
+    cert: readFileSync(join(CERTS_DIR, "cert.pem")),
+  };
+} catch {
+  console.error("No TLS certs found in scripts/tools/certs/. Run:");
+  console.error("  openssl req -x509 -newkey rsa:2048 -keyout scripts/tools/certs/key.pem -out scripts/tools/certs/cert.pem -days 365 -nodes -subj '/CN=localhost'");
+  process.exit(1);
+}
 
 const MIME = {
   ".html": "text/html",
@@ -97,15 +113,7 @@ function handleSSE(req, res) {
   });
 }
 
-// --- COOP/COEP headers ---
-
 function setCrossOriginHeaders(req, res) {
-  const ua = req.headers["user-agent"] || "";
-  const isSafari = ua.includes("Safari") && !ua.includes("Chrome");
-  if (!isSafari) {
-    res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
-    res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
-  }
   res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
 }
 
@@ -146,8 +154,19 @@ setInterval(async () => {
 
 // --- Request handler ---
 
-const server = createServer(async (req, res) => {
+async function handler(req, res) {
   if (req.url === "/__reload") return handleSSE(req, res);
+
+  // Serve cert for iOS install (visit http://<ip>:8061/cert on the device)
+  if (req.url === "/cert") {
+    const certData = readFileSync(join(CERTS_DIR, "cert.pem"));
+    res.writeHead(200, {
+      "Content-Type": "application/x-pem-file",
+      "Content-Disposition": "attachment; filename=civdecks-dev.pem",
+    });
+    res.end(certData);
+    return;
+  }
 
   const url = req.url === "/" ? "/index.html" : req.url.split("?")[0];
   const filePath = join(DIR, url);
@@ -180,8 +199,29 @@ const server = createServer(async (req, res) => {
     res.writeHead(404);
     res.end("Not found");
   }
+}
+
+// HTTPS server (primary)
+const server = createServer(tlsOptions, handler);
+server.listen(PORT, "0.0.0.0", () => {
+  console.log(`HTTPS server: https://0.0.0.0:${PORT}`);
 });
 
-server.listen(PORT, "0.0.0.0", () => {
-  console.log(`LAN server: http://0.0.0.0:${PORT} (live reload + cache)`);
+// HTTP — serves cert install page, redirects everything else to HTTPS
+const httpServer = createHttpServer((req, res) => {
+  if (req.url === "/cert") {
+    const certData = readFileSync(join(CERTS_DIR, "cert.pem"));
+    res.writeHead(200, {
+      "Content-Type": "application/x-pem-file",
+      "Content-Disposition": "attachment; filename=civdecks-dev.pem",
+    });
+    res.end(certData);
+    return;
+  }
+  const host = (req.headers.host || "").replace(`:${HTTP_PORT}`, `:${PORT}`);
+  res.writeHead(301, { Location: `https://${host}${req.url}` });
+  res.end();
+});
+httpServer.listen(HTTP_PORT, "0.0.0.0", () => {
+  console.log(`HTTP redirect: http://0.0.0.0:${HTTP_PORT} -> https`);
 });

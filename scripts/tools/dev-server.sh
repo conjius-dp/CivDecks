@@ -105,8 +105,8 @@ print_urls() {
     local ip=$(ipconfig getifaddr en0 2>/dev/null || echo "unknown")
     echo ""
     echo "==> Game ready at:"
-    echo "    Local:   http://localhost:8060"
-    echo "    Network: http://$ip:8060"
+    echo "    Local:   https://localhost:8060"
+    echo "    Network: https://$ip:8060"
 }
 
 # --- Main ---
