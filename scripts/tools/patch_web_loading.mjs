@@ -32,7 +32,7 @@ img#status-splash {
   appearance: none; -webkit-appearance: none;
   border: none; background: #1a1a1a; border-radius: 2px;
   position: fixed !important;
-  top: calc(50% + 70px + clamp(2px, 2vh, 60px)) !important; left: 50% !important;
+  top: calc(50% + 8vh + clamp(2px, 2vh, 60px)) !important; left: 50% !important;
   transform: translate(-50%, 0) !important;
   margin: 0 !important; padding: 0 !important;
   overflow: hidden;
@@ -44,7 +44,7 @@ img#status-splash {
 canvas { background: #000 !important; }
 .progress-fill {
   position: fixed; left: 50%;
-  top: calc(50% + 70px + clamp(2px, 2vh, 60px));
+  top: calc(50% + 8vh + clamp(2px, 2vh, 60px));
   transform: translate(-50%, 0);
   width: 20vw; height: 6px;
   background: #1a1a1a;
