@@ -28,6 +28,7 @@ var _click_start_pos: Vector2 = Vector2.ZERO
 var _click_pending: bool = false
 var _click_start_time: int = 0
 var _pending_discard_visual: int = 0
+var _touch_node: Node
 
 @onready var hex_map: Node3D = $HexMap
 @onready var player_unit: Node3D = $PlayerUnit
@@ -41,6 +42,7 @@ var _pending_discard_visual: int = 0
 
 func _ready() -> void:
 	UIHelpers.set_default_cursor()
+	_setup_touch()
 	_setup_starfield()
 	# Wire references
 	card_effects.hex_map = hex_map
@@ -155,6 +157,83 @@ func _setup_starfield() -> void:
 	sky.radiance_size = Sky.RADIANCE_SIZE_64
 	env.background_mode = Environment.BG_SKY
 	env.sky = sky
+
+
+func _setup_touch() -> void:
+	_touch_node = Node.new()
+	_touch_node.set_script(
+		load("res://scripts/input/touch_input_node.gd")
+	)
+	add_child(_touch_node)
+	var mgr: RefCounted = _touch_node.manager
+	mgr.tapped.connect(_on_touch_tap)
+	mgr.drag_started.connect(_on_touch_drag_start)
+	mgr.drag_moved.connect(_on_touch_drag_move)
+	mgr.drag_ended.connect(_on_touch_drag_end)
+	mgr.swiped_up.connect(_on_touch_swipe_up)
+	mgr.swiped_down.connect(_on_touch_swipe_down)
+	mgr.swiped_horizontal.connect(_on_touch_swipe_h)
+	mgr.pinched.connect(_on_touch_pinch)
+	mgr.two_finger_dragged.connect(_on_touch_two_drag)
+
+
+func _on_touch_tap(pos: Vector2) -> void:
+	if game_ui.card_gallery.visible:
+		return
+	var vp_h: float = get_viewport().get_visible_rect().size.y
+	var hand_top: float = vp_h - float(UIHelpers.CARD_HEIGHT)
+	if pos.y < hand_top:
+		_handle_click(pos)
+
+
+func _on_touch_drag_start(_pos: Vector2) -> void:
+	pass
+
+
+func _on_touch_drag_move(pos: Vector2, _delta: Vector2) -> void:
+	if game_ui.card_gallery.visible:
+		return
+	if game_ui.card_hand._any_dragging:
+		return
+	camera_rig.touch_pan(pos - _delta, pos)
+
+
+func _on_touch_drag_end(_pos: Vector2) -> void:
+	pass
+
+
+func _on_touch_swipe_up(_pos: Vector2) -> void:
+	if not game_ui.card_gallery.visible:
+		game_ui.open_gallery()
+		_touch_node.manager.gallery_open = true
+
+
+func _on_touch_swipe_down(_pos: Vector2) -> void:
+	if game_ui.card_gallery.visible:
+		game_ui.close_gallery()
+		_touch_node.manager.gallery_open = false
+
+
+func _on_touch_swipe_h(direction: int) -> void:
+	if game_ui.card_gallery.visible:
+		game_ui.card_gallery.swipe_to_pile(direction)
+		game_ui._sync_pile_toggles()
+
+
+func _on_touch_pinch(_center: Vector2, factor: float) -> void:
+	if game_ui.card_gallery.visible:
+		return
+	if game_ui.card_hand._any_dragging:
+		return
+	camera_rig.touch_zoom(factor)
+
+
+func _on_touch_two_drag(delta: Vector2) -> void:
+	if game_ui.card_gallery.visible:
+		return
+	if game_ui.card_hand._any_dragging:
+		camera_rig.touch_tilt(delta.y * 0.5)
+		camera_rig.touch_orbit(delta.x)
 
 
 func _input(event: InputEvent) -> void:

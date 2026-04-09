@@ -171,6 +171,39 @@ func toggle_filter(pile: String) -> void:
 	filter_changed.emit()
 
 
+func get_active_pile() -> String:
+	if _show_draw:
+		return "draw"
+	if _show_discard:
+		return "discard"
+	return "hand"
+
+
+func set_active_pile(pile: String) -> void:
+	_show_draw = pile == "draw"
+	_show_hand = pile == "hand"
+	_show_discard = pile == "discard"
+
+
+func swipe_to_pile(direction: int) -> void:
+	var order: Array[String] = ["draw", "hand", "discard"]
+	var current := get_active_pile()
+	var idx := order.find(current)
+	if idx < 0:
+		idx = 1
+	idx = (idx + direction) % order.size()
+	if idx < 0:
+		idx += order.size()
+	var target: String = order[idx]
+	set_active_pile(target)
+	if visible:
+		_scroll_offset = 0.0
+		_layout_visible_cards()
+		_apply_scroll()
+		_update_hand_visual()
+		filter_changed.emit()
+
+
 func update_hand_toggle() -> void:
 	if _hand_btn:
 		_hand_btn.set_toggled(_show_hand)
@@ -390,4 +423,11 @@ func _input(event: InputEvent) -> void:
 		_apply_scroll()
 		get_viewport().set_input_as_handled()
 	elif event is InputEventMouseMotion:
+		get_viewport().set_input_as_handled()
+	elif event is InputEventScreenDrag:
+		_scroll_offset = clampf(
+			_scroll_offset - event.relative.y,
+			0.0, _max_scroll,
+		)
+		_apply_scroll()
 		get_viewport().set_input_as_handled()

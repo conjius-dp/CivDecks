@@ -319,6 +319,21 @@ func show_settlement_info(
 
 
 
+func open_gallery(
+	show_draw: bool = false,
+	show_hand: bool = true,
+	show_discard: bool = false,
+) -> void:
+	if card_gallery.visible:
+		return
+	_open_gallery_internal(show_draw, show_hand, show_discard)
+
+
+func close_gallery() -> void:
+	if card_gallery.visible:
+		card_gallery.hide_gallery()
+
+
 func _toggle_gallery(
 	show_draw: bool = false,
 	show_hand: bool = true,
@@ -327,35 +342,43 @@ func _toggle_gallery(
 	if card_gallery.visible:
 		card_gallery.hide_gallery()
 	else:
-		if not _active_picker:
-			_animate_overlay(true)
-		_slide_hand_out()
-		_slide_ui_out()
-		var dm := _deck_manager_ref
-		if dm:
-			card_gallery.show_gallery(
-				dm.draw_pile, dm.hand, dm.discard_pile,
-				show_draw, show_hand, show_discard,
-			)
-		else:
-			card_gallery.show_gallery(
-				[] as Array[CardData],
-				_current_cards,
-				[] as Array[CardData],
-				false, true, false,
-			)
-		var rig := camera.get_parent().get_parent()
-		if "input_enabled" in rig:
-			rig.input_enabled = false
-		if hex_map:
-			hex_map.clear_highlights()
-		_draw_pile_ui.set_gallery_mode(true)
-		_discard_pile_ui.set_gallery_mode(true)
-		_draw_pile_ui.set_toggled(show_draw)
-		_discard_pile_ui.set_toggled(show_discard)
-		_animate_piles_to_gallery()
-		if _active_picker:
-			_active_picker.enter_gallery_mode()
+		_open_gallery_internal(show_draw, show_hand, show_discard)
+
+
+func _open_gallery_internal(
+	show_draw: bool = false,
+	show_hand: bool = true,
+	show_discard: bool = false,
+) -> void:
+	if not _active_picker:
+		_animate_overlay(true)
+	_slide_hand_out()
+	_slide_ui_out()
+	var dm := _deck_manager_ref
+	if dm:
+		card_gallery.show_gallery(
+			dm.draw_pile, dm.hand, dm.discard_pile,
+			show_draw, show_hand, show_discard,
+		)
+	else:
+		card_gallery.show_gallery(
+			[] as Array[CardData],
+			_current_cards,
+			[] as Array[CardData],
+			false, true, false,
+		)
+	var rig := camera.get_parent().get_parent()
+	if "input_enabled" in rig:
+		rig.input_enabled = false
+	if hex_map:
+		hex_map.clear_highlights()
+	_draw_pile_ui.set_gallery_mode(true)
+	_discard_pile_ui.set_gallery_mode(true)
+	_draw_pile_ui.set_toggled(show_draw)
+	_discard_pile_ui.set_toggled(show_discard)
+	_animate_piles_to_gallery()
+	if _active_picker:
+		_active_picker.enter_gallery_mode()
 
 
 func _sync_pile_toggles() -> void:

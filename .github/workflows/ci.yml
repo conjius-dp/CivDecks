@@ -114,6 +114,7 @@ jobs:
           godot --headless --export-release "Web" build/web/index.html 2>&1
           cp scripts/tools/coi-serviceworker.min.js build/web/
           cp assets/boot_logo.png build/web/index.png
+          cp assets/favicon.ico build/web/favicon.ico
           node scripts/tools/patch_web_loading.mjs build/web/index.html
         timeout-minutes: 3
       - name: version

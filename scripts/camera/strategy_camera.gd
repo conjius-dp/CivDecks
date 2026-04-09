@@ -181,6 +181,30 @@ func _apply_tilt() -> void:
 	_pivot.rotation.x = -rad
 
 
+func touch_zoom(factor: float) -> void:
+	var delta := -(factor - 1.0) * zoom_speed * 8.0
+	_target_zoom = clampf(
+		_target_zoom + delta, zoom_min, zoom_max
+	)
+
+
+func touch_tilt(delta_y: float) -> void:
+	_target_tilt = clampf(
+		_target_tilt + delta_y, tilt_min, tilt_max
+	)
+
+
+func touch_orbit(delta_x: float) -> void:
+	_target_rot_y += delta_x * rotate_speed * 4.0
+
+
+func touch_pan(screen_from: Vector2, screen_to: Vector2) -> void:
+	var origin := _screen_to_ground(screen_from)
+	var current := _screen_to_ground(screen_to)
+	var diff := origin - current
+	_target_position += diff
+
+
 func _screen_to_ground(screen_pos: Vector2) -> Vector3:
 	var cam: Camera3D = $CameraPivot/Camera3D
 	var origin := cam.project_ray_origin(screen_pos)

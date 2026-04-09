@@ -697,3 +697,7 @@ static func s(value: int) -> int:
 
 static func sf(value: float) -> float:
 	return value * UI_SCALE
+
+
+static func is_touch_device() -> bool:
+	return DisplayServer.is_touchscreen_available()

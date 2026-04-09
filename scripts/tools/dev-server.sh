@@ -53,6 +53,7 @@ export_web() {
     $GODOT --headless --export-release "Web" "$BUILD_DIR/index.html" 2>&1
     cp "$PROJECT_DIR/scripts/tools/coi-serviceworker.min.js" "$BUILD_DIR/"
     cp "$PROJECT_DIR/assets/boot_logo.png" "$BUILD_DIR/index.png"
+    cp "$PROJECT_DIR/assets/favicon.ico" "$BUILD_DIR/favicon.ico"
     node "$PROJECT_DIR/scripts/tools/patch_web_loading.mjs" "$BUILD_DIR/index.html"
     touch "$PROJECT_DIR/build/.reload"
     echo "==> Build ready."

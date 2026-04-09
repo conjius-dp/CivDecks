@@ -64,7 +64,7 @@ canvas { background: #000 !important; }
   100% { transform: scaleX(0.98); }
 }
 </style>`;
-html = html.replace("<head>", `<head>${css}`);
+html = html.replace("<head>", `<head><link rel="icon" href="favicon.ico" type="image/x-icon">${css}`);
 
 // Disable default progress handler
 const oldProgress = `'onProgress': function (current, total) {
@@ -179,6 +179,21 @@ window.addEventListener('keydown', function(e) {
 	}
 }, true);
 </script>`);
+
+// Replace Godot's engine icon link with our favicon
+html = html.replace(
+	/<link id="-gd-engine-icon"[^>]*>/,
+	'<link id="-gd-engine-icon" rel="icon" type="image/x-icon" href="favicon.ico" />'
+);
+
+// Prevent Godot from overwriting favicon at runtime
+const jsFile = file.replace('index.html', 'index.js');
+let js = readFileSync(jsFile, 'utf8');
+js = js.replace(
+	'_godot_js_display_window_icon_set(p_ptr,p_len){',
+	'_godot_js_display_window_icon_set(p_ptr,p_len){return;'
+);
+writeFileSync(jsFile, js);
 
 // Remove fullsize class so Godot doesn't force 100% width/height
 html = html.replaceAll('fullsize--true', 'fullsize--false');
