@@ -217,3 +217,21 @@ jobs:
           git commit -m "Deploy web build and screenshots" || true
           git push
           rm -rf "$TMPDIR"
+      - name: deploy-conji
+        env:
+          GH_TOKEN: ${{ secrets.CONJI_DEPLOY_TOKEN }}
+        if: env.GH_TOKEN != ''
+        run: |
+          REPO_URL="https://x-access-token:${GH_TOKEN}@github.com/conjius-dp/conji.us.git"
+          TMPDIR=$(mktemp -d)
+          git clone --depth 1 "$REPO_URL" "$TMPDIR"
+          rm -rf "$TMPDIR/civdecks"
+          mkdir -p "$TMPDIR/civdecks"
+          cp -r build/web/* "$TMPDIR/civdecks/"
+          cd "$TMPDIR"
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+          git add -A
+          git commit -m "Update CivDecks to ${{ needs.export.outputs.tag }}" || true
+          git push
+          rm -rf "$TMPDIR"
