@@ -164,6 +164,7 @@ jobs:
           name: CivDecks-${{ steps.version.outputs.tag }}-macOS
           path: build
       - name: create-release
+        id: create_release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -173,6 +174,64 @@ jobs:
             --title "$TAG" \
             --notes "Automated build from commit ${{ github.sha }}" \
             --latest
+          # Surface the release URL for downstream steps (Discord announce).
+          URL=$(gh release view "$TAG" --json url -q .url)
+          echo "url=$URL"  >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG"  >> "$GITHUB_OUTPUT"
+
+      # Inlined Discord announce — GITHUB_TOKEN-created releases don't fire
+      # the `release: published` event (GitHub security), so we post straight
+      # from this job instead of relying on a separate workflow.
+      - name: discord — post release notes to #releases
+        id: post_release
+        env:
+          WEBHOOK: ${{ secrets.DISCORD_RELEASES_WEBHOOK }}
+          TAG:     ${{ steps.create_release.outputs.tag }}
+          URL:     ${{ steps.create_release.outputs.url }}
+          SHA:     ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          BODY="Automated build from commit \`${SHA:0:7}\`"
+          PAYLOAD=$(jq -n \
+            --arg title "$TAG" \
+            --arg body  "$BODY" \
+            --arg url   "$URL" \
+            '{content: "**\($title)**\n\n\($body)\n\n\($url)"}')
+          RESPONSE=$(curl -sS -X POST \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "${WEBHOOK}?wait=true")
+          echo "$RESPONSE"
+          MSG_ID=$(printf '%s' "$RESPONSE" | jq -r '.id')
+          CH_ID=$(printf '%s'  "$RESPONSE" | jq -r '.channel_id')
+          if [ -z "$MSG_ID" ] || [ "$MSG_ID" = "null" ]; then
+            echo "Failed to read message id from webhook response" >&2
+            exit 1
+          fi
+          echo "message_id=$MSG_ID" >> "$GITHUB_OUTPUT"
+          echo "channel_id=$CH_ID"  >> "$GITHUB_OUTPUT"
+
+      - name: discord — share jump-link to #announcements
+        if: ${{ steps.post_release.outputs.message_id != '' }}
+        env:
+          WEBHOOK:  ${{ secrets.DISCORD_ANNOUNCEMENTS_WEBHOOK }}
+          GUILD_ID: ${{ vars.DISCORD_GUILD_ID }}
+          CH_ID:    ${{ steps.post_release.outputs.channel_id }}
+          MSG_ID:   ${{ steps.post_release.outputs.message_id }}
+          TAG:      ${{ steps.create_release.outputs.tag }}
+        run: |
+          set -euo pipefail
+          # Tag is "v0.3.555-stable" — strip the leading v for the blurb.
+          VERSION="${TAG#v}"
+          LINK="https://discord.com/channels/${GUILD_ID}/${CH_ID}/${MSG_ID}"
+          PAYLOAD=$(jq -n \
+            --arg version "$VERSION" \
+            --arg link    "$LINK" \
+            '{content: "**Version \($version) released!**\n\($link)"}')
+          curl -sS -X POST \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD" \
+            "$WEBHOOK"
 
   deploy:
     needs: [build-test-lint, export]
