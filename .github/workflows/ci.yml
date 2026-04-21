@@ -192,11 +192,16 @@ jobs:
         run: |
           set -euo pipefail
           BODY="Automated build from commit \`${SHA:0:7}\`"
+          # The #releases channel is a Forum channel — webhook posts must
+          # include `thread_name` (creates a new forum post) or `thread_id`
+          # (posts into an existing thread). Using the tag as the thread
+          # title gives each release its own post.
           PAYLOAD=$(jq -n \
             --arg title "$TAG" \
             --arg body  "$BODY" \
             --arg url   "$URL" \
-            '{content: "**\($title)**\n\n\($body)\n\n\($url)"}')
+            '{thread_name: $title,
+              content: "**\($title)**\n\n\($body)\n\n\($url)"}')
           RESPONSE=$(curl -sS -X POST \
             -H "Content-Type: application/json" \
             -d "$PAYLOAD" \
